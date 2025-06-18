@@ -1,16 +1,31 @@
-// Animação ao rolar
-document.addEventListener('DOMContentLoaded', function () {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-in');
+   // Funções para controlar o modal
+        const modal = document.getElementById('appointmentModal');
+        const openButtons = document.querySelectorAll('#openModal, #openModal2');
+        const closeButton = document.getElementById('closeModal');
+        
+        openButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+            });
+        });
+        
+        closeButton.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+        
+        // Fechar modal ao clicar fora
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.classList.add('hidden');
             }
         });
-    }, {
-        threshold: 0.1
-    });
-
-    document.querySelectorAll('.card-hover, .service-icon, .floating').forEach(el => {
-        observer.observe(el);
-    });
-});
+        
+        // Efeito de scroll suave
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });

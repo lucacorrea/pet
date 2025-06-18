@@ -1,313 +1,137 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VetCare | Clínica Veterinária de Excelência</title>
-    <link rel="stylesheet" href="./assets/css/colors.css">
+    <title>Elemoel - Clínica Veterinária</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Urbanist:wght@700;800;900&display=swap" rel="stylesheet">
-    <script src="./assets/js/style.js"></script>
-    <script src="./assets/js/main.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/colors.css">
 </head>
-<body class="font-sans bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300">
-    <!-- Header -->
-    <header class="sticky top-0 z-50 glass py-4">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center">
-                    <div class="w-12 h-12 rounded-xl bg-primary-500 flex items-center justify-center mr-3">
-                        <i class="fas fa-paw text-white text-2xl"></i>
-                    </div>
-                    <h1 class="text-2xl font-display font-bold">Vet<span class="text-primary-600">Care</span></h1>
-                </div>
-                
-                <nav class="hidden lg:block">
-                    <ul class="flex space-x-10">
-                        <li><a href="#inicio" class="font-medium hover:text-primary-500 transition">Início</a></li>
-                        <li><a href="#servicos" class="font-medium hover:text-primary-500 transition">Serviços</a></li>
-                        <li><a href="#equipe" class="font-medium hover:text-primary-500 transition">Equipe</a></li>
-                        <li><a href="#depoimentos" class="font-medium hover:text-primary-500 transition">Depoimentos</a></li>
-                        <li><a href="#contato" class="font-medium hover:text-primary-500 transition">Contato</a></li>
-                    </ul>
-                </nav>
-                
-                <div class="flex items-center space-x-4">
-                    <div class="dark-mode-toggle bg-slate-200 dark:bg-slate-700" id="darkModeToggle">
-                        <div class="absolute top-3 left-3 text-yellow-400 dark:hidden">
-                            <i class="fas fa-sun"></i>
-                        </div>
-                        <div class="absolute top-3 right-3 text-gray-300 hidden dark:block">
-                            <i class="fas fa-moon"></i>
-                        </div>
-                    </div>
-                    <button class="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-xl font-medium transition flex items-center">
-                        <i class="fas fa-calendar-check mr-2"></i> Agendar
-                    </button>
-                    <button class="lg:hidden text-2xl">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-            </div>
+<body class="bg-gray-50">
+    <!-- Botão Flutuante do WhatsApp -->
+    <a href="https://wa.me/5511999999999" target="_blank" class="whatsapp-float fixed bottom-6 right-6 bg-[#25D366] text-white w-16 h-16 rounded-full flex items-center justify-center shadow-xl z-50">
+        <i class="fab fa-whatsapp text-3xl"></i>
+    </a>
+
+    <!-- Cabeçalho -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-green-600 flex items-center">
+                <i class="fas fa-paw mr-2"></i>
+                Elemoel
+            </a>
+            <nav class="hidden md:flex space-x-8">
+                <a href="#home" class="text-gray-700 hover:text-green-600 font-medium">Home</a>
+                <a href="#services" class="text-gray-700 hover:text-green-600 font-medium">Serviços</a>
+                <a href="#about" class="text-gray-700 hover:text-green-600 font-medium">Sobre</a>
+                <a href="#testimonials" class="text-gray-700 hover:text-green-600 font-medium">Depoimentos</a>
+                <a href="#contact" class="text-gray-700 hover:text-green-600 font-medium">Contato</a>
+            </nav>
+            <button id="openModal" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-full shadow-md">
+                Agendar Consulta
+            </button>
         </div>
     </header>
 
     <!-- Hero Section -->
-    <section id="inicio" class="hero-pattern relative py-16 md:py-24 overflow-hidden">
-        <div class="absolute inset-0 z-0">
-            <div class="absolute top-20 right-10 w-72 h-72 bg-primary-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-            <div class="absolute top-60 left-10 w-72 h-72 bg-secondary-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-            <div class="absolute bottom-20 right-1/4 w-72 h-72 bg-accent-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-        </div>
-        
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div class="text-center lg:text-left">
-                    <div class="inline-block px-4 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 rounded-full text-sm font-medium mb-6">
-                        <span class="mr-2">🏆</span> Clínica premiada 2025
-                    </div>
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight mb-6">
-                        Cuidado <span class="text-gradient">veterinário</span> de excelência
-                    </h1>
-                    <p class="text-xl text-slate-600 dark:text-slate-300 mb-10 max-w-2xl">
-                        Tecnologia avançada, profissionais especializados e atendimento humanizado para garantir a saúde e bem-estar do seu pet.
-                    </p>
-                    <div class="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
-                        <button class="bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-xl text-lg font-semibold transition flex items-center justify-center">
-                            <i class="fas fa-calendar-alt mr-3"></i> Agendar Consulta
-                        </button>
-                        <button class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-primary-500 text-slate-800 dark:text-slate-200 px-8 py-4 rounded-xl text-lg font-semibold transition flex items-center justify-center">
-                            <i class="fas fa-video mr-3"></i> Teleconsulta
-                        </button>
-                    </div>
+    <section id="home" class="hero-pattern py-16 md:py-24">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 mb-12 md:mb-0">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
+                    Cuidando do seu <span class="text-green-600">melhor amigo</span> com amor e expertise
+                </h1>
+                <p class="text-gray-600 mt-4 text-lg">
+                    Na Elemoel, seu pet recebe atendimento de qualidade com profissionais dedicados e apaixonados por animais.
+                </p>
+                <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                    <button id="openModal2" class="btn-primary text-white font-bold py-3 px-6 rounded-full shadow-lg">
+                        Agendar Consulta
+                    </button>
+                    <a href="https://wa.me/5511999999999" target="_blank" class="bg-gray-800 hover:bg-black text-white font-bold py-3 px-6 rounded-full shadow-lg flex items-center justify-center">
+                        <i class="fab fa-whatsapp mr-2"></i> Fale Conosco
+                    </a>
                 </div>
-                
+            </div>
+            <div class="md:w-1/2 flex justify-center">
                 <div class="relative">
-                    <div class="relative floating">
-                        <div class="absolute -top-10 -right-10 w-64 h-64 bg-primary-500/10 rounded-full"></div>
-                        <div class="absolute -bottom-10 -left-10 w-64 h-64 bg-secondary-500/10 rounded-full"></div>
-                        <div class="relative rounded-3xl overflow-hidden shadow-2xl">
-                            <img src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Veterinário cuidando de cachorro" class="w-full h-auto">
-                        </div>
-                    </div>
-                    <div class="absolute top-1/2 -left-10 glass p-4 rounded-2xl shadow-lg">
-                        <div class="text-center">
-                            <div class="text-3xl font-bold text-primary-500">24h</div>
-                            <div class="text-sm">Atendimento</div>
-                        </div>
-                    </div>
-                    <div class="absolute bottom-10 -right-10 glass p-4 rounded-2xl shadow-lg">
-                        <div class="text-center">
-                            <div class="text-3xl font-bold text-secondary-500">98%</div>
-                            <div class="text-sm">Satisfação</div>
-                        </div>
-                    </div>
+                    <div class="absolute -top-6 -left-6 w-48 h-48 bg-green-100 rounded-full z-0"></div>
+                    <div class="absolute -bottom-6 -right-6 w-48 h-48 bg-green-100 rounded-full z-0"></div>
+                    <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="Veterinário e cachorro" class="rounded-2xl shadow-xl relative z-10 w-full max-w-md">
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Serviços -->
-    <section id="servicos" class="py-20 bg-slate-50 dark:bg-slate-800/30">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <div class="inline-block px-4 py-1 bg-accent-100 dark:bg-accent-900/30 text-accent-600 dark:text-accent-300 rounded-full text-sm font-medium mb-6">
-                    Nossos Serviços
-                </div>
-                <h2 class="text-3xl md:text-4xl font-display font-bold mb-6">Cuidados completos para seu pet</h2>
-                <p class="text-lg text-slate-600 dark:text-slate-300">
-                    Oferecemos uma gama completa de serviços veterinários com tecnologia de ponta e profissionais especializados.
-                </p>
+    <section id="services" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-800">Nossos Serviços</h2>
+                <div class="w-20 h-1 bg-green-600 mx-auto mt-4"></div>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- Serviço 1 -->
-                <div class="card-hover glass p-8 rounded-2xl">
-                    <div class="service-icon bg-primary-100 dark:bg-primary-900/20 text-primary-500 mb-6">
-                        <i class="fas fa-stethoscope text-3xl"></i>
+                <div class="bg-white p-8 rounded-xl shadow-lg text-center transition-all duration-300 hover:shadow-xl">
+                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
+                        <i class="fas fa-stethoscope text-green-600 text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Consultas Especializadas</h3>
-                    <p class="text-slate-600 dark:text-slate-300 mb-4">Exames preventivos, diagnóstico e tratamento com especialistas em diversas áreas.</p>
-                    <a href="#" class="text-primary-500 font-medium flex items-center">
-                        Saiba mais <i class="fas fa-arrow-right ml-2 text-sm"></i>
-                    </a>
+                    <h3 class="text-xl font-bold text-gray-800 mt-4">Consultas</h3>
+                    <p class="text-gray-600 mt-2">Consultas de rotina e emergenciais com profissionais especializados.</p>
                 </div>
-                
                 <!-- Serviço 2 -->
-                <div class="card-hover glass p-8 rounded-2xl">
-                    <div class="service-icon bg-secondary-100 dark:bg-secondary-900/20 text-secondary-500 mb-6">
-                        <i class="fas fa-x-ray text-3xl"></i>
+                <div class="bg-white p-8 rounded-xl shadow-lg text-center transition-all duration-300 hover:shadow-xl">
+                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
+                        <i class="fas fa-syringe text-green-600 text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Diagnóstico Avançado</h3>
-                    <p class="text-slate-600 dark:text-slate-300 mb-4">Tomografia, ultrassom, raio-x e exames laboratoriais com tecnologia de ponta.</p>
-                    <a href="#" class="text-primary-500 font-medium flex items-center">
-                        Saiba mais <i class="fas fa-arrow-right ml-2 text-sm"></i>
-                    </a>
+                    <h3 class="text-xl font-bold text-gray-800 mt-4">Vacinação</h3>
+                    <p class="text-gray-600 mt-2">Vacinas para todas as idades e espécies, seguindo o calendário adequado.</p>
                 </div>
-                
                 <!-- Serviço 3 -->
-                <div class="card-hover glass p-8 rounded-2xl">
-                    <div class="service-icon bg-accent-100 dark:bg-accent-900/20 text-accent-500 mb-6">
-                        <i class="fas fa-heartbeat text-3xl"></i>
+                <div class="bg-white p-8 rounded-xl shadow-lg text-center transition-all duration-300 hover:shadow-xl">
+                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
+                        <i class="fas fa-cut text-green-600 text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Cirurgias Complexas</h3>
-                    <p class="text-slate-600 dark:text-slate-300 mb-4">Centro cirúrgico equipado para procedimentos de alta complexidade com segurança.</p>
-                    <a href="#" class="text-primary-500 font-medium flex items-center">
-                        Saiba mais <i class="fas fa-arrow-right ml-2 text-sm"></i>
-                    </a>
+                    <h3 class="text-xl font-bold text-gray-800 mt-4">Banho e Tosa</h3>
+                    <p class="text-gray-600 mt-2">Serviços de banho, tosa e higiene com produtos de alta qualidade.</p>
                 </div>
-                
-                <!-- Serviço 4 -->
-                <div class="card-hover glass p-8 rounded-2xl">
-                    <div class="service-icon bg-primary-100 dark:bg-primary-900/20 text-primary-500 mb-6">
-                        <i class="fas fa-teeth-open text-3xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Odontologia Veterinária</h3>
-                    <p class="text-slate-600 dark:text-slate-300 mb-4">Cuidados odontológicos completos, desde limpeza até procedimentos complexos.</p>
-                    <a href="#" class="text-primary-500 font-medium flex items-center">
-                        Saiba mais <i class="fas fa-arrow-right ml-2 text-sm"></i>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="text-center mt-16">
-                <button class="border-2 border-primary-500 text-primary-500 px-8 py-4 rounded-xl font-semibold hover:bg-primary-500 hover:text-white transition">
-                    Ver Todos os Serviços
-                </button>
             </div>
         </div>
     </section>
 
-    <!-- Tecnologia -->
-    <section class="py-20 bg-gradient-to-r from-primary-500 to-secondary-500 text-white">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div>
-                    <img src="https://images.unsplash.com/photo-1577893301161-8507c384a0d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Tecnologia veterinária" class="rounded-3xl shadow-2xl">
-                </div>
-                
-                <div>
-                    <div class="inline-block px-4 py-1 bg-white/20 rounded-full text-sm font-medium mb-6">
-                        Inovação 2025
+    <!-- Sobre -->
+    <section id="about" class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <div class="grid grid-cols-2 gap-4">
+                        <img src="https://images.unsplash.com/photo-1510337550647-e84f83e341ca?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="Clínica Veterinária" class="rounded-2xl shadow-lg w-full h-64 object-cover">
+                        <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1169&q=80" alt="Atendimento Veterinário" class="rounded-2xl shadow-lg w-full h-64 object-cover">
+                        <div class="col-span-2">
+                            <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Equipe Veterinária" class="rounded-2xl shadow-lg w-full h-64 object-cover">
+                        </div>
                     </div>
-                    <h2 class="text-3xl md:text-4xl font-display font-bold mb-6">Tecnologia de ponta para diagnósticos precisos</h2>
-                    <p class="text-lg mb-8 opacity-90">
-                        Investimos nas mais modernas tecnologias para oferecer diagnósticos rápidos e precisos, garantindo o melhor tratamento para seu pet.
+                </div>
+                <div class="md:w-1/2 md:pl-12">
+                    <h2 class="text-3xl font-bold text-gray-800">Sobre a Elemoel</h2>
+                    <div class="w-20 h-1 bg-green-600 mt-4"></div>
+                    <p class="text-gray-600 mt-6">
+                        A Elemoel é uma clínica veterinária moderna, fundada em 2020, com o objetivo de oferecer o melhor atendimento e cuidado para os animais de estimação. Nossa equipe é formada por profissionais altamente qualificados e apaixonados por animais.
                     </p>
-                    
-                    <div class="grid grid-cols-2 gap-6">
-                        <div class="glass p-6 rounded-2xl">
-                            <i class="fas fa-brain text-3xl mb-4"></i>
-                            <h3 class="text-xl font-bold mb-2">IA Diagnóstica</h3>
-                            <p>Inteligência Artificial para análise de exames com precisão superior.</p>
+                    <p class="text-gray-600 mt-4">
+                        Nossas instalações são equipadas com tecnologia de ponta para garantir diagnósticos precisos e tratamentos eficazes. Priorizamos o bem-estar e a saúde dos pets, além de oferecer um ambiente acolhedor e seguro.
+                    </p>
+                    <div class="mt-8 flex items-center">
+                        <div class="flex -space-x-2">
+                            <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Veterinária" class="w-12 h-12 rounded-full border-2 border-white">
+                            <img src="https://randomuser.me/api/portraits/men/44.jpg" alt="Veterinário" class="w-12 h-12 rounded-full border-2 border-white">
+                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Assistente" class="w-12 h-12 rounded-full border-2 border-white">
                         </div>
-                        
-                        <div class="glass p-6 rounded-2xl">
-                            <i class="fas fa-robot text-3xl mb-4"></i>
-                            <h3 class="text-xl font-bold mb-2">Cirurgia Robótica</h3>
-                            <p>Procedimentos minimamente invasivos com tecnologia robótica.</p>
+                        <div class="ml-4">
+                            <p class="font-semibold">Nossa Equipe</p>
+                            <p class="text-gray-600">Profissionais qualificados</p>
                         </div>
-                        
-                        <div class="glass p-6 rounded-2xl">
-                            <i class="fas fa-mobile-alt text-3xl mb-4"></i>
-                            <h3 class="text-xl font-bold mb-2">App PetCare</h3>
-                            <p>Acompanhamento completo da saúde do seu pet pelo celular.</p>
-                        </div>
-                        
-                        <div class="glass p-6 rounded-2xl">
-                            <i class="fas fa-dna text-3xl mb-4"></i>
-                            <h3 class="text-xl font-bold mb-2">Genética Avançada</h3>
-                            <p>Testes genéticos para prevenção de doenças hereditárias.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Equipe -->
-    <section id="equipe" class="py-20 bg-white dark:bg-slate-900">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <div class="inline-block px-4 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-300 rounded-full text-sm font-medium mb-6">
-                    Nossa Equipe
-                </div>
-                <h2 class="text-3xl md:text-4xl font-display font-bold mb-6">Profissionais Especializados</h2>
-                <p class="text-lg text-slate-600 dark:text-slate-300">
-                    Nossa equipe é formada por veterinários altamente qualificados e apaixonados por animais.
-                </p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <!-- Veterinário 1 -->
-                <div class="card-hover glass p-6 rounded-2xl text-center">
-                    <div class="w-32 h-32 mx-auto rounded-full overflow-hidden mb-6 border-4 border-white dark:border-slate-800 shadow-lg">
-                        <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Dra. Ana Silva" class="w-full h-full object-cover">
-                    </div>
-                    <h3 class="text-xl font-bold mb-1">Dra. Ana Silva</h3>
-                    <div class="text-primary-500 mb-4">Cardiologista Veterinária</div>
-                    <p class="text-slate-600 dark:text-slate-300 mb-6">Especialista em cardiologia com 12 anos de experiência.</p>
-                    <div class="flex justify-center space-x-3">
-                        <a href="#" class="w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-secondary-500 text-white flex items-center justify-center hover:bg-secondary-600">
-                            <i class="fas fa-envelope"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Veterinário 2 -->
-                <div class="card-hover glass p-6 rounded-2xl text-center">
-                    <div class="w-32 h-32 mx-auto rounded-full overflow-hidden mb-6 border-4 border-white dark:border-slate-800 shadow-lg">
-                        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Dr. Carlos Mendes" class="w-full h-full object-cover">
-                    </div>
-                    <h3 class="text-xl font-bold mb-1">Dr. Carlos Mendes</h3>
-                    <div class="text-primary-500 mb-4">Cirurgião Geral</div>
-                    <p class="text-slate-600 dark:text-slate-300 mb-6">Especialista em cirurgias complexas e minimamente invasivas.</p>
-                    <div class="flex justify-center space-x-3">
-                        <a href="#" class="w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-secondary-500 text-white flex items-center justify-center hover:bg-secondary-600">
-                            <i class="fas fa-envelope"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Veterinário 3 -->
-                <div class="card-hover glass p-6 rounded-2xl text-center">
-                    <div class="w-32 h-32 mx-auto rounded-full overflow-hidden mb-6 border-4 border-white dark:border-slate-800 shadow-lg">
-                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Dra. Juliana Oliveira" class="w-full h-full object-cover">
-                    </div>
-                    <h3 class="text-xl font-bold mb-1">Dra. Juliana Oliveira</h3>
-                    <div class="text-primary-500 mb-4">Ortopedista</div>
-                    <p class="text-slate-600 dark:text-slate-300 mb-6">Especialista em ortopedia e fisioterapia animal.</p>
-                    <div class="flex justify-center space-x-3">
-                        <a href="#" class="w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-secondary-500 text-white flex items-center justify-center hover:bg-secondary-600">
-                            <i class="fas fa-envelope"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Veterinário 4 -->
-                <div class="card-hover glass p-6 rounded-2xl text-center">
-                    <div class="w-32 h-32 mx-auto rounded-full overflow-hidden mb-6 border-4 border-white dark:border-slate-800 shadow-lg">
-                        <img src="https://images.unsplash.com/photo-1552058544-f2b08422138a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Dr. Ricardo Santos" class="w-full h-full object-cover">
-                    </div>
-                    <h3 class="text-xl font-bold mb-1">Dr. Ricardo Santos</h3>
-                    <div class="text-primary-500 mb-4">Dermatologista</div>
-                    <p class="text-slate-600 dark:text-slate-300 mb-6">Especialista em dermatologia e alergias animais.</p>
-                    <div class="flex justify-center space-x-3">
-                        <a href="#" class="w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-secondary-500 text-white flex items-center justify-center hover:bg-secondary-600">
-                            <i class="fas fa-envelope"></i>
-                        </a>
                     </div>
                 </div>
             </div>
@@ -315,27 +139,19 @@
     </section>
 
     <!-- Depoimentos -->
-    <section id="depoimentos" class="py-20 bg-slate-50 dark:bg-slate-800/30">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <div class="inline-block px-4 py-1 bg-accent-100 dark:bg-accent-900/30 text-accent-600 dark:text-accent-300 rounded-full text-sm font-medium mb-6">
-                    Depoimentos
-                </div>
-                <h2 class="text-3xl md:text-4xl font-display font-bold mb-6">O que nossos clientes dizem</h2>
-                <p class="text-lg text-slate-600 dark:text-slate-300">
-                    A satisfação dos pets e seus tutores é nossa maior recompensa.
-                </p>
+    <section id="testimonials" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-800">O que dizem nossos clientes</h2>
+                <div class="w-20 h-1 bg-green-600 mx-auto mt-4"></div>
             </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- Depoimento 1 -->
-                <div class="card-hover glass p-8 rounded-2xl">
-                    <div class="flex items-center mb-6">
-                        <div class="w-16 h-16 rounded-full overflow-hidden mr-4">
-                            <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Maria Fernanda" class="w-full h-full object-cover">
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-lg">Maria Fernanda</h4>
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <div class="flex items-center mb-4">
+                        <img src="https://randomuser.me/api/portraits/women/43.jpg" alt="Cliente" class="w-16 h-16 rounded-full">
+                        <div class="ml-4">
+                            <h4 class="font-bold text-gray-800">Maria Silva</h4>
                             <div class="flex text-yellow-400">
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
@@ -345,22 +161,16 @@
                             </div>
                         </div>
                     </div>
-                    <p class="text-slate-600 dark:text-slate-300 italic mb-6">
-                        "O cuidado que a equipe da VetCare teve com meu labrador foi impressionante. Diagnosticaram um problema cardíaco precocemente e hoje ele está saudável. Profissionais incríveis!"
+                    <p class="text-gray-600">
+                        "A equipe da Elemoel é incrível! Salvaram a vida do meu cachorro quando ele teve uma emergência. São profissionais dedicados e muito atenciosos."
                     </p>
-                    <div class="text-sm text-slate-500 dark:text-slate-400">
-                        <i class="fas fa-paw mr-2"></i> Tutora do Thor, Labrador de 5 anos
-                    </div>
                 </div>
-                
                 <!-- Depoimento 2 -->
-                <div class="card-hover glass p-8 rounded-2xl">
-                    <div class="flex items-center mb-6">
-                        <div class="w-16 h-16 rounded-full overflow-hidden mr-4">
-                            <img src="https://randomuser.me/api/portraits/men/54.jpg" alt="Carlos Eduardo" class="w-full h-full object-cover">
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-lg">Carlos Eduardo</h4>
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <div class="flex items-center mb-4">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Cliente" class="w-16 h-16 rounded-full">
+                        <div class="ml-4">
+                            <h4 class="font-bold text-gray-800">João Pereira</h4>
                             <div class="flex text-yellow-400">
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
@@ -370,148 +180,209 @@
                             </div>
                         </div>
                     </div>
-                    <p class="text-slate-600 dark:text-slate-300 italic mb-6">
-                        "Meu gato precisou de uma cirurgia complexa e a VetCare foi incrível. Tecnologia de ponta e equipe extremamente competente. Recomendo sem dúvidas!"
+                    <p class="text-gray-600">
+                        "Sempre levo meus gatos para a Elemoel. O atendimento é excelente e o carinho que têm com os animais é visível. Recomendo a todos!"
                     </p>
-                    <div class="text-sm text-slate-500 dark:text-slate-400">
-                        <i class="fas fa-paw mr-2"></i> Tutor do Loki, Gato Siamês de 3 anos
-                    </div>
                 </div>
-                
                 <!-- Depoimento 3 -->
-                <div class="card-hover glass p-8 rounded-2xl">
-                    <div class="flex items-center mb-6">
-                        <div class="w-16 h-16 rounded-full overflow-hidden mr-4">
-                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Amanda Santos" class="w-full h-full object-cover">
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-lg">Amanda Santos</h4>
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <div class="flex items-center mb-4">
+                        <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Cliente" class="w-16 h-16 rounded-full">
+                        <div class="ml-4">
+                            <h4 class="font-bold text-gray-800">Ana Costa</h4>
                             <div class="flex text-yellow-400">
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i>
+                                <i class="fas fa-star"></i>
                             </div>
                         </div>
                     </div>
-                    <p class="text-slate-600 dark:text-slate-300 italic mb-6">
-                        "O atendimento 24 horas salvou minha cachorrinha em uma emergência. Profissionais atenciosos e estrutura completa. Vale cada centavo investido!"
+                    <p class="text-gray-600">
+                        "Profissionais muito competentes e preços justos. Minha cadela foi diagnosticada rapidamente e o tratamento foi um sucesso. Obrigada, Elemoel!"
                     </p>
-                    <div class="text-sm text-slate-500 dark:text-slate-400">
-                        <i class="fas fa-paw mr-2"></i> Tutora da Mel, Poodle de 8 anos
-                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- CTA -->
-    <section class="py-20 bg-slate-900 text-white">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-3xl md:text-4xl font-display font-bold mb-6">Pronto para cuidar do seu pet com excelência?</h2>
-                <p class="text-xl text-slate-300 mb-10">
-                    Agende uma consulta agora mesmo e proporcione o melhor cuidado veterinário para seu companheiro.
-                </p>
-                <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <button class="bg-white text-slate-900 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-slate-100 transition flex items-center justify-center">
-                        <i class="fas fa-calendar-alt mr-3"></i> Agendar Consulta
-                    </button>
-                    <button class="bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-xl text-lg font-semibold transition flex items-center justify-center">
-                        <i class="fas fa-phone-alt mr-3"></i> (11) 3456-7890
-                    </button>
+    <!-- Contato -->
+    <section id="contact" class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-800">Entre em Contato</h2>
+                <div class="w-20 h-1 bg-green-600 mx-auto mt-4"></div>
+            </div>
+            <div class="flex flex-col md:flex-row bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div class="md:w-1/3 bg-green-600 p-8 text-white">
+                    <h3 class="text-xl font-bold mb-6">Informações de Contato</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-center">
+                            <i class="fas fa-map-marker-alt text-xl mr-4"></i>
+                            <span>Rua dos Animais, 123 - Bairro Pet, Cidade - SP</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone text-xl mr-4"></i>
+                            <span>(11) 9999-9999</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope text-xl mr-4"></i>
+                            <span>contato@elemoel.com.br</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fab fa-whatsapp text-xl mr-4"></i>
+                            <span>(11) 98888-7777</span>
+                        </li>
+                    </ul>
+                    <div class="mt-8">
+                        <h4 class="text-lg font-bold mb-4">Horário de Funcionamento</h4>
+                        <p>Segunda a Sexta: 8h às 20h</p>
+                        <p>Sábado: 9h às 18h</p>
+                        <p>Domingo: 9h às 13h</p>
+                    </div>
+                </div>
+                <div class="md:w-2/3 p-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">Envie uma Mensagem</h3>
+                    <form class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-gray-700 mb-2">Nome</label>
+                                <input type="text" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">Email</label>
+                                <input type="email" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Assunto</label>
+                            <input type="text" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Mensagem</label>
+                            <textarea rows="5" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600"></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary text-white font-bold py-3 px-6 rounded-lg shadow-lg">
+                            Enviar Mensagem
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-slate-900 text-slate-300 pt-16 pb-8">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
-                    <div class="flex items-center mb-6">
-                        <div class="w-12 h-12 rounded-xl bg-primary-500 flex items-center justify-center mr-3">
-                            <i class="fas fa-paw text-white text-2xl"></i>
-                        </div>
-                        <h2 class="text-2xl font-display font-bold text-white">Vet<span class="text-primary-500">Care</span></h2>
-                    </div>
-                    <p class="mb-6">
-                        Cuidando do seu pet com excelência desde 2010. Tecnologia, amor e dedicação em cada consulta.
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-paw mr-2 text-green-400"></i>
+                        Elemoel
+                    </h3>
+                    <p class="text-gray-400">
+                        Cuidando do seu pet com amor e dedicação desde 2020.
                     </p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary-500 transition">
+                    <div class="flex mt-6 space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary-500 transition">
+                        <a href="#" class="text-gray-400 hover:text-white">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary-500 transition">
-                            <i class="fab fa-youtube"></i>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-twitter"></i>
                         </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary-500 transition">
-                            <i class="fab fa-tiktok"></i>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-linkedin-in"></i>
                         </a>
                     </div>
                 </div>
-                
                 <div>
-                    <h3 class="text-lg font-bold text-white mb-6">Links Rápidos</h3>
-                    <ul class="space-y-3">
-                        <li><a href="#inicio" class="hover:text-white transition">Início</a></li>
-                        <li><a href="#servicos" class="hover:text-white transition">Serviços</a></li>
-                        <li><a href="#equipe" class="hover:text-white transition">Equipe</a></li>
-                        <li><a href="#depoimentos" class="hover:text-white transition">Depoimentos</a></li>
-                        <li><a href="#contato" class="hover:text-white transition">Contato</a></li>
+                    <h4 class="text-lg font-semibold mb-4">Links Rápidos</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li><a href="#services" class="text-gray-400 hover:text-white">Serviços</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-white">Sobre</a></li>
+                        <li><a href="#testimonials" class="text-gray-400 hover:text-white">Depoimentos</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-white">Contato</a></li>
                     </ul>
                 </div>
-                
                 <div>
-                    <h3 class="text-lg font-bold text-white mb-6">Serviços</h3>
-                    <ul class="space-y-3">
-                        <li><a href="#" class="hover:text-white transition">Consultas</a></li>
-                        <li><a href="#" class="hover:text-white transition">Cirurgias</a></li>
-                        <li><a href="#" class="hover:text-white transition">Exames</a></li>
-                        <li><a href="#" class="hover:text-white transition">Vacinação</a></li>
-                        <li><a href="#" class="hover:text-white transition">Internação</a></li>
+                    <h4 class="text-lg font-semibold mb-4">Serviços</h4>
+                    <ul class="space-y-2">
+                        <li class="text-gray-400">Consultas</li>
+                        <li class="text-gray-400">Vacinação</li>
+                        <li class="text-gray-400">Banho e Tosa</li>
+                        <li class="text-gray-400">Cirurgias</li>
+                        <li class="text-gray-400">Exames</li>
                     </ul>
                 </div>
-                
-                <div id="contato">
-                    <h3 class="text-lg font-bold text-white mb-6">Contato</h3>
-                    <ul class="space-y-4">
-                        <li class="flex items-start">
-                            <i class="fas fa-map-marker-alt mt-1 mr-3 text-primary-500"></i>
-                            <span>Av. Paulista, 1000<br>São Paulo, SP</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-phone-alt mr-3 text-primary-500"></i>
-                            <span>(11) 3456-7890</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-envelope mr-3 text-primary-500"></i>
-                            <span>contato@vetcare.com.br</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-clock mr-3 text-primary-500"></i>
-                            <span>24 horas por dia, 7 dias por semana</span>
-                        </li>
-                    </ul>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Newsletter</h4>
+                    <p class="text-gray-400 mb-4">Inscreva-se para receber dicas de cuidados com seu pet.</p>
+                    <form class="flex">
+                        <input type="email" placeholder="Seu email" class="px-4 py-2 rounded-l-lg w-full focus:outline-none text-gray-800">
+                        <button class="bg-green-600 hover:bg-green-700 px-4 rounded-r-lg">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
-            
-            <div class="border-t border-slate-800 mt-12 pt-8 text-center">
-                <p>&copy; 2025 VetCare - Todos os direitos reservados.</p>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 Elemoel - Clínica Veterinária. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>
 
-    <!-- WhatsApp Flutuante -->
-    <a href="#" class="fixed bottom-6 right-6 z-50">
-        <div class="bg-green-500 text-white p-4 rounded-full shadow-lg flex items-center justify-center w-16 h-16 hover:bg-green-600 transition">
-            <i class="fab fa-whatsapp text-2xl"></i>
+    <!-- Modal Agendamento -->
+    <div id="appointmentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-11/12 md:w-1/2 lg:w-1/3 p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Agendar Consulta</h3>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <form class="space-y-6">
+                <div>
+                    <label class="block text-gray-700 mb-2">Nome do Pet</label>
+                    <input type="text" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Espécie</label>
+                    <select class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600">
+                        <option>Cachorro</option>
+                        <option>Gato</option>
+                        <option>Ave</option>
+                        <option>Outro</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Data</label>
+                    <input type="date" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Horário</label>
+                    <select class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600">
+                        <option>08:00</option>
+                        <option>09:00</option>
+                        <option>10:00</option>
+                        <option>11:00</option>
+                        <option>14:00</option>
+                        <option>15:00</option>
+                        <option>16:00</option>
+                        <option>17:00</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full btn-primary text-white font-bold py-3 px-6 rounded-lg shadow-lg">
+                    Agendar
+                </button>
+            </form>
         </div>
-    </a>
+    </div>
+
+    <script src="./assets/js/main.js"></script>
 </body>
 </html>
