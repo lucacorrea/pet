@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailwind CSS - Guia Essencial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .code-block {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            background: #1e293b;
+            color: #f8fafc;
+            border-radius: 8px;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .class-card {
+            transition: all 0.3s ease;
+            background: linear-gradient(145deg, #ffffff, #f5f7fa);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .class-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        
+        .tip {
+            position: relative;
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+        
+        .tip:before {
+            content: "💡";
+            position: absolute;
+            left: -10px;
+            top: -10px;
+            background: #0ea5e9;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        
+        .feature-icon {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .interactive-element {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .interactive-element:hover {
+            transform: scale(1.05);
+        }
+        
+        .section-title {
+            position: relative;
+            display: inline-block;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, #0ea5e9, #6366f1);
+            border-radius: 2px;
+        }
+        
+        .code-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #93c5fd;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .feature-highlight {
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .feature-highlight:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #0ea5e9, #6366f1);
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0ea5e9, #6366f1);
+            width: 85%;
+            border-radius: 3px;
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .mobile-flex-col {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-blue-50 to-indigo-50 font-poppins">
+    <!-- Cabeçalho -->
+    <header class="gradient-bg text-white sticky top-0 z-40 shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center mb-4 md:mb-0">
+                <div class="bg-white w-10 h-10 rounded-lg flex items-center justify-center mr-3 shadow-md">
+                    <i class="fab fa-css3-alt text-blue-600 text-2xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold">Tailwind CSS <span class="font-light">Essencial</span></h1>
+            </div>
+            <nav class="flex flex-wrap justify-center gap-4 md:gap-6">
+                <a href="#destaques" class="hover:text-blue-200 transition flex items-center">
+                    <i class="fas fa-star mr-2"></i> Destaques
+                </a>
+                <a href="#classes" class="hover:text-blue-200 transition flex items-center">
+                    <i class="fas fa-code mr-2"></i> Classes
+                </a>
+                <a href="#exemplos" class="hover:text-blue-200 transition flex items-center">
+                    <i class="fas fa-laptop-code mr-2"></i> Exemplos
+                </a>
+                <a href="#videos" class="hover:text-blue-200 transition flex items-center">
+                    <i class="fas fa-play-circle mr-2"></i> Vídeos
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="py-16 md:py-24">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 mb-12 md:mb-0">
+                <div class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg inline-block mb-6">
+                    <span class="text-blue-600 font-bold">NOVO GUIA</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
+                    Domine o <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Tailwind CSS</span> em projetos reais
+                </h1>
+                <p class="text-gray-600 mt-4 text-lg max-w-2xl">
+                    Aprenda as classes essenciais do Tailwind CSS com exemplos práticos, dicas avançadas e técnicas profissionais utilizadas em sites de alto nível.
+                </p>
+                
+                <div class="mt-8 flex flex-wrap gap-4">
+                    <a href="#classes" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105 flex items-center">
+                        <i class="fas fa-code mr-2"></i> Ver Classes
+                    </a>
+                    <a href="#videos" class="bg-white border-2 border-blue-500 text-blue-600 hover:bg-blue-50 font-bold py-3 px-6 rounded-lg shadow-md transform transition duration-300 hover:scale-105 flex items-center">
+                        <i class="fas fa-play-circle mr-2"></i> Ver Vídeos
+                    </a>
+                </div>
+                
+                <div class="mt-10 flex items-center">
+                    <div class="flex -space-x-2">
+                        <img class="w-10 h-10 rounded-full border-2 border-white" src="https://randomuser.me/api/portraits/women/44.jpg" alt="">
+                        <img class="w-10 h-10 rounded-full border-2 border-white" src="https://randomuser.me/api/portraits/men/32.jpg" alt="">
+                        <img class="w-10 h-10 rounded-full border-2 border-white" src="https://randomuser.me/api/portraits/women/68.jpg" alt="">
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-600"><span class="font-semibold">+2.500 desenvolvedores</span> já aprenderam com este guia</p>
+                    </div>
+                </div>
+            </div>
+            <div class="md:w-1/2 flex justify-center">
+                <div class="relative">
+                    <div class="absolute -top-6 -left-6 w-48 h-48 bg-blue-200 rounded-full z-0 opacity-50"></div>
+                    <div class="absolute -bottom-6 -right-6 w-48 h-48 bg-indigo-200 rounded-full z-0 opacity-50"></div>
+                    <div class="bg-white p-6 rounded-2xl shadow-xl relative z-10 w-full max-w-md border border-gray-100">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center">
+                                <div class="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16" />
+                                <div class="ml-4">
+                                    <div class="h-4 bg-blue-400 rounded w-24 mb-2"></div>
+                                    <div class="h-3 bg-gray-300 rounded w-32"></div>
+                                </div>
+                            </div>
+                            <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">Tailwind</div>
+                        </div>
+                        <div class="space-y-3 mb-4">
+                            <div class="h-3 bg-gray-200 rounded"></div>
+                            <div class="h-3 bg-gray-200 rounded w-5/6"></div>
+                            <div class="h-3 bg-gray-200 rounded w-4/6"></div>
+                        </div>
+                        <div class="mt-6 grid grid-cols-3 gap-4">
+                            <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                <div class="h-3 bg-blue-200 rounded mb-2"></div>
+                                <div class="h-2 bg-blue-200 rounded w-4/5"></div>
+                            </div>
+                            <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+                                <div class="h-3 bg-indigo-200 rounded mb-2"></div>
+                                <div class="h-2 bg-indigo-200 rounded w-3/5"></div>
+                            </div>
+                            <div class="bg-purple-50 p-3 rounded-lg border border-purple-100">
+                                <div class="h-3 bg-purple-200 rounded mb-2"></div>
+                                <div class="h-2 bg-purple-200 rounded w-4/5"></div>
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-gray-100 flex justify-between">
+                            <div class="text-sm text-gray-500">Última atualização: Hoje</div>
+                            <div class="flex">
+                                <i class="fas fa-heart text-red-500 mr-2"></i>
+                                <span>128</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Destaques -->
+    <section id="destaques" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-800 section-title">Por que Tailwind CSS?</h2>
+                <p class="text-gray-600 mt-4 max-w-3xl mx-auto">O framework CSS utilitário que está revolucionando a forma como construímos interfaces modernas</p>
+            </div>
+            
+            <div class="feature-grid">
+                <div class="feature-highlight bg-white p-8">
+                    <div class="feature-item">
+                        <div class="feature-icon bg-blue-100 text-blue-600">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Desenvolvimento Rápido</h3>
+                            <p class="text-gray-600">Construa interfaces rapidamente com classes utilitárias sem precisar sair do HTML.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar mt-6">
+                        <div class="progress-fill"></div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h4 class="font-semibold text-gray-700 mb-3">Economia de tempo:</h4>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Sem nomeação de classes CSS</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Menos troca entre arquivos</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Design consistente com sistema de design</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="feature-highlight bg-white p-8">
+                    <div class="feature-item">
+                        <div class="feature-icon bg-purple-100 text-purple-600">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Responsividade Nativa</h3>
+                            <p class="text-gray-600">Crie designs responsivos diretamente com prefixos como md:, lg: e xl:.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+                        <div class="text-sm font-medium text-gray-700 mb-2">Exemplo de código:</div>
+                        <div class="code-block p-4 text-sm">
+                            <div><span class="text-purple-400">&lt;div</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"flex flex-col md:flex-row"</span><span class="text-purple-400">&gt;</span></div>
+                            <div class="ml-4"><span class="text-purple-400">&lt;div</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"w-full md:w-1/2"</span><span class="text-purple-400">&gt;</span>...<span class="text-purple-400">&lt;/div&gt;</span></div>
+                            <div class="ml-4"><span class="text-purple-400">&lt;div</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"w-full md:w-1/2"</span><span class="text-purple-400">&gt;</span>...<span class="text-purple-400">&lt;/div&gt;</span></div>
+                            <div><span class="text-purple-400">&lt;/div&gt;</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="tip mt-6">
+                        <strong>Dica:</strong> Use a abordagem mobile-first. Estilize para mobile e depois adicione modificadores para telas maiores.
+                    </div>
+                </div>
+                
+                <div class="feature-highlight bg-white p-8">
+                    <div class="feature-item">
+                        <div class="feature-icon bg-green-100 text-green-600">
+                            <i class="fas fa-paint-brush"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Customização Total</h3>
+                            <p class="text-gray-600">Configure completamente o sistema de design para atender às necessidades do seu projeto.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h4 class="font-semibold text-gray-700 mb-3">O que você pode personalizar:</h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-blue-50 text-blue-800 py-2 px-3 rounded-lg text-sm">Cores</div>
+                            <div class="bg-indigo-50 text-indigo-800 py-2 px-3 rounded-lg text-sm">Espaçamentos</div>
+                            <div class="bg-purple-50 text-purple-800 py-2 px-3 rounded-lg text-sm">Tipografia</div>
+                            <div class="bg-pink-50 text-pink-800 py-2 px-3 rounded-lg text-sm">Bordas</div>
+                            <div class="bg-yellow-50 text-yellow-800 py-2 px-3 rounded-lg text-sm">Sombras</div>
+                            <div class="bg-green-50 text-green-800 py-2 px-3 rounded-lg text-sm">Breakpoints</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h4 class="font-semibold text-gray-700 mb-2">Como configurar:</h4>
+                        <p class="text-gray-600 text-sm">No arquivo tailwind.config.js, você pode estender o tema padrão:</p>
+                        <div class="code-block p-4 text-sm mt-2">
+                            <div><span class="text-blue-400">module</span>.<span class="text-blue-400">exports</span> = {</div>
+                            <div class="ml-4"><span class="text-blue-400">theme</span>: {</div>
+                            <div class="ml-8"><span class="text-blue-400">extend</span>: {</div>
+                            <div class="ml-12"><span class="text-blue-400">colors</span>: {</div>
+                            <div class="ml-16"><span class="text-yellow-400">'custom-blue'</span>: <span class="text-yellow-400">'#0ea5e9'</span>,</div>
+                            <div class="ml-16"><span class="text-yellow-400">'custom-indigo'</span>: <span class="text-yellow-400">'#6366f1'</span></div>
+                            <div class="ml-12">},</div>
+                            <div class="ml-8">}</div>
+                            <div class="ml-4">}</div>
+                            <div>}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Principais Classes -->
+    <section id="classes" class="py-16 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-800 section-title">Principais Classes do Tailwind CSS</h2>
+                <p class="text-gray-600 mt-4 max-w-3xl mx-auto">Classes essenciais que você precisa dominar para construir interfaces modernas</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Layout e Espaçamento -->
+                <div class="class-card p-6 rounded-xl">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-100 text-blue-800 p-3 rounded-lg mr-4">
+                            <i class="fas fa-border-all text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800">Layout & Espaçamento</h3>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-700 mb-2">Classes fundamentais:</h4>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">container</code> Centraliza conteúdo</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">flex</code> Container flexível</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">grid</code> Layout em grade</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">p-4</code> Padding</span>
+                                <span class="badge bg-green-100 text-green-800">Util</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">m-4</code> Margin</span>
+                                <span class="badge bg-green-100 text-green-800">Util</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="code-block p-4 text-sm mb-4">
+                        <div class="code-toolbar">
+                            <button class="copy-btn">Copiar</button>
+                        </div>
+                        <div><span class="text-purple-400">&lt;div</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"container mx-auto p-4"</span><span class="text-purple-400">&gt;</span></div>
+                        <div class="ml-4"><span class="text-purple-400">&lt;div</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"flex space-x-4"</span><span class="text-purple-400">&gt;</span></div>
+                        <div class="ml-8"><span class="text-purple-400">&lt;div</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"p-4 bg-blue-100"</span><span class="text-purple-400">&gt;</span>Item 1<span class="text-purple-400">&lt;/div&gt;</span></div>
+                        <div class="ml-8"><span class="text-purple-400">&lt;div</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"p-4 bg-blue-100"</span><span class="text-purple-400">&gt;</span>Item 2<span class="text-purple-400">&lt;/div&gt;</span></div>
+                        <div class="ml-4"><span class="text-purple-400">&lt;/div&gt;</span></div>
+                        <div><span class="text-purple-400">&lt;/div&gt;</span></div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-700 mb-2">Explicação Detalhada:</h4>
+                        <p class="text-gray-600">
+                            O sistema de layout do Tailwind é baseado em Flexbox e Grid, combinado com utilitários de espaçamento.
+                            <br><br>
+                            <span class="font-semibold">container</span> centraliza o conteúdo e define uma largura máxima responsiva.
+                            <br><br>
+                            <span class="font-semibold">flex</span> e <span class="font-semibold">grid</span> permitem criar layouts complexos com mínimo esforço.
+                            <br><br>
+                            <span class="font-semibold">p-{size}</span> e <span class="font-semibold">m-{size}</span> controlam padding e margin (0, 0.25rem, 0.5rem, 1rem, etc).
+                        </p>
+                    </div>
+                    
+                    <div class="tip">
+                        <strong>Dica:</strong> Use <code>space-x-*</code> para espaçamento horizontal entre elementos flexíveis, evitando margens individuais.
+                    </div>
+                </div>
+                
+                <!-- Tipografia -->
+                <div class="class-card p-6 rounded-xl">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-purple-100 text-purple-800 p-3 rounded-lg mr-4">
+                            <i class="fas fa-font text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800">Tipografia</h3>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-700 mb-2">Classes fundamentais:</h4>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">text-xl</code> Tamanho do texto</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">font-bold</code> Peso da fonte</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">text-center</code> Alinhamento</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">leading-relaxed</code> Altura de linha</span>
+                                <span class="badge bg-green-100 text-green-800">Util</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">tracking-wide</code> Espaçamento</span>
+                                <span class="badge bg-green-100 text-green-800">Util</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="code-block p-4 text-sm mb-4">
+                        <div class="code-toolbar">
+                            <button class="copy-btn">Copiar</button>
+                        </div>
+                        <div><span class="text-purple-400">&lt;h1</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"text-3xl md:text-4xl font-bold text-gray-800 mb-4"</span><span class="text-purple-400">&gt;</span></div>
+                        <div class="ml-4">Título Importante</div>
+                        <div><span class="text-purple-400">&lt;/h1&gt;</span></div>
+                        <div><span class="text-purple-400">&lt;p</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"text-gray-600 leading-relaxed"</span><span class="text-purple-400">&gt;</span></div>
+                        <div class="ml-4">Este é um parágrafo com espaçamento de linha relaxado para melhor legibilidade.</div>
+                        <div><span class="text-purple-400">&lt;/p&gt;</span></div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-700 mb-2">Explicação Detalhada:</h4>
+                        <p class="text-gray-600">
+                            O Tailwind oferece controle completo sobre tipografia com classes intuitivas.
+                            <br><br>
+                            <span class="font-semibold">text-{size}</span> define tamanhos de fonte (xs, sm, base, lg, xl, etc).
+                            <br><br>
+                            <span class="font-semibold">font-{weight}</span> controla o peso da fonte (thin, light, normal, medium, bold).
+                            <br><br>
+                            <span class="font-semibold">leading-{size}</span> ajusta a altura da linha para melhor legibilidade.
+                        </p>
+                    </div>
+                    
+                    <div class="tip">
+                        <strong>Dica:</strong> Use <code>leading-*</code> para melhorar a legibilidade do texto, especialmente em parágrafos longos.
+                    </div>
+                </div>
+                
+                <!-- Cores e Estilos -->
+                <div class="class-card p-6 rounded-xl">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-pink-100 text-pink-800 p-3 rounded-lg mr-4">
+                            <i class="fas fa-palette text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800">Cores & Estilos</h3>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-700 mb-2">Classes fundamentais:</h4>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">bg-blue-500</code> Cor de fundo</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">text-white</code> Cor do texto</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">rounded-lg</code> Bordas</span>
+                                <span class="badge bg-green-100 text-green-800">Util</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">shadow-md</code> Sombras</span>
+                                <span class="badge bg-green-100 text-green-800">Util</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">border-2</code> Espessura</span>
+                                <span class="badge bg-green-100 text-green-800">Util</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="code-block p-4 text-sm mb-4">
+                        <div class="code-toolbar">
+                            <button class="copy-btn">Copiar</button>
+                        </div>
+                        <div><span class="text-purple-400">&lt;button</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300"</span><span class="text-purple-400">&gt;</span></div>
+                        <div class="ml-4">Botão Moderno</div>
+                        <div><span class="text-purple-400">&lt;/button&gt;</span></div>
+                    </div>
+                    
+                    <div class="mt-4 flex justify-center">
+                        <button class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-2 px-5 rounded-lg shadow-lg hover:shadow-xl transition duration-300">
+                            Botão Exemplo
+                        </button>
+                    </div>
+                    
+                    <div class="mb-4 mt-6">
+                        <h4 class="font-semibold text-gray-700 mb-2">Explicação Detalhada:</h4>
+                        <p class="text-gray-600">
+                            O Tailwind oferece uma paleta de cores completa com 9 tons para cada cor (100-900).
+                            <br><br>
+                            <span class="font-semibold">bg-{color}-{shade}</span> define cores de fundo.
+                            <br><br>
+                            <span class="font-semibold">text-{color}-{shade}</span> define cores de texto.
+                            <br><br>
+                            <span class="font-semibold">rounded-{size}</span> cria bordas arredondadas (none, sm, md, lg, xl, 2xl, full).
+                            <br><br>
+                            <span class="font-semibold">shadow-{size}</span> adiciona sombras para profundidade visual.
+                        </p>
+                    </div>
+                    
+                    <div class="tip mt-4">
+                        <strong>Dica:</strong> Use gradientes com <code>bg-gradient-to-*</code> para criar botões e elementos mais modernos e atraentes.
+                    </div>
+                </div>
+                
+                <!-- Responsividade -->
+                <div class="class-card p-6 rounded-xl">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-yellow-100 text-yellow-800 p-3 rounded-lg mr-4">
+                            <i class="fas fa-mobile-alt text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800">Responsividade</h3>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-700 mb-2">Classes fundamentais:</h4>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">md:</code> Telas médias (≥768px)</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">lg:</code> Telas grandes (≥1024px)</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">xl:</code> Telas extra grandes (≥1280px)</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">2xl:</code> Telas muito grandes (≥1536px)</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="code-block p-4 text-sm mb-4">
+                        <div class="code-toolbar">
+                            <button class="copy-btn">Copiar</button>
+                        </div>
+                        <div><span class="text-purple-400">&lt;div</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"</span><span class="text-purple-400">&gt;</span></div>
+                        <div class="ml-4"><span class="text-purple-400">&lt;div</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"p-6 bg-white rounded-lg shadow"</span><span class="text-purple-400">&gt;</span></div>
+                        <div class="ml-8">Card 1</div>
+                        <div class="ml-4"><span class="text-purple-400">&lt;/div&gt;</span></div>
+                        <div class="ml-4"><span class="text-purple-400">&lt;div</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"p-6 bg-white rounded-lg shadow"</span><span class="text-purple-400">&gt;</span></div>
+                        <div class="ml-8">Card 2</div>
+                        <div class="ml-4"><span class="text-purple-400">&lt;/div&gt;</span></div>
+                        <div class="ml-4"><span class="text-purple-400">&lt;div</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"p-6 bg-white rounded-lg shadow"</span><span class="text-purple-400">&gt;</span></div>
+                        <div class="ml-8">Card 3</div>
+                        <div class="ml-4"><span class="text-purple-400">&lt;/div&gt;</span></div>
+                        <div><span class="text-purple-400">&lt;/div&gt;</span></div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-700 mb-2">Explicação Detalhada:</h4>
+                        <p class="text-gray-600">
+                            A responsividade no Tailwind é baseada em breakpoints prefixados:
+                            <br><br>
+                            <span class="font-semibold">sm:</span> ≥640px<br>
+                            <span class="font-semibold">md:</span> ≥768px<br>
+                            <span class="font-semibold">lg:</span> ≥1024px<br>
+                            <span class="font-semibold">xl:</span> ≥1280px<br>
+                            <span class="font-semibold">2xl:</span> ≥1536px<br><br>
+                            Você pode aplicar qualquer classe com prefixos responsivos:<br>
+                            <code>md:text-center</code>, <code>lg:p-8</code>, <code>xl:flex</code>
+                        </p>
+                    </div>
+                    
+                    <div class="tip">
+                        <strong>Dica:</strong> Sempre comece estilizando para dispositivos móveis e depois adicione modificadores para telas maiores (abordagem mobile-first).
+                    </div>
+                </div>
+                
+                <!-- Estados e Interações -->
+                <div class="class-card p-6 rounded-xl">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-red-100 text-red-800 p-3 rounded-lg mr-4">
+                            <i class="fas fa-mouse-pointer text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800">Estados & Interações</h3>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-700 mb-2">Classes fundamentais:</h4>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">hover:</code> Estado hover</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">focus:</code> Estado foco</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">active:</code> Estado ativo</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">disabled:</code> Elemento desabilitado</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="code-block p-4 text-sm mb-4">
+                        <div class="code-toolbar">
+                            <button class="copy-btn">Copiar</button>
+                        </div>
+                        <div><span class="text-purple-400">&lt;button</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"bg-blue-500 text-white py-2 px-4 rounded transition duration-300 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 active:bg-blue-700"</span><span class="text-purple-400">&gt;</span></div>
+                        <div class="ml-4">Botão Interativo</div>
+                        <div><span class="text-purple-400">&lt;/button&gt;</span></div>
+                    </div>
+                    
+                    <div class="mt-4 flex flex-col space-y-4">
+                        <button class="bg-blue-500 text-white py-2 px-4 rounded transition duration-300 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 active:bg-blue-700">
+                            Passe o mouse
+                        </button>
+                        <button class="bg-gray-300 text-gray-500 py-2 px-4 rounded cursor-not-allowed" disabled>
+                            Desabilitado
+                        </button>
+                    </div>
+                    
+                    <div class="mb-4 mt-6">
+                        <h4 class="font-semibold text-gray-700 mb-2">Explicação Detalhada:</h4>
+                        <p class="text-gray-600">
+                            Tailwind permite estilizar diferentes estados de elementos:
+                            <br><br>
+                            <span class="font-semibold">hover:</span> Estilo quando o mouse está sobre o elemento<br>
+                            <span class="font-semibold">focus:</span> Estilo quando o elemento está focado (importante para acessibilidade)<br>
+                            <span class="font-semibold">active:</span> Estilo quando o elemento está sendo clicado<br>
+                            <span class="font-semibold">disabled:</span> Estilo para elementos desabilitados<br>
+                            <br>
+                            Combine com transições para criar experiências suaves.
+                        </p>
+                    </div>
+                    
+                    <div class="tip mt-4">
+                        <strong>Dica:</strong> Sempre inclua estados <code>focus</code> para acessibilidade e <code>active</code> para feedback visual ao clicar.
+                    </div>
+                </div>
+                
+                <!-- Animações -->
+                <div class="class-card p-6 rounded-xl">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-indigo-100 text-indigo-800 p-3 rounded-lg mr-4">
+                            <i class="fas fa-bolt text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800">Animações & Transições</h3>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-700 mb-2">Classes fundamentais:</h4>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">transition</code> Habilita transição</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">duration-300</code> Duração</span>
+                                <span class="badge bg-green-100 text-green-800">Util</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">ease-in-out</code> Curva de animação</span>
+                                <span class="badge bg-green-100 text-green-800">Util</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">transform</code> Habilita transformações</span>
+                                <span class="badge bg-blue-100 text-blue-800">Core</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span><code class="bg-gray-100 px-2 py-1 rounded">hover:scale-105</code> Escala no hover</span>
+                                <span class="badge bg-green-100 text-green-800">Util</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="code-block p-4 text-sm mb-4">
+                        <div class="code-toolbar">
+                            <button class="copy-btn">Copiar</button>
+                        </div>
+                        <div><span class="text-purple-400">&lt;div</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"transform transition duration-500 hover:scale-105"</span><span class="text-purple-400">&gt;</span></div>
+                        <div class="ml-4"><span class="text-purple-400">&lt;div</span> <span class="text-green-400">class=</span><span class="text-yellow-400">"p-8 bg-white rounded-xl shadow-lg"</span><span class="text-purple-400">&gt;</span></div>
+                        <div class="ml-8">Passe o mouse para animar</div>
+                        <div class="ml-4"><span class="text-purple-400">&lt;/div&gt;</span></div>
+                        <div><span class="text-purple-400">&lt;/div&gt;</span></div>
+                    </div>
+                    
+                    <div class="mt-4 flex justify-center">
+                        <div class="transform transition duration-500 hover:scale-105 interactive-element">
+                            <div class="p-6 bg-white rounded-xl shadow-lg w-48 text-center">
+                                Passe o mouse
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4 mt-6">
+                        <h4 class="font-semibold text-gray-700 mb-2">Explicação Detalhada:</h4>
+                        <p class="text-gray-600">
+                            Animações no Tailwind são baseadas em CSS transitions com classes utilitárias:
+                            <br><br>
+                            <span class="font-semibold">transition</span>: Habilita transições<br>
+                            <span class="font-semibold">duration-{ms}</span>: Duração da transição (75, 100, 150, 200, 300, etc)<br>
+                            <span class="font-semibold">ease-{type}</span>: Função de temporização (linear, in, out, in-out)<br>
+                            <span class="font-semibold">transform</span>: Habilita transformações CSS<br>
+                            <br>
+                            Transformações incluem: scale, rotate, translate, skew
+                        </p>
+                    </div>
+                    
+                    <div class="tip mt-4">
+                        <strong>Dica:</strong> Use <code>transition</code> combinado com <code>transform</code> para criar efeitos suaves e profissionais.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vídeos de Ensino -->
+    <section id="videos" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-800 section-title">Vídeos de Ensino</h2>
+                <p class="text-gray-600 mt-4 max-w-3xl mx-auto">Aprenda a criar layouts bonitos e modernos com Tailwind CSS através destes tutoriais</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <!-- Vídeo 1 -->
+                <div class="bg-gray-50 p-8 rounded-2xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-play-circle text-blue-600 mr-3"></i>
+                        Layouts Modernos com Tailwind CSS
+                    </h3>
+                    <div class="video-container mb-6">
+                        <iframe src="https://www.youtube.com/embed/dFgzHOX84xQ" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Conteúdo:</h4>
+                            <ul class="list-disc pl-5 space-y-1 text-gray-600">
+                                <li>Criação de layouts responsivos</li>
+                                <li>Uso avançado de Grid e Flexbox</li>
+                                <li>Design de cards modernos</li>
+                                <li>Animações e transições</li>
+                                <li>Organização de componentes</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Duração:</h4>
+                            <p class="text-gray-600">32 minutos</p>
+                        </div>
+                        <div class="flex items-center mt-4">
+                            <div class="bg-gray-200 border-2 border-dashed rounded-xl w-10 h-10" />
+                            <div class="ml-3">
+                                <p class="font-medium text-gray-800">Tailwind Labs</p>
+                                <p class="text-sm text-gray-600">Canal Oficial</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vídeo 2 -->
+                <div class="bg-gray-50 p-8 rounded-2xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-play-circle text-blue-600 mr-3"></i>
+                        Design de Interfaces Profissionais
+                    </h3>
+                    <div class="video-container mb-6">
+                        <iframe src="https://www.youtube.com/embed/UBOj6rqRUME" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Conteúdo:</h4>
+                            <ul class="list-disc pl-5 space-y-1 text-gray-600">
+                                <li>Hierarquia visual e tipografia</li>
+                                <li>Cores e gradientes</li>
+                                <li>Design de botões e inputs</li>
+                                <li>Componentes reutilizáveis</li>
+                                <li>Dark mode com Tailwind</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Duração:</h4>
+                            <p class="text-gray-600">45 minutos</p>
+                        </div>
+                        <div class="flex items-center mt-4">
+                            <div class="bg-gray-200 border-2 border-dashed rounded-xl w-10 h-10" />
+                            <div class="ml-3">
+                                <p class="font-medium text-gray-800">Design Mastery</p>
+                                <p class="text-sm text-gray-600">Especialista em UI/UX</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vídeo 3 -->
+                <div class="bg-gray-50 p-8 rounded-2xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-play-circle text-blue-600 mr-3"></i>
+                        Animações Avançadas com Tailwind
+                    </h3>
+                    <div class="video-container mb-6">
+                        <iframe src="https://www.youtube.com/embed/MAtaT8BZEAo" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Conteúdo:</h4>
+                            <ul class="list-disc pl-5 space-y-1 text-gray-600">
+                                <li>Transições suaves</li>
+                                <li>Animações personalizadas</li>
+                                <li>Efeitos de hover complexos</li>
+                                <li>Animações com JavaScript</li>
+                                <li>Performance de animações</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Duração:</h4>
+                            <p class="text-gray-600">28 minutos</p>
+                        </div>
+                        <div class="flex items-center mt-4">
+                            <div class="bg-gray-200 border-2 border-dashed rounded-xl w-10 h-10" />
+                            <div class="ml-3">
+                                <p class="font-medium text-gray-800">Frontend Masters</p>
+                                <p class="text-sm text-gray-600">Tutoriais Avançados</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vídeo 4 -->
+                <div class="bg-gray-50 p-8 rounded-2xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-play-circle text-blue-600 mr-3"></i>
+                        Projeto Completo: Site Moderno
+                    </h3>
+                    <div class="video-container mb-6">
+                        <iframe src="https://www.youtube.com/embed/6zIuAyLZPH0" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Conteúdo:</h4>
+                            <ul class="list-disc pl-5 space-y-1 text-gray-600">
+                                <li>Configuração inicial</li>
+                                <li>Design de header e footer</li>
+                                <li>Seção hero moderna</li>
+                                <li>Cards responsivos</li>
+                                <li>Formulários estilizados</li>
+                                <li>Deploy do projeto</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Duração:</h4>
+                            <p class="text-gray-600">1 hora 15 minutos</p>
+                        </div>
+                        <div class="flex items-center mt-4">
+                            <div class="bg-gray-200 border-2 border-dashed rounded-xl w-10 h-10" />
+                            <div class="ml-3">
+                                <p class="font-medium text-gray-800">Code With Me</p>
+                                <p class="text-sm text-gray-600">Projetos Práticos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-16 text-center">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">Mais Recursos de Aprendizado</h3>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="#" class="bg-blue-100 text-blue-700 hover:bg-blue-200 px-6 py-3 rounded-lg font-medium flex items-center">
+                        <i class="fas fa-book mr-2"></i> Documentação Oficial
+                    </a>
+                    <a href="#" class="bg-purple-100 text-purple-700 hover:bg-purple-200 px-6 py-3 rounded-lg font-medium flex items-center">
+                        <i class="fas fa-puzzle-piece mr-2"></i> Componentes Prontos
+                    </a>
+                    <a href="#" class="bg-green-100 text-green-700 hover:bg-green-200 px-6 py-3 rounded-lg font-medium flex items-center">
+                        <i class="fas fa-laptop-code mr-2"></i> Playground Online
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <div class="bg-white w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fab fa-css3-alt text-blue-600 text-2xl"></i>
+                        </div>
+                        Tailwind CSS Essencial
+                    </h3>
+                    <p class="text-gray-400 mb-4">
+                        Guia de referência completo para dominar o Tailwind CSS e construir interfaces modernas e responsivas.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-github text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-youtube text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Links Úteis</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Documentação Oficial</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Componentes Tailwind UI</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Playground Online</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Cheat Sheet</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Plugins Recomendados</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Newsletter</h4>
+                    <p class="text-gray-400 mb-4">Receba atualizações e dicas avançadas sobre Tailwind CSS.</p>
+                    <form class="flex flex-col space-y-3">
+                        <input type="email" placeholder="Seu melhor email" class="px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="submit" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2 px-4 rounded-lg font-medium">Inscrever-se</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-10 pt-6 text-center text-gray-400">
+                <p>&copy; 2023 Tailwind CSS Essencial. Todos os direitos reservados.</p>
+                <p class="mt-2">Desenvolvido com ❤️ e Tailwind CSS</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Botão flutuante de voltar ao topo
+        const scrollToTopBtn = document.createElement('a');
+        scrollToTopBtn.href = '#';
+        scrollToTopBtn.className = 'fixed bottom-6 left-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl z-50 opacity-0 transition-opacity duration-300';
+        scrollToTopBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+        document.body.appendChild(scrollToTopBtn);
+        
+        // Mostrar/ocultar botão ao rolar
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                scrollToTopBtn.style.opacity = '1';
+            } else {
+                scrollToTopBtn.style.opacity = '0';
+            }
+        });
+        
+        // Comportamento de clique
+        scrollToTopBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Animação ao entrar na tela
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fadeIn');
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.class-card, .feature-highlight').forEach(el => {
+            observer.observe(el);
+        });
+        
+        // Simulação de cópia de código
+        document.querySelectorAll('.copy-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const originalText = this.textContent;
+                this.textContent = 'Copiado!';
+                this.classList.add('bg-green-500', 'text-white');
+                
+                setTimeout(() => {
+                    this.textContent = originalText;
+                    this.classList.remove('bg-green-500', 'text-white');
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>
