@@ -1,0 +1,109 @@
+ @import "tailwindcss";
+ 
+ 
+ :root {
+     --glass-bg: rgba(255, 255, 255, 0.08);
+     --glass-border: rgba(255, 255, 255, 0.18);
+ }
+
+ .dark {
+     --glass-bg: rgba(15, 23, 42, 0.5);
+     --glass-border: rgba(255, 255, 255, 0.05);
+ }
+
+ .glass {
+     background: var(--glass-bg);
+     backdrop-filter: blur(12px);
+     -webkit-backdrop-filter: blur(12px);
+     border: 1px solid var(--glass-border);
+ }
+
+ .hero-pattern {
+     background: radial-gradient(circle at 10% 20%, rgba(14, 165, 233, 0.1) 0%, rgba(255, 255, 255, 0) 25%),
+         radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.1) 0%, rgba(255, 255, 255, 0) 25%);
+ }
+
+ .pet-shape {
+     clip-path: polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%);
+ }
+
+ .floating {
+     animation: float 6s ease-in-out infinite;
+ }
+
+ @keyframes float {
+     0% {
+         transform: translateY(0px);
+     }
+
+     50% {
+         transform: translateY(-20px);
+     }
+
+     100% {
+         transform: translateY(0px);
+     }
+ }
+
+ .card-hover {
+     transition: all 0.3s ease;
+ }
+
+ .card-hover:hover {
+     transform: translateY(-8px);
+     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+ }
+
+ .text-gradient {
+     background: linear-gradient(90deg, #0ea5e9 0%, #ec4899 100%);
+     -webkit-background-clip: text;
+     -webkit-text-fill-color: transparent;
+ }
+
+ .service-icon {
+     width: 80px;
+     height: 80px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     border-radius: 24px;
+ }
+
+ .animate-in {
+     animation: fadeIn 0.5s ease-in-out;
+ }
+
+ @keyframes fadeIn {
+     from {
+         opacity: 0;
+         transform: translateY(20px);
+     }
+
+     to {
+         opacity: 1;
+         transform: translateY(0);
+     }
+ }
+
+ .dark-mode-toggle {
+     position: relative;
+     width: 60px;
+     height: 30px;
+     border-radius: 15px;
+     cursor: pointer;
+ }
+
+ .dark-mode-toggle::before {
+     content: '';
+     position: absolute;
+     top: 3px;
+     left: 3px;
+     width: 24px;
+     height: 24px;
+     border-radius: 50%;
+     transition: all 0.3s ease;
+ }
+
+ .dark .dark-mode-toggle::before {
+     transform: translateX(30px);
+ }
