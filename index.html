@@ -1,204 +1,46 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elemoel - Clínica Veterinária</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .hero-pattern {
-            background: linear-gradient(120deg, rgba(16, 185, 129, 0.1) 0%, rgba(255, 255, 255, 0.8) 100%);
-        }
-        
-        .float-animation {
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        .fade-in {
-            animation: fadeIn 1s ease-out forwards;
-        }
-        
-        .delay-100 { animation-delay: 100ms; }
-        .delay-200 { animation-delay: 200ms; }
-        .delay-300 { animation-delay: 300ms; }
-        .delay-400 { animation-delay: 400ms; }
-        
-        .btn-primary {
-            background: linear-gradient(to right, #10b981, #059669);
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(5, 150, 105, 0.3);
-        }
-        
-        .service-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        .service-card:hover {
-            transform: translateY(-10px) scale(1.03);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        }
-        
-        .pet-icon {
-            transition: all 0.3s ease;
-        }
-        
-        .pet-icon:hover {
-            transform: rotate(15deg) scale(1.1);
-        }
-        
-        .testimonial-card {
-            transition: all 0.3s ease;
-        }
-        
-        .testimonial-card:hover {
-            transform: scale(1.05);
-        }
-        
-        .floating {
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        .bounce {
-            animation: bounce 2s infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-        
-        .animate-on-scroll {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        
-        .animate-on-scroll.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .pop-in {
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-        
-        @keyframes popIn {
-            0% { transform: scale(0.5); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        
-        .rotate-in {
-            animation: rotateIn 0.8s ease-out forwards;
-        }
-        
-        @keyframes rotateIn {
-            from { transform: rotate(-10deg) scale(0.8); opacity: 0; }
-            to { transform: rotate(0) scale(1); opacity: 1; }
-        }
-        
-        .slide-in-left {
-            animation: slideInLeft 0.8s ease-out forwards;
-        }
-        
-        @keyframes slideInLeft {
-            from { transform: translateX(-100px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        .slide-in-right {
-            animation: slideInRight 0.8s ease-out forwards;
-        }
-        
-        @keyframes slideInRight {
-            from { transform: translateX(100px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        .wave {
-            animation: wave 2s infinite;
-        }
-        
-        @keyframes wave {
-            0% { transform: rotate(0deg); }
-            10% { transform: rotate(14deg); }
-            20% { transform: rotate(-8deg); }
-            30% { transform: rotate(14deg); }
-            40% { transform: rotate(-4deg); }
-            50% { transform: rotate(10deg); }
-            60% { transform: rotate(0deg); }
-            100% { transform: rotate(0deg); }
-        }
-        
-        .paw-print {
-            position: absolute;
-            opacity: 0.1;
-            font-size: 24px;
-            color: #059669;
-        }
-        
-        .pet-shake {
-            animation: shake 0.5s ease-in-out infinite alternate;
-        }
-        
-        @keyframes shake {
-            from { transform: rotate(-3deg); }
-            to { transform: rotate(3deg); }
-        }
-        
-        .bg-pattern {
-            background-image: radial-gradient(#059669 1px, transparent 1px);
-            background-size: 30px 30px;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/colors.css">
+
 </head>
+
 <body class="bg-gray-50 font-poppins overflow-x-hidden">
     <!-- Botão Flutuante do WhatsApp -->
-    <a href="https://wa.me/5511999999999" target="_blank" class="whatsapp-float fixed bottom-6 right-6 bg-[#25D366] text-white w-16 h-16 rounded-full flex items-center justify-center shadow-xl z-50 pulse">
+    <a href="https://wa.me/5592991515710" target="_blank"
+        class="whatsapp-float fixed bottom-6 right-6 bg-[#25D366] text-white w-16 h-16 rounded-full flex items-center justify-center shadow-xl z-50 pulse">
         <i class="fab fa-whatsapp text-3xl float-animation"></i>
     </a>
 
     <!-- Cabeçalho -->
     <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="#" class="text-2xl font-bold text-green-600 flex items-center transform transition duration-500 hover:scale-105">
+            <a href="#"
+                class="text-2xl font-bold text-green-600 flex items-center transform transition duration-500 hover:scale-105">
                 <i class="fas fa-paw mr-2 bounce"></i>
                 Elemoel
             </a>
             <nav class="hidden md:flex space-x-8">
                 <a href="#home" class="text-gray-700 hover:text-green-600 font-medium transition duration-300">Home</a>
-                <a href="#services" class="text-gray-700 hover:text-green-600 font-medium transition duration-300">Serviços</a>
-                <a href="#about" class="text-gray-700 hover:text-green-600 font-medium transition duration-300">Sobre</a>
-                <a href="#testimonials" class="text-gray-700 hover:text-green-600 font-medium transition duration-300">Depoimentos</a>
-                <a href="#contact" class="text-gray-700 hover:text-green-600 font-medium transition duration-300">Contato</a>
+                <a href="#services"
+                    class="text-gray-700 hover:text-green-600 font-medium transition duration-300">Serviços</a>
+                <a href="#about"
+                    class="text-gray-700 hover:text-green-600 font-medium transition duration-300">Sobre</a>
+                <a href="#testimonials"
+                    class="text-gray-700 hover:text-green-600 font-medium transition duration-300">Depoimentos</a>
+                <a href="#contact"
+                    class="text-gray-700 hover:text-green-600 font-medium transition duration-300">Contato</a>
             </nav>
-            <button id="openModal" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-full shadow-md transform transition duration-300 hover:scale-105">
+            <button id="openModal"
+                class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-full shadow-md transform transition duration-300 hover:scale-105">
                 Agendar Consulta
             </button>
         </div>
@@ -210,24 +52,26 @@
         <div class="paw-print top-20 right-20 rotate-45 floating delay-300">🐾</div>
         <div class="paw-print bottom-20 left-1/4 rotate-12 floating delay-500">🐾</div>
         <div class="paw-print bottom-10 right-1/3 -rotate-12 floating delay-700">🐾</div>
-        
+
         <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
             <div class="md:w-1/2 mb-12 md:mb-0 slide-in-left">
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
                     Cuidando do seu <span class="text-green-600">melhor amigo</span> com amor e expertise
                 </h1>
                 <p class="text-gray-600 mt-4 text-lg">
-                    Na Elemoel, seu pet recebe atendimento de qualidade com profissionais dedicados e apaixonados por animais.
+                    Na Elemoel, seu pet recebe atendimento de qualidade com profissionais dedicados e apaixonados por
+                    animais.
                 </p>
                 <div class="mt-8 flex flex-col sm:flex-row gap-4">
                     <button id="openModal2" class="btn-primary text-white font-bold py-3 px-6 rounded-full shadow-lg">
                         Agendar Consulta
                     </button>
-                    <a href="https://wa.me/5511999999999" target="_blank" class="bg-gray-800 hover:bg-black text-white font-bold py-3 px-6 rounded-full shadow-lg flex items-center justify-center transform transition duration-300 hover:scale-105">
+                    <a href="https://wa.me/5592991515710" target="_blank"
+                        class="bg-gray-800 hover:bg-black text-white font-bold py-3 px-6 rounded-full shadow-lg flex items-center justify-center transform transition duration-300 hover:scale-105">
                         <i class="fab fa-whatsapp mr-2"></i> Fale Conosco
                     </a>
                 </div>
-                
+
                 <div class="mt-12 flex flex-wrap gap-4">
                     <div class="flex items-center bg-white p-3 rounded-lg shadow">
                         <div class="bg-green-100 p-2 rounded-full mr-3">
@@ -246,8 +90,10 @@
             <div class="md:w-1/2 flex justify-center rotate-in">
                 <div class="relative">
                     <div class="absolute -top-6 -left-6 w-48 h-48 bg-green-100 rounded-full z-0 animate-pulse"></div>
-                    <div class="absolute -bottom-6 -right-6 w-48 h-48 bg-green-100 rounded-full z-0 animate-pulse" style="animation-delay: 1s;"></div>
-                    <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="Veterinário e cachorro" class="rounded-2xl shadow-xl relative z-10 w-full max-w-md transform transition duration-700 hover:scale-105">
+                    <div class="absolute -bottom-6 -right-6 w-48 h-48 bg-green-100 rounded-full z-0 animate-pulse"
+                        style="animation-delay: 1s;"></div>
+                    <img src="./assets/img/dog-0.avif"
+                        class="rounded-2xl shadow-xl relative z-10 w-full max-w-md transform transition duration-700 hover:scale-105">
                 </div>
             </div>
         </div>
@@ -259,28 +105,34 @@
             <div class="text-center mb-16 slide-in-right">
                 <h2 class="text-3xl font-bold text-gray-800">Nossos Serviços</h2>
                 <div class="w-20 h-1 bg-green-600 mx-auto mt-4"></div>
-                <p class="text-gray-600 mt-4 max-w-2xl mx-auto">Oferecemos uma gama completa de serviços veterinários para garantir a saúde e bem-estar do seu animal de estimação.</p>
+                <p class="text-gray-600 mt-4 max-w-2xl mx-auto">Oferecemos uma gama completa de serviços veterinários
+                    para garantir a saúde e bem-estar do seu animal de estimação.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <!-- Serviço 1 -->
                 <div class="service-card bg-white p-8 rounded-xl shadow-lg text-center fade-in delay-100">
-                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto transform transition duration-500 hover:rotate-12">
+                    <div
+                        class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto transform transition duration-500 hover:rotate-12">
                         <i class="fas fa-stethoscope text-green-600 text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-bold text-gray-800 mt-4">Consultas</h3>
-                    <p class="text-gray-600 mt-2">Consultas de rotina e emergenciais com profissionais especializados.</p>
+                    <p class="text-gray-600 mt-2">Consultas de rotina e emergenciais com profissionais especializados.
+                    </p>
                 </div>
                 <!-- Serviço 2 -->
                 <div class="service-card bg-white p-8 rounded-xl shadow-lg text-center fade-in delay-200">
-                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto transform transition duration-500 hover:rotate-12">
+                    <div
+                        class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto transform transition duration-500 hover:rotate-12">
                         <i class="fas fa-syringe text-green-600 text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-bold text-gray-800 mt-4">Vacinação</h3>
-                    <p class="text-gray-600 mt-2">Vacinas para todas as idades e espécies, seguindo o calendário adequado.</p>
+                    <p class="text-gray-600 mt-2">Vacinas para todas as idades e espécies, seguindo o calendário
+                        adequado.</p>
                 </div>
                 <!-- Serviço 3 -->
                 <div class="service-card bg-white p-8 rounded-xl shadow-lg text-center fade-in delay-300">
-                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto transform transition duration-500 hover:rotate-12">
+                    <div
+                        class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto transform transition duration-500 hover:rotate-12">
                         <i class="fas fa-cut text-green-600 text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-bold text-gray-800 mt-4">Banho e Tosa</h3>
@@ -288,22 +140,25 @@
                 </div>
                 <!-- Serviço 4 -->
                 <div class="service-card bg-white p-8 rounded-xl shadow-lg text-center fade-in delay-400">
-                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto transform transition duration-500 hover:rotate-12">
+                    <div
+                        class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto transform transition duration-500 hover:rotate-12">
                         <i class="fas fa-clinic-medical text-green-600 text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-bold text-gray-800 mt-4">Cirurgias</h3>
                     <p class="text-gray-600 mt-2">Procedimentos cirúrgicos com tecnologia de ponta e segurança.</p>
                 </div>
             </div>
-            
-            <div class="mt-16 bg-green-600 rounded-2xl p-8 text-white flex flex-col md:flex-row items-center justify-between pop-in">
+
+            <div
+                class="mt-16 bg-green-600 rounded-2xl p-8 text-white flex flex-col md:flex-row items-center justify-between pop-in">
                 <div class="text-center md:text-left mb-6 md:mb-0">
                     <h3 class="text-2xl font-bold">Precisa de ajuda urgente?</h3>
                     <p class="mt-2">Nossa equipe está disponível 24 horas para emergências</p>
                 </div>
                 <div>
-                    <a href="tel:+5511999999999" class="bg-white text-green-600 font-bold py-3 px-6 rounded-full shadow-lg flex items-center transform transition duration-300 hover:scale-105">
-                        <i class="fas fa-phone mr-2"></i> Ligue agora: (11) 9999-9999
+                    <a href="tel:+5592991515710"
+                        class="bg-white text-green-600 font-bold py-3 px-6 rounded-full shadow-lg flex items-center transform transition duration-300 hover:scale-105">
+                        <i class="fas fa-phone mr-2"></i> Ligue agora: (92) 99151-5710
                     </a>
                 </div>
             </div>
@@ -317,13 +172,14 @@
                 <div class="md:w-1/2 mb-10 md:mb-0 slide-in-left">
                     <div class="grid grid-cols-2 gap-4">
                         <div class="transform transition duration-500 hover:scale-105">
-                            <img src="https://images.unsplash.com/photo-1510337550647-e84f83e341ca?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="Clínica Veterinária" class="rounded-2xl shadow-lg w-full h-64 object-cover">
+                            <img src="./assets/img/dog-1.avif" class="rounded-2xl shadow-lg w-full h-64 object-cover">
                         </div>
                         <div class="transform transition duration-500 hover:scale-105">
-                            <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1169&q=80" alt="Atendimento Veterinário" class="rounded-2xl shadow-lg w-full h-64 object-cover">
+                            <img src="./assets/img/dog-2.avif" class="rounded-2xl shadow-lg w-full h-64 object-cover">
                         </div>
                         <div class="col-span-2 transform transition duration-500 hover:scale-105">
-                            <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Equipe Veterinária" class="rounded-2xl shadow-lg w-full h-64 object-cover">
+                            <img src="./assets/img/dog-3.avif" alt="Equipe Veterinária"
+                                class="rounded-2xl shadow-lg w-full h-64 object-cover">
                         </div>
                     </div>
                 </div>
@@ -331,23 +187,32 @@
                     <h2 class="text-3xl font-bold text-gray-800">Sobre a Elemoel</h2>
                     <div class="w-20 h-1 bg-green-600 mt-4"></div>
                     <p class="text-gray-600 mt-6">
-                        A Elemoel é uma clínica veterinária moderna, fundada em 2020, com o objetivo de oferecer o melhor atendimento e cuidado para os animais de estimação. Nossa equipe é formada por profissionais altamente qualificados e apaixonados por animais.
+                        A Elemoel é uma clínica veterinária moderna, fundada em 2020, com o objetivo de oferecer o
+                        melhor atendimento e cuidado para os animais de estimação. Nossa equipe é formada por
+                        profissionais altamente qualificados e apaixonados por animais.
                     </p>
                     <p class="text-gray-600 mt-4">
-                        Nossas instalações são equipadas com tecnologia de ponta para garantir diagnósticos precisos e tratamentos eficazes. Priorizamos o bem-estar e a saúde dos pets, além de oferecer um ambiente acolhedor e seguro.
+                        Nossas instalações são equipadas com tecnologia de ponta para garantir diagnósticos precisos e
+                        tratamentos eficazes. Priorizamos o bem-estar e a saúde dos pets, além de oferecer um ambiente
+                        acolhedor e seguro.
                     </p>
                     <div class="mt-8 flex items-center">
                         <div class="flex -space-x-2">
-                            <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Veterinária" class="w-12 h-12 rounded-full border-2 border-white transform transition duration-500 hover:scale-125 hover:z-10">
-                            <img src="https://randomuser.me/api/portraits/men/44.jpg" alt="Veterinário" class="w-12 h-12 rounded-full border-2 border-white transform transition duration-500 hover:scale-125 hover:z-10">
-                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Assistente" class="w-12 h-12 rounded-full border-2 border-white transform transition duration-500 hover:scale-125 hover:z-10">
+
+                            <!-- Imagens da equipe fotos pegas no site-->
+                            <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Veterinária"
+                                class="w-12 h-12 rounded-full border-2 border-white transform transition duration-500 hover:scale-125 hover:z-10">
+                            <img src="https://randomuser.me/api/portraits/men/44.jpg" alt="Veterinário"
+                                class="w-12 h-12 rounded-full border-2 border-white transform transition duration-500 hover:scale-125 hover:z-10">
+                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Assistente"
+                                class="w-12 h-12 rounded-full border-2 border-white transform transition duration-500 hover:scale-125 hover:z-10">
                         </div>
                         <div class="ml-4">
                             <p class="font-semibold">Nossa Equipe</p>
                             <p class="text-gray-600">Profissionais qualificados</p>
                         </div>
                     </div>
-                    
+
                     <div class="mt-8 grid grid-cols-2 gap-4">
                         <div class="flex items-center p-4 bg-green-50 rounded-lg">
                             <i class="fas fa-check-circle text-green-600 text-2xl mr-3"></i>
@@ -371,19 +236,21 @@
         </div>
     </section>
 
-    <!-- Depoimentos -->
+    <!-- Depoimentos fotos pegas no site-->
     <section id="testimonials" class="py-16 bg-gray-50">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16 fade-in">
                 <h2 class="text-3xl font-bold text-gray-800">O que dizem nossos clientes</h2>
                 <div class="w-20 h-1 bg-green-600 mx-auto mt-4"></div>
-                <p class="text-gray-600 mt-4 max-w-2xl mx-auto">A satisfação dos nossos clientes e seus pets é a nossa maior recompensa.</p>
+                <p class="text-gray-600 mt-4 max-w-2xl mx-auto">A satisfação dos nossos clientes e seus pets é a nossa
+                    maior recompensa.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- Depoimento 1 -->
                 <div class="testimonial-card bg-white p-8 rounded-xl shadow-lg fade-in delay-100">
                     <div class="flex items-center mb-4">
-                        <img src="https://randomuser.me/api/portraits/women/43.jpg" alt="Cliente" class="w-16 h-16 rounded-full">
+                        <img src="https://randomuser.me/api/portraits/women/43.jpg" alt="Cliente"
+                            class="w-16 h-16 rounded-full">
                         <div class="ml-4">
                             <h4 class="font-bold text-gray-800">Maria Silva</h4>
                             <div class="flex text-yellow-400">
@@ -396,13 +263,15 @@
                         </div>
                     </div>
                     <p class="text-gray-600">
-                        "A equipe da Elemoel é incrível! Salvaram a vida do meu cachorro quando ele teve uma emergência. São profissionais dedicados e muito atenciosos."
+                        "A equipe da Elemoel é incrível! Salvaram a vida do meu cachorro quando ele teve uma emergência.
+                        São profissionais dedicados e muito atenciosos."
                     </p>
                 </div>
                 <!-- Depoimento 2 -->
                 <div class="testimonial-card bg-white p-8 rounded-xl shadow-lg fade-in delay-200">
                     <div class="flex items-center mb-4">
-                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Cliente" class="w-16 h-16 rounded-full">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Cliente"
+                            class="w-16 h-16 rounded-full">
                         <div class="ml-4">
                             <h4 class="font-bold text-gray-800">João Pereira</h4>
                             <div class="flex text-yellow-400">
@@ -415,13 +284,15 @@
                         </div>
                     </div>
                     <p class="text-gray-600">
-                        "Sempre levo meus gatos para a Elemoel. O atendimento é excelente e o carinho que têm com os animais é visível. Recomendo a todos!"
+                        "Sempre levo meus gatos para a Elemoel. O atendimento é excelente e o carinho que têm com os
+                        animais é visível. Recomendo a todos!"
                     </p>
                 </div>
                 <!-- Depoimento 3 -->
                 <div class="testimonial-card bg-white p-8 rounded-xl shadow-lg fade-in delay-300">
                     <div class="flex items-center mb-4">
-                        <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Cliente" class="w-16 h-16 rounded-full">
+                        <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Cliente"
+                            class="w-16 h-16 rounded-full">
                         <div class="ml-4">
                             <h4 class="font-bold text-gray-800">Ana Costa</h4>
                             <div class="flex text-yellow-400">
@@ -434,11 +305,12 @@
                         </div>
                     </div>
                     <p class="text-gray-600">
-                        "Profissionais muito competentes e preços justos. Minha cadela foi diagnosticada rapidamente e o tratamento foi um sucesso. Obrigada, Elemoel!"
+                        "Profissionais muito competentes e preços justos. Minha cadela foi diagnosticada rapidamente e o
+                        tratamento foi um sucesso. Obrigada, Elemoel!"
                     </p>
                 </div>
             </div>
-            
+
             <div class="mt-12 flex justify-center">
                 <div class="bg-white rounded-full p-1 shadow-lg inline-flex">
                     <button class="bg-green-600 text-white py-2 px-6 rounded-full">Todos os depoimentos</button>
@@ -454,7 +326,8 @@
             <div class="text-center mb-16 fade-in">
                 <h2 class="text-3xl font-bold text-gray-800">Entre em Contato</h2>
                 <div class="w-20 h-1 bg-green-600 mx-auto mt-4"></div>
-                <p class="text-gray-600 mt-4 max-w-2xl mx-auto">Estamos à disposição para tirar suas dúvidas e agendar consultas para seu pet.</p>
+                <p class="text-gray-600 mt-4 max-w-2xl mx-auto">Estamos à disposição para tirar suas dúvidas e agendar
+                    consultas para seu pet.</p>
             </div>
             <div class="flex flex-col md:flex-row bg-white rounded-2xl shadow-xl overflow-hidden">
                 <div class="md:w-1/3 bg-green-600 p-8 text-white">
@@ -462,20 +335,17 @@
                     <ul class="space-y-4">
                         <li class="flex items-center transform transition duration-300 hover:translate-x-2">
                             <i class="fas fa-map-marker-alt text-xl mr-4"></i>
-                            <span>Rua dos Animais, 123 - Bairro Pet, Cidade - SP</span>
+                            <span>Rua Capitão Pessoa, 717 - Bairro Chagas Aguiar, Cidade - Coari-Am</span>
                         </li>
                         <li class="flex items-center transform transition duration-300 hover:translate-x-2">
                             <i class="fas fa-phone text-xl mr-4"></i>
-                            <span>(11) 9999-9999</span>
+                            <span>(92) 99151-5710</span>
                         </li>
                         <li class="flex items-center transform transition duration-300 hover:translate-x-2">
                             <i class="fas fa-envelope text-xl mr-4"></i>
                             <span>contato@elemoel.com.br</span>
                         </li>
-                        <li class="flex items-center transform transition duration-300 hover:translate-x-2">
-                            <i class="fab fa-whatsapp text-xl mr-4"></i>
-                            <span>(11) 98888-7777</span>
-                        </li>
+
                     </ul>
                     <div class="mt-8">
                         <h4 class="text-lg font-bold mb-4">Horário de Funcionamento</h4>
@@ -483,7 +353,7 @@
                         <p>Sábado: 9h às 18h</p>
                         <p>Domingo: 9h às 13h</p>
                     </div>
-                    
+
                     <div class="mt-8">
                         <h4 class="text-lg font-bold mb-4">Siga-nos</h4>
                         <div class="flex space-x-4">
@@ -500,30 +370,36 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-gray-700 mb-2">Nome</label>
-                                <input type="text" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
+                                <input type="text"
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
                             </div>
                             <div>
                                 <label class="block text-gray-700 mb-2">Email</label>
-                                <input type="email" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
+                                <input type="email"
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
                             </div>
                         </div>
                         <div>
                             <label class="block text-gray-700 mb-2">Assunto</label>
-                            <input type="text" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
+                            <input type="text"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
                         </div>
                         <div>
                             <label class="block text-gray-700 mb-2">Mensagem</label>
-                            <textarea rows="5" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300"></textarea>
+                            <textarea rows="5"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300"></textarea>
                         </div>
-                        <button type="submit" class="btn-primary text-white font-bold py-3 px-6 rounded-lg shadow-lg w-full transform transition duration-300 hover:scale-105">
+                        <button type="submit"
+                            class="btn-primary text-white font-bold py-3 px-6 rounded-lg shadow-lg w-full transform transition duration-300 hover:scale-105">
                             Enviar Mensagem
                         </button>
                     </form>
-                    
+
                     <div class="mt-8 bg-gray-100 p-4 rounded-lg">
                         <div class="flex items-center">
                             <i class="fas fa-info-circle text-green-600 text-2xl mr-3"></i>
-                            <p>Respondemos todas as mensagens em até 24 horas. Para emergências, entre em contato por telefone.</p>
+                            <p>Respondemos todas as mensagens em até 24 horas. Para emergências, entre em contato por
+                                telefone.</p>
                         </div>
                     </div>
                 </div>
@@ -544,16 +420,20 @@
                         Cuidando do seu pet com amor e dedicação desde 2020.
                     </p>
                     <div class="flex mt-6 space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-white transform transition duration-300 hover:scale-125">
+                        <a href="#"
+                            class="text-gray-400 hover:text-white transform transition duration-300 hover:scale-125">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-white transform transition duration-300 hover:scale-125">
+                        <a href="#"
+                            class="text-gray-400 hover:text-white transform transition duration-300 hover:scale-125">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-white transform transition duration-300 hover:scale-125">
+                        <a href="#"
+                            class="text-gray-400 hover:text-white transform transition duration-300 hover:scale-125">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-white transform transition duration-300 hover:scale-125">
+                        <a href="#"
+                            class="text-gray-400 hover:text-white transform transition duration-300 hover:scale-125">
                             <i class="fab fa-linkedin-in"></i>
                         </a>
                     </div>
@@ -562,10 +442,14 @@
                     <h4 class="text-lg font-semibold mb-4">Links Rápidos</h4>
                     <ul class="space-y-2">
                         <li><a href="#home" class="text-gray-400 hover:text-white transition duration-300">Home</a></li>
-                        <li><a href="#services" class="text-gray-400 hover:text-white transition duration-300">Serviços</a></li>
-                        <li><a href="#about" class="text-gray-400 hover:text-white transition duration-300">Sobre</a></li>
-                        <li><a href="#testimonials" class="text-gray-400 hover:text-white transition duration-300">Depoimentos</a></li>
-                        <li><a href="#contact" class="text-gray-400 hover:text-white transition duration-300">Contato</a></li>
+                        <li><a href="#services"
+                                class="text-gray-400 hover:text-white transition duration-300">Serviços</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-white transition duration-300">Sobre</a>
+                        </li>
+                        <li><a href="#testimonials"
+                                class="text-gray-400 hover:text-white transition duration-300">Depoimentos</a></li>
+                        <li><a href="#contact"
+                                class="text-gray-400 hover:text-white transition duration-300">Contato</a></li>
                     </ul>
                 </div>
                 <div>
@@ -573,7 +457,8 @@
                     <ul class="space-y-2">
                         <li class="text-gray-400 hover:text-white transition duration-300 cursor-pointer">Consultas</li>
                         <li class="text-gray-400 hover:text-white transition duration-300 cursor-pointer">Vacinação</li>
-                        <li class="text-gray-400 hover:text-white transition duration-300 cursor-pointer">Banho e Tosa</li>
+                        <li class="text-gray-400 hover:text-white transition duration-300 cursor-pointer">Banho e Tosa
+                        </li>
                         <li class="text-gray-400 hover:text-white transition duration-300 cursor-pointer">Cirurgias</li>
                         <li class="text-gray-400 hover:text-white transition duration-300 cursor-pointer">Exames</li>
                     </ul>
@@ -582,36 +467,44 @@
                     <h4 class="text-lg font-semibold mb-4">Newsletter</h4>
                     <p class="text-gray-400 mb-4">Inscreva-se para receber dicas de cuidados com seu pet.</p>
                     <form class="flex">
-                        <input type="email" placeholder="Seu email" class="px-4 py-2 rounded-l-lg w-full focus:outline-none text-gray-800">
-                        <button class="bg-green-600 hover:bg-green-700 px-4 rounded-r-lg transform transition duration-300 hover:scale-110">
+                        <input type="email" placeholder="Seu email"
+                            class="px-4 py-2 rounded-l-lg w-full focus:outline-none text-gray-800">
+                        <button
+                            class="bg-green-600 hover:bg-green-700 px-4 rounded-r-lg transform transition duration-300 hover:scale-110">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </form>
                 </div>
             </div>
             <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                <p>&copy; 2025 Elemoel - Clínica Veterinária. Todos os direitos reservados. Desenvolvido por <a class="hover:text-green-400 transition duration-300" href="https://lucacorrea.github.io/portifolio/" target="_blank">Lucas Correa</a></p>
+                <p>&copy; 2025 Elemoel - Clínica Veterinária. Todos os direitos reservados. Desenvolvido por <a
+                        class="hover:text-green-400 transition duration-300"
+                        href="https://lucacorrea.github.io/portifolio/" target="_blank">Lucas Correa</a></p>
             </div>
         </div>
     </footer>
 
     <!-- Modal Agendamento -->
-    <div id="appointmentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div id="appointmentModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-xl shadow-2xl w-11/12 md:w-1/2 lg:w-1/3 p-8 pop-in">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold text-gray-800">Agendar Consulta</h3>
-                <button id="closeModal" class="text-gray-500 hover:text-gray-700 transform transition duration-300 hover:rotate-90">
+                <button id="closeModal"
+                    class="text-gray-500 hover:text-gray-700 transform transition duration-300 hover:rotate-90">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
             <form class="space-y-6">
                 <div>
                     <label class="block text-gray-700 mb-2">Nome do Pet</label>
-                    <input type="text" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
+                    <input type="text"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
                 </div>
                 <div>
                     <label class="block text-gray-700 mb-2">Espécie</label>
-                    <select class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
+                    <select
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
                         <option>Cachorro</option>
                         <option>Gato</option>
                         <option>Ave</option>
@@ -620,11 +513,13 @@
                 </div>
                 <div>
                     <label class="block text-gray-700 mb-2">Data</label>
-                    <input type="date" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
+                    <input type="date"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
                 </div>
                 <div>
                     <label class="block text-gray-700 mb-2">Horário</label>
-                    <select class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
+                    <select
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-300">
                         <option>08:00</option>
                         <option>09:00</option>
                         <option>10:00</option>
@@ -635,13 +530,16 @@
                         <option>17:00</option>
                     </select>
                 </div>
-                <button type="submit" class="w-full btn-primary text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">
+                <button type="submit"
+                    class="w-full btn-primary text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">
                     Agendar
                 </button>
             </form>
         </div>
     </div>
 
-   
+    <script src="./assets/js/main.js"></script>
+
 </body>
+
 </html>
