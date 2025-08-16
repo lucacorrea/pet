@@ -29,7 +29,7 @@
 .delay-400 { animation-delay: 400ms; }
 
 .btn-primary {
-    background: linear-gradient(to right, #2C6A92, #1f4a66);
+    background: linear-gradient(to right, #2c678e, #20577b);
     color: #fff;
     transition: all 0.3s ease;
 }
@@ -119,6 +119,6 @@
 }
 
 .bg-pattern {
-    background-image: radial-gradient(#2C6A92 1px, transparent 1px);
+    background-image: radial-gradient(#2978ad 1px, transparent 1px);
     background-size: 30px 30px;
 }
