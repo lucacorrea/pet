@@ -122,3 +122,19 @@
     background-image: radial-gradient(#2978ad 1px, transparent 1px);
     background-size: 30px 30px;
 }
+
+
+@media screen and (max-width: 768px) {
+    .hero-pattern {
+        background: linear-gradient(120deg, rgba(44, 106, 146, 0.1) 0%, rgba(255, 255, 255, 0.8) 100%);
+    }
+    .btn-primary {
+        background: linear-gradient(to right, #2c678e, #20577b);
+        color: #fff;
+    }
+    .service-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.2);
+    }
+    
+}
