@@ -11,14 +11,55 @@ openModalButtons.forEach(button => {
 
 closeModalButton.addEventListener('click', () => {
     modal.classList.add('hidden');
+
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.classList.add('hidden');
+        }
+    });
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const phone = (modal.dataset.whatsapp || '').replace(/\D+/g, ''); // só dígitos
+        if (!phone) {
+            alert('Número do WhatsApp não configurado. Defina data-whatsapp no #appointmentModal.');
+            return;
+        }
+
+        const pet = (inputPet.value || '').trim();
+        const species = selSpecies.value;
+        const dateISO = inputDate.value; // yyyy-mm-dd
+        const time = selTime.value;
+
+        if (!pet || !dateISO || !time) {
+            alert('Preencha todos os campos obrigatórios.');
+            return;
+        }
+
+        // Formata data para dd/mm/aaaa
+        const [yyyy, mm, dd] = dateISO.split('-');
+        const dateBR = `${dd}/${mm}/${yyyy}`;
+
+        const text =
+            `*Agendamento de Consulta*
+🐾 *Pet:* ${pet}
+🦴 *Espécie:* ${species}
+📅 *Data:* ${dateBR}
+🕒 *Horário:* ${time}
+
+Olá! Gostaria de confirmar esse horário.`;
+
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+
+        // Opcional: fechar o modal
+        closeModal();
+        form.reset();
+    });
 });
 
-// Close modal when clicking outside
-window.addEventListener('click', (event) => {
-    if (event.target === modal) {
-        modal.classList.add('hidden');
-    }
-});
 
 // Animação de elementos quando entram na tela
 const observer = new IntersectionObserver((entries) => {
