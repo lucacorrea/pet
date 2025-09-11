@@ -3,9 +3,9 @@
 
 // Ajuste conforme seu ambiente:
 $host = "localhost";
-$db   = "u920914488_smth";
-$user = "u920914488_smth";
-$pass = "pX0V>i8~T";
+$db   = "u920914488_petshop";
+$user = "u920914488_petshop";
+$pass = "!f827DVCzgT";
 $charset = "utf8mb4";
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
