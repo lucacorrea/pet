@@ -45,10 +45,11 @@ $msg = (string)($_GET['msg'] ?? '');
 <html lang="pt-BR" dir="ltr">
 <head>
   <meta charset="utf-8">
-  <title>AutoERP — Fechar Caixa</title>
+  <title>Mundo Pets — Fechar Caixa</title>
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
   <link rel="stylesheet" href="../../assets/css/hope-ui.min.css?v=4.0.0">
   <link rel="stylesheet" href="../../assets/css/custom.min.css?v=4.0.0">
+  <link rel="shortcut icon" href="../../assets/images/dashboard/logo.png" type="image/x-icon">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
 <body>
@@ -58,7 +59,7 @@ $msg = (string)($_GET['msg'] ?? '');
     <div class="position-relative iq-banner">
       <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
         <div class="container-fluid navbar-inner">
-          <a href="../../dashboard.php" class="navbar-brand"><h4 class="logo-title">AutoERP</h4></a>
+          <a href="../../dashboard.php" class="navbar-brand"><h4 class="logo-title">Mundo Pets</h4></a>
         </div>
       </nav>
 

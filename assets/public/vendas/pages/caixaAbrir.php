@@ -92,8 +92,8 @@ try {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AutoERP — Abrir Caixa</title>
-  <link rel="icon" type="image/png" href="../../assets/images/dashboard/icon.png">
+  <title>Mundo Pets — Abrir Caixa</title>
+  <link rel="icon" type="image/png" href="../../assets/images/dashboard/logo.png">
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
   <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
   <link rel="stylesheet" href="../../assets/css/hope-ui.min.css?v=4.0.0">
@@ -115,7 +115,7 @@ try {
       <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
         <div class="container-fluid navbar-inner">
           <a href="../../dashboard.php" class="navbar-brand">
-            <h4 class="logo-title">AutoERP</h4>
+            <h4 class="logo-title">Mundo Pets</h4>
           </a>
           <div class="input-group search-input">
             <span class="input-group-text" id="search-input">
