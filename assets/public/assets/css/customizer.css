@@ -24,11 +24,11 @@ body {
 
 :root {
   --bs-heading-color: #0c112e;
-  --bs-primary: #0b6112;
+  --bs-primary: #06347e;
   --bs-primary-shade-80: #0c112e;
-  --bs-primary-shade-60: #17235d;
+  --bs-primary-shade-60: #15298b;
   --bs-primary-shade-40: #23348b;
-  --bs-primary-shade-20: #007041;
+  --bs-primary-shade-20: #092b74;
   --bs-primary-tint-90: #ebeefd;
   --bs-primary-tint-80: #d8ddfa;
   --bs-primary-tint-60: #b0bcf6;
