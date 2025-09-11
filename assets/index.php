@@ -18,7 +18,7 @@ if (isset($_GET['erro'])) {
 <head>
    <meta charset="utf-8">
    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-   <title>AutoERP — Login</title>
+   <title>PetERP — Login</title>
 
    <!-- Favicon -->
    <link rel="shortcut icon" href="./public/assets/images/favicon.ico">
