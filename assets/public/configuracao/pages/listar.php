@@ -137,7 +137,7 @@ function badge_status(int $s): string
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h4 class="card-title mb-0">Lista de Funcionários</h4>
                             <?php if ($vm['canCreate']): ?>
-                                <a href="./novo.php" class="btn btn-sm btn-primary"><i class="bi bi-person-plus"></i> Novo usuário</a>
+                                <a href="./novo.php" class="btn btn-sm btn-primary mb-2"><i class="bi bi-person-plus"></i> Novo usuário</a>
                             <?php endif; ?>
                         </div>
 
