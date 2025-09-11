@@ -1,0 +1,193 @@
+<?php
+// autoErp/public/lavajato/pages/lavadoresNovo.php
+declare(strict_types=1);
+
+// (Descomente durante o debug de "tela branca")
+// ini_set('display_errors', '1');
+// ini_set('display_startup_errors', '1');
+// error_reporting(E_ALL);
+
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+require_once __DIR__ . '/../../../lib/auth_guard.php';
+guard_empresa_user(['dono', 'administrativo']); // quem pode cadastrar lavadores
+
+/** ================== Conexão ================== */
+$pdo = null;
+$pathConexao = realpath(__DIR__ . '/../../../conexao/conexao.php');
+if ($pathConexao && file_exists($pathConexao)) require_once $pathConexao;
+if (!isset($pdo) || !($pdo instanceof PDO)) {
+  die('Conexão indisponível.');
+}
+
+/** ================== Util & nome da empresa ================== */
+require_once __DIR__ . '/../../../lib/util.php';
+$empresaNome = 'Sua empresa';
+try {
+  $empresaNome = empresa_nome_logada($pdo) ?: $empresaNome;
+} catch (Throwable $e) {
+  // silencioso; mantém fallback
+}
+
+/** ================== Sessão / CNPJ ================== */
+$empresaCnpjSess = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj'] ?? ''));
+if (!preg_match('/^\d{14}$/', $empresaCnpjSess)) {
+  die('Empresa não vinculada ao usuário.');
+}
+
+/** ================== CSRF ================== */
+if (empty($_SESSION['csrf_lavador_novo'])) {
+  $_SESSION['csrf_lavador_novo'] = bin2hex(random_bytes(32));
+}
+$csrf = $_SESSION['csrf_lavador_novo'];
+
+/** ================== Flash ================== */
+$ok  = (int)($_GET['ok'] ?? 0);
+$err = (int)($_GET['err'] ?? 0);
+$msg = (string)($_GET['msg'] ?? '');
+?>
+<!doctype html>
+<html lang="pt-BR" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AutoERP — Add Lavador</title>
+
+  <link rel="icon" type="image/png" href="../../assets/images/dashboard/icon.png">
+  <link rel="shortcut icon" href="../../assets/images/favicon.ico">
+
+  <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
+  <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
+  <link rel="stylesheet" href="../../assets/css/hope-ui.min.css?v=4.0.0">
+  <link rel="stylesheet" href="../../assets/css/custom.min.css?v=4.0.0">
+  <link rel="stylesheet" href="../../assets/css/dark.min.css">
+  <link rel="stylesheet" href="../../assets/css/customizer.min.css">
+  <link rel="stylesheet" href="../../assets/css/customizer.css">
+  <link rel="stylesheet" href="../../assets/css/rtl.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- usa o mesmo menu -->
+  <?php
+  if (session_status() === PHP_SESSION_NONE) session_start();
+  $menuAtivo = 'lavajato-add-lavador'; // sem espaço
+  include '../../layouts/sidebar.php';
+  ?>
+
+  <main class="main-content">
+    <div class="position-relative iq-banner">
+      <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
+        <div class="container-fluid navbar-inner">
+          <a href="../../dashboard.php" class="navbar-brand">
+            <h4 class="logo-title">AutoERP</h4>
+          </a>
+          <div class="input-group search-input">
+            <span class="input-group-text" id="search-input">
+              <svg class="icon-18" width="18" viewBox="0 0 24 24" fill="none">
+
+
+              </svg>
+            </span>
+
+          </div>
+        </div>
+      </nav>
+
+      <div class="iq-navbar-header" style="height: 150px; margin-bottom: 50px;">
+        <div class="container-fluid iq-container">
+          <div class="row">
+            <div class="col-md-12">
+              <h1 class="mb-0">Adicionar Lavador</h1>
+              <p>Cadastre colaboradores do Lava Jato (não criam acesso ao sistema).</p>
+            </div>
+          </div>
+        </div>
+        <div class="iq-header-img">
+          <img src="../../assets/images/dashboard/top-header.png" alt="" class="theme-color-default-img img-fluid w-100 h-100 animated-scaleX">
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid content-inner mt-n3 py-0">
+      <div class="row">
+        <div class="col-12">
+          <div class="card" data-aos="fade-up" data-aos-delay="150">
+            <div class="card-header">
+              <h4 class="card-title mb-0">Dados do Lavador</h4>
+            </div>
+            <div class="card-body">
+              <form method="post" action="../actions/lavadoresSalvar.php" id="form-lavador">
+                <input type="hidden" name="op" value="lavador_novo">
+                <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
+
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" name="nome" class="form-control" required maxlength="150">
+                  </div>
+
+                  <div class="col-md-3">
+                    <label class="form-label">CPF (opcional)</label>
+                    <input type="text" name="cpf" class="form-control" maxlength="14" placeholder="000.000.000-00">
+                  </div>
+
+                  <div class="col-md-3">
+                    <label class="form-label">Telefone (opcional)</label>
+                    <input type="text" name="telefone" class="form-control" maxlength="20" placeholder="(00) 00000-0000">
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">E-mail (opcional)</label>
+                    <input type="email" name="email" class="form-control" maxlength="150" placeholder="nome@dominio.com">
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Status</label>
+                    <select name="ativo" class="form-select">
+                      <option value="1" selected>Ativo</option>
+                      <option value="0">Inativo</option>
+                    </select>
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label">Observações</label>
+                    <textarea name="obs" class="form-control" rows="3" maxlength="1000" placeholder="Observações gerais (opcional)"></textarea>
+                  </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i> Salvar
+                  </button>
+                  <a href="./lavadores.php" class="btn btn-outline-secondary">Voltar para lista</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div> <!-- col -->
+      </div> <!-- row -->
+    </div> <!-- container -->
+
+    <footer class="footer">
+      <div class="footer-body d-flex justify-content-between align-items-center">
+        <div class="left-panel">
+          © <script>
+            document.write(new Date().getFullYear())
+          </script>
+          <?= htmlspecialchars($empresaNome, ENT_QUOTES, 'UTF-8') ?>
+        </div>
+        <div class="right-panel">Desenvolvido por Lucas de S. Correa.</div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="../../assets/js/core/libs.min.js"></script>
+  <script src="../../assets/js/core/external.min.js"></script>
+  <script src="../../assets/vendor/aos/dist/aos.js"></script>
+  <script src="../../assets/js/hope-ui.js" defer></script>
+</body>
+
+</html>

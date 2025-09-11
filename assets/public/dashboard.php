@@ -1,0 +1,528 @@
+<?php
+// autoErp/public/dashboard.php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../lib/auth_guard.php';
+ensure_logged_in(['dono', 'funcionario']); // dashboard público para dono/funcionário
+
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+// Se quiser usar na view:
+$cnpjSess = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj'] ?? ''));
+$cpfSess  = preg_replace('/\D+/', '', (string)($_SESSION['user_cpf'] ?? ''));
+
+// Conexão
+$pdo = null;
+$pathConexao = realpath(__DIR__ . '/../conexao/conexao.php');
+if ($pathConexao && file_exists($pathConexao)) {
+    require_once $pathConexao; // define $pdo
+}
+
+// Controller do dashboard (se existir)
+require_once __DIR__ . '/controllers/dashboardController.php';
+
+
+// ===== Verificação de cadastro da empresa =====
+$empresaPendente = false;
+$msgCompletar    = '';
+$canEditEmpresa  = (($_SESSION['user_perfil'] ?? '') === 'dono');
+
+$empresaRow = null;
+if (!empty($cnpjSess) && isset($pdo) && $pdo instanceof PDO) {
+    $st = $pdo->prepare("SELECT * FROM empresas_peca WHERE cnpj = :c LIMIT 1");
+    $st->execute([':c' => $cnpjSess]);
+    $empresaRow = $st->fetch(PDO::FETCH_ASSOC) ?: null;
+}
+
+// Defina os campos que você considera OBRIGATÓRIOS para o cadastro estar "ok"
+$camposObrigatorios = [
+    'nome_fantasia' => 'Nome Fantasia',
+    'email'         => 'E-mail',
+    'telefone'      => 'Telefone',
+    'endereco'      => 'Endereço',
+    'cidade'        => 'Cidade',
+    'estado'        => 'UF',
+    'cep'           => 'CEP',
+];
+
+$faltando = [];
+if (!$empresaRow) {
+    // Não existe registro na empresas_peca ainda
+    $empresaPendente = true;
+    $msgCompletar = 'Sua empresa ainda não está cadastrada. Complete as informações para aproveitar todos os recursos.';
+} else {
+    // Existe, mas podemos verificar campos vazios/ausentes
+    foreach ($camposObrigatorios as $k => $rot) {
+        $val = trim((string)($empresaRow[$k] ?? ''));
+        if ($val === '') {
+            $faltando[] = $rot;
+        }
+    }
+    if ($faltando) {
+        $empresaPendente = true;
+        $msgCompletar = 'Algumas informações da empresa estão faltando: ' . implode(', ', $faltando) . '.';
+    }
+}
+
+// ... seus requires/guards/conexão/controller acima ...
+
+// Dados básicos vindos da sessão / controller
+$nomeUser     = $_SESSION['user_nome']         ?? ($nomeUser     ?? 'Usuário');
+$empresaNome  = $empresaNome                   ?? ($_SESSION['empresa_nome'] ?? 'sua empresa');
+$perfil       = strtolower($_SESSION['user_perfil'] ?? 'funcionario');        // dono | funcionario
+$tipo         = strtolower($_SESSION['user_tipo']   ?? '');                   // administrativo | caixa | estoque | lavajato
+
+// Rótulos bonitinhos
+$rotTipo = [
+    'administrativo' => 'Administrativo',
+    'caixa'          => 'Caixa',
+    'estoque'        => 'Estoque',
+    'lavajato'       => 'Lava Jato',
+];
+$tipoLabel = $rotTipo[$tipo] ?? 'Colaborador';
+
+// Frase dinâmica por perfil/tipo
+$fraseHeader = '';
+if ($perfil === 'dono') {
+    $fraseHeader = 'Você é o dono. Gerencie sua empresa, cadastre sua equipe e mantenha tudo em dia.';
+} else {
+    switch ($tipo) {
+        case 'administrativo':
+            $fraseHeader = 'Acompanhe o financeiro, cadastre produtos e dê suporte à operação.';
+            break;
+        case 'caixa':
+            $fraseHeader = 'Abra vendas rápidas, finalize pagamentos e agilize o atendimento.';
+            break;
+        case 'estoque':
+            $fraseHeader = 'Gerencie entradas e saídas, controle níveis e mantenha o estoque organizado.';
+            break;
+        case 'lavajato':
+            $fraseHeader = 'Registre lavagens, acompanhe status e mantenha o fluxo do box.';
+            break;
+        default:
+            $fraseHeader = 'Bem-vindo ao sistema. Use o menu ao lado para começar.';
+            break;
+    }
+    // complementa com o tipo do funcionário
+    $fraseHeader = "Você está logado como {$tipoLabel}. {$fraseHeader}";
+}
+?>
+
+
+<!doctype html>
+<html lang="pt-BR" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>AutoERP - Dashboard</title>
+    <link rel="icon" type="image/png" sizes="512x512" href="./assets/images/dashboard/icon.png">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="./assets/images/favicon.ico">
+
+    <!-- Libraries / Plugins -->
+    <link rel="stylesheet" href="./assets/css/core/libs.min.css">
+    <link rel="stylesheet" href="./assets/vendor/aos/dist/aos.css">
+    <link rel="stylesheet" href="./assets/css/hope-ui.min.css?v=4.0.0">
+    <link rel="stylesheet" href="./assets/css/custom.min.css?v=4.0.0">
+    <link rel="stylesheet" href="./assets/css/dark.min.css">
+    <link rel="stylesheet" href="./assets/css/customizer.min.css">
+    <link rel="stylesheet" href="./assets/css/customizer.css">
+    <link rel="stylesheet" href="./assets/css/rtl.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- SIDEBAR -->
+    <?php
+    if (session_status() === PHP_SESSION_NONE) session_start();
+    $menuAtivo = 'dashboard'; // ID do menu atual
+    include './layouts/dashboard.php';
+    ?>
+
+    <main class="main-content">
+        <?php if (!empty($empresaPendente)): ?>
+            <!-- Modal: Cadastro da Empresa Incompleto -->
+            <div class="modal fade" id="modalEmpresaIncompleta" tabindex="-1" aria-labelledby="modalEmpresaIncompletaLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning-subtle">
+                            <h5 class="modal-title" id="modalEmpresaIncompletaLabel">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Completar cadastro da empresa
+                            </h5>
+
+                        </div>
+
+                        <div class="modal-body">
+                            <p class="mb-0">
+                                <?= htmlspecialchars($msgCompletar, ENT_QUOTES, 'UTF-8') ?>
+                            </p>
+                        </div>
+
+                        <div class="modal-footer text-center">
+                            <?php if (!empty($canEditEmpresa)): ?>
+                                <a href="./configuracao/pages/empresa.php" class="btn btn-primary w-100">
+                                    <i class="bi bi-building me-1"></i>
+                                    Ir para Dados da Empresa
+                                </a>
+                            <?php else: ?>
+                                <button type="button" class="btn btn-outline-secondary" disabled
+                                    title="Peça ao dono para completar o cadastro">
+                                    <i class="bi bi-lock me-1"></i>
+                                    Somente o dono pode editar
+                                </button>
+                            <?php endif; ?>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                // Abre o modal automaticamente quando a página carregar
+                document.addEventListener('DOMContentLoaded', function() {
+                    var el = document.getElementById('modalEmpresaIncompleta');
+                    if (!el || typeof bootstrap === 'undefined' || !bootstrap.Modal) return;
+                    var modal = new bootstrap.Modal(el, {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    modal.show();
+                });
+            </script>
+        <?php endif; ?>
+
+        <div class="position-relative iq-banner">
+            <!-- NAV -->
+            <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
+                <div class="container-fluid navbar-inner">
+                    <a href="./dashboard.php" class="navbar-brand">
+                        <h4 class="logo-title">AutoERP</h4>
+                    </a>
+                    <div class="sidebar-toggle" data-toggle="sidebar" data-active="true">
+                        <i class="icon">
+                            <svg width="20px" class="icon-20" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" />
+                            </svg>
+                        </i>
+                    </div>
+                    <div class="input-group search-input">
+                        <span class="input-group-text" id="search-input">
+                            <svg class="icon-18" width="18" viewBox="0 0 24 24" fill="none">
+                                <circle cx="11.7669" cy="11.7666" r="8.98856" stroke="currentColor" stroke-width="1.5"></circle>
+                                <path d="M18.0186 18.4851L21.5426 22" stroke="currentColor" stroke-width="1.5"></path>
+                            </svg>
+                        </span>
+                        <input type="search" class="form-control" placeholder="Pesquisar...">
+                    </div>
+                </div>
+            </nav>
+
+            <!-- HEADER -->
+            <div class="iq-navbar-header" style="height: 215px;">
+                <div class="container-fluid iq-container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="flex-wrap d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="flex-wrap d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h1>Bem-vindo, <?= htmlspecialchars($nomeUser, ENT_QUOTES, 'UTF-8') ?>!</h1>
+                                            <p>
+                                                <?= htmlspecialchars($fraseHeader, ENT_QUOTES, 'UTF-8') ?>
+                                                Empresa: <strong><?= htmlspecialchars($empresaNome, ENT_QUOTES, 'UTF-8') ?></strong>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="iq-header-img">
+                    <img src="./assets/images/dashboard/top-header.png" alt="header" class="theme-color-default-img img-fluid w-100 h-100 animated-scaleX">
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid content-inner mt-n5 py-0">
+            <div class="row">
+                <div class="col-md-12 col-lg-12">
+                    <!-- CARDS -->
+
+                    <div class="row ">
+                        <!-- CARDS AUTO PEÇAS -->
+                        <div class="overflow-hidden d-slider1 ">
+                            <ul class="p-0 m-0 mb-2 swiper-wrapper list-inline" style="gap: 6px;">
+                                <li class="swiper-slide card card-slide col-lg-3" data-aos="fade-up" data-aos-delay="700">
+                                    <div class="card-body">
+                                        <div class="progress-widget">
+                                            <div id="circle-progress-01"
+                                                class="text-center circle-progress-01 circle-progress circle-progress-primary"
+                                                data-min-value="0" data-max-value="100" data-value="<?= (int)$vendasPct ?>"
+                                                data-type="percent">
+                                                <svg class="card-slie-arrow icon-24" width="24" viewBox="0 0 24 24">
+                                                    <path fill="currentColor" d="M5,17.59L15.59,7H9V5H19V15H17V8.41L6.41,19L5,17.59Z" />
+                                                </svg>
+                                            </div>
+                                            <div class="progress-detail">
+                                                <p class="mb-2">Vendas</p>
+                                                <h4 class="counter"><?= number_format((float)$vendasQtde, 0, ',', '.') ?></h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="swiper-slide card card-slide col-lg-3" data-aos="fade-up" data-aos-delay="800">
+                                    <div class="card-body">
+                                        <div class="progress-widget">
+                                            <div id="circle-progress-02"
+                                                class="text-center circle-progress-01 circle-progress circle-progress-info"
+                                                data-min-value="0" data-max-value="100" data-value="<?= (int)$estoquePct ?>"
+                                                data-type="percent">
+                                                <svg class="card-slie-arrow icon-24" width="24" viewBox="0 0 24 24">
+                                                    <path fill="currentColor" d="M19,6.41L17.59,5L7,15.59V9H5V19H15V17H8.41L19,6.41Z" />
+                                                </svg>
+                                            </div>
+                                            <div class="progress-detail">
+                                                <p class="mb-2">Itens em Estoque</p>
+                                                <h4 class="counter"><?= number_format((float)$itensEstoque, 0, ',', '.') ?></h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="swiper-slide card card-slide col-lg-3" data-aos="fade-up" data-aos-delay="900">
+                                    <div class="card-body">
+                                        <div class="progress-widget">
+                                            <div id="circle-progress-03"
+                                                class="text-center circle-progress-01 circle-progress circle-progress-primary"
+                                                data-min-value="0" data-max-value="100" data-value="<?= (int)$faturamentoPct ?>"
+                                                data-type="percent">
+                                                <svg class="card-slie-arrow icon-24" width="24" viewBox="0 0 24 24">
+                                                    <path fill="currentColor" d="M19,6.41L17.59,5L7,15.59V9H5V19H15V17H8.41L19,6.41Z" />
+                                                </svg>
+                                            </div>
+                                            <div class="progress-detail">
+                                                <p class="mb-2">Faturamento</p>
+                                                <h4 class="counter">R$ <?= number_format((float)$faturamento30d, 2, ',', '.') ?></h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="swiper-slide card card-slide col-lg-3 px-3" data-aos="fade-up" data-aos-delay="1100">
+                                    <div class="card-body">
+                                        <div class="progress-widget">
+                                            <div id="circle-progress-04"
+                                                class="text-center circle-progress-01 circle-progress circle-progress-primary"
+                                                data-min-value="0" data-max-value="100" data-value="<?= (int)$despesasPct ?>"
+                                                data-type="percent">
+                                                <svg class="card-slie-arrow icon-24" width="24px" viewBox="0 0 24 24">
+                                                    <path fill="currentColor" d="M5,17.59L15.59,7H9V5H19V15H17V8.41L6.41,19L5,17.59Z" />
+                                                </svg>
+                                            </div>
+                                            <div class="progress-detail">
+                                                <p class="mb-2">Despesas</p>
+                                                <h4 class="counter">R$ <?= number_format((float)$despesas30d, 2, ',', '.') ?></h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-md-12 col-lg-12">
+                <div class="row">
+                    <!-- GRÁFICO -->
+                    <div class="col-md-12">
+                        <div class="card" data-aos="fade-up" data-aos-delay="800">
+                            <div class="flex-wrap card-header d-flex justify-content-between align-items-center">
+                                <div class="header-title">
+                                    <h4 class="card-title">Gráfico de Vendas</h4>
+                                    <p class="mb-0">Últimos 6 meses</p>
+                                </div>
+                                <div class="dropdown">
+                                    <a href="#" class="text-gray dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Últimos 6 meses</a>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><span class="dropdown-item">Últimos 6 meses</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="d-main" class="d-main"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TABELA LAVA JATO -->
+                    <div class="col-md-12 col-lg-12">
+                        <div class="overflow-hidden card" data-aos="fade-up" data-aos-delay="600">
+                            <div class="flex-wrap card-header d-flex justify-content-between">
+                                <div class="header-title">
+                                    <h4 class="mb-2 card-title">Lavagens Recentes</h4>
+                                    <p class="mb-0">Últimas lavagens registradas</p>
+                                </div>
+                            </div>
+                            <div class="p-0 card-body">
+                                <div class="mt-4 table-responsive">
+                                    <table class="table mb-0 table-striped align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Lavador</th>
+                                                <th>Serviço</th>
+                                                <th>Veículo</th>
+                                                <th>Valor</th>
+                                                <th>Data/Hora</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php if (!$lavagens): ?>
+                                                <tr>
+                                                    <td colspan="6" class="text-center text-muted">Sem registros.</td>
+                                                </tr>
+                                                <?php else: foreach ($lavagens as $L): ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($L['lavador'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
+                                                        <td><?= htmlspecialchars($L['servico'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
+                                                        <td><?= htmlspecialchars($L['veiculo'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
+                                                        <td>R$ <?= number_format((float)($L['valor'] ?? 0), 2, ',', '.') ?></td>
+                                                        <td><?= htmlspecialchars($L['quando'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
+                                                        <td>
+                                                            <?php
+                                                            $st = (string)($L['status'] ?? 'aberta');
+                                                            $badge = 'secondary';
+                                                            $rot = 'Aberta';
+                                                            if ($st === 'concluida') {
+                                                                $badge = 'success';
+                                                                $rot = 'Concluída';
+                                                            } elseif ($st === 'cancelada') {
+                                                                $badge = 'danger';
+                                                                $rot = 'Cancelada';
+                                                            }
+                                                            ?>
+                                                            <span class="badge bg-<?= $badge ?>"><?= $rot ?></span>
+                                                        </td>
+                                                    </tr>
+                                            <?php endforeach;
+                                            endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- /tabela -->
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-body d-flex justify-content-between align-items-center">
+                <div class="left-panel">© <script>
+                        document.write(new Date().getFullYear())
+                    </script> <?= htmlspecialchars($empresaNome, ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="right-panel">Desenvolvido por Lucas de S. Correa.</div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- LIBS -->
+    <script src="./assets/js/core/libs.min.js"></script>
+    <script src="./assets/js/core/external.min.js"></script>
+    <script src="./assets/js/charts/widgetcharts.js"></script>
+    <script src="./assets/js/charts/vectore-chart.js"></script>
+    <script src="./assets/js/plugins/fslightbox.js"></script>
+    <script src="./assets/js/plugins/setting.js"></script>
+    <script src="./assets/js/plugins/slider-tabs.js"></script>
+    <script src="./assets/js/plugins/form-wizard.js"></script>
+    <script src="./assets/vendor/aos/dist/aos.js"></script>
+    <script src="./assets/js/hope-ui.js" defer></script>
+
+    <!-- ApexCharts (gráfico) -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <!-- Variáveis vindas do PHP para o JS -->
+    <script>
+        window.DASH_LABELS = <?= json_encode(array_values($chartLabels), JSON_UNESCAPED_UNICODE) ?>;
+        window.DASH_SERIES = <?= json_encode(array_values($chartSeries), JSON_UNESCAPED_UNICODE) ?>;
+    </script>
+
+    <!-- JS específico do dashboard -->
+    <script src="./assets/js/public/dashboardView.js">
+        // autoErp/public/assets/js/public/dashboardView.js
+
+        (function() {
+            const el = document.getElementById('d-main');
+            if (!el) return;
+
+            const LABELS = Array.isArray(window.DASH_LABELS) ? window.DASH_LABELS : [];
+            const SERIES = Array.isArray(window.DASH_SERIES) ? window.DASH_SERIES : [];
+
+            if (typeof ApexCharts === 'undefined') {
+                el.innerHTML = '<div class="text-muted">Biblioteca de gráfico indisponível.</div>';
+                return;
+            }
+
+            const options = {
+                chart: {
+                    type: 'line',
+                    height: 360,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                series: [{
+                    name: 'Faturamento',
+                    data: SERIES
+                }],
+                xaxis: {
+                    categories: LABELS
+                },
+                stroke: {
+                    width: 3,
+                    curve: 'smooth'
+                }, // curva suave liga os pontos
+                markers: {
+                    size: 3
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                legend: {
+                    position: 'top'
+                },
+                grid: {
+                    borderColor: 'rgba(0,0,0,0.1)'
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        opacityFrom: 0.3,
+                        opacityTo: 0.0
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: (val) => 'R$ ' + (Number(val || 0)).toLocaleString('pt-BR', {
+                            minimumFractionDigits: 2
+                        })
+                    }
+                }
+            };
+
+            new ApexCharts(el, options).render();
+        })();
+    </script>
+</body>
+
+</html>
