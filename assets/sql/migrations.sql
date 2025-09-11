@@ -1,37 +1,37 @@
 CREATE TABLE caixas_peca (
-  id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  empresa_cnpj VARCHAR(20) NOT NULL,
-  tipo ENUM('individual','compartilhado') NOT NULL,
-  terminal VARCHAR(60) DEFAULT NULL,
-  aberto_por_cpf VARCHAR(20) DEFAULT NULL,
-  aberto_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  saldo_inicial DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-  status ENUM('aberto','fechado') NOT NULL DEFAULT 'aberto',
-  fechado_por_cpf VARCHAR(20) DEFAULT NULL,
-  fechado_em DATETIME DEFAULT NULL,
-  observacoes TEXT
+  id                                              INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  empresa_cnpj                                    VARCHAR(20) NOT NULL,
+  tipo                                            ENUM('individual','compartilhado') NOT NULL,
+  terminal                                        VARCHAR(60) DEFAULT NULL,
+  aberto_por_cpf                                  VARCHAR(20) DEFAULT NULL,
+  aberto_em                                       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  saldo_inicial                                   DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  status                                          ENUM('aberto','fechado') NOT NULL DEFAULT 'aberto',
+  fechado_por_cpf                                 VARCHAR(20) DEFAULT NULL,
+  fechado_em                                      DATETIME DEFAULT NULL,
+  observacoes                                     TEXT
 );
 
 CREATE TABLE caixa_movimentos_peca (
-  id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  empresa_cnpj VARCHAR(20) NOT NULL,
-  caixa_id INT NOT NULL,
-  tipo ENUM('entrada','saida') NOT NULL,
-  forma_pagamento VARCHAR(40) DEFAULT NULL,
-  valor DECIMAL(12,2) NOT NULL,
-  descricao VARCHAR(255) DEFAULT NULL,
-  criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  id                                              INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  empresa_cnpj                                    VARCHAR(20) NOT NULL,
+  caixa_id                                        INT NOT NULL,
+  tipo                                            ENUM('entrada','saida') NOT NULL,
+  forma_pagamento                                 VARCHAR(40) DEFAULT NULL,
+  valor                                           DECIMAL(12,2) NOT NULL,
+  descricao                                       VARCHAR(255) DEFAULT NULL,
+  criado_em                                       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE caixa_participantes_peca (
-  id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  caixa_id INT NOT NULL,
-  empresa_cnpj VARCHAR(20) NOT NULL,
-  operador_cpf VARCHAR(20) NOT NULL,
-  operador_nome VARCHAR(150) DEFAULT NULL,
-  entrou_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  saiu_em DATETIME DEFAULT NULL,
-  ativo TINYINT(1) NOT NULL DEFAULT 1
+  id                                              INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  caixa_id                                        INT NOT NULL,
+  empresa_cnpj                                    VARCHAR(20) NOT NULL,
+  operador_cpf                                    VARCHAR(20) NOT NULL,
+  operador_nome                                   VARCHAR(150) DEFAULT NULL,
+  entrou_em                                       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  saiu_em                                         DATETIME DEFAULT NULL,
+  ativo                                           TINYINT(1) NOT NULL DEFAULT 1
 );
 
 CREATE TABLE categorias_lavagem_peca (
