@@ -193,7 +193,7 @@ try {
       <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
         <div class="container-fluid navbar-inner">
           <a href="../../dashboard.php" class="navbar-brand">
-            <h4 class="logo-title">AutoERP</h4>
+            <h4 class="logo-title">Mundo Pets</h4>
           </a>
           <div class="ms-auto d-none d-lg-flex align-items-center gap-3">
             <span class="text-muted small">Atalhos: <span class="kbd">Enter</span> Adicionar • <span class="kbd">F2</span> Quantidade • <span class="kbd">F4</span> Finalizar</span>
