@@ -18,7 +18,7 @@ function enviar_email(
     string $subject,
     string $htmlBody,
     string $from = 'suporte@codegeek.dev.br',
-    string $fromName = 'AutoERP Suporte'
+    string $fromName = 'PetERP Suporte'
 ): bool {
     // Assunto em UTF-8
     $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
