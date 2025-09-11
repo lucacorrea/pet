@@ -188,7 +188,7 @@ try {
 <body>
   <?php
   if (session_status() === PHP_SESSION_NONE) session_start();
-  $menuAtivo = 'vendaRapida'; // ID do menu atual
+  $menuAtivo = 'vendas-rapida'; // ID do menu atual
   include '../../layouts/sidebar.php';
   ?>
 
