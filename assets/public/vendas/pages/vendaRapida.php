@@ -186,7 +186,11 @@ try {
 </head>
 
 <body>
-  <?php include __DIR__ . '/../../layouts/sidebar.php'; ?>
+  <?php
+  if (session_status() === PHP_SESSION_NONE) session_start();
+  $menuAtivo = 'vendaRapida'; // ID do menu atual
+  include '../../layouts/sidebar.php';
+  ?>
 
   <main class="main-content">
     <div class="position-relative iq-banner">
