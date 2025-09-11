@@ -115,7 +115,7 @@ if ($perfil === 'dono') {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>AutoERP - Dashboard</title>
+    <title>Mundo Pets - Dashboard</title>
     <link rel="icon" type="image/png" sizes="512x512" href="./assets/images/dashboard/logo.png">
 
     <!-- Favicon -->
