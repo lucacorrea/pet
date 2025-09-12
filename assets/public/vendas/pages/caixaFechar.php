@@ -254,7 +254,7 @@ function fmt($v)
           <div class="card-body">
             <div class="alert alert-warning mb-0">
               Não há caixa aberto para esta empresa.
-              <a class="alert-link" href="../../caixa/pages/caixaAbrir.php">Clique aqui</a> para abrir.
+              <a class="alert-link" href="./caixaAbrir.php">Clique aqui</a> para abrir.
             </div>
           </div>
         </div>
