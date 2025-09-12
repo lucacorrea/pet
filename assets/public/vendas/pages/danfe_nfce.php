@@ -14,9 +14,14 @@ if (!isset($pdo) || !($pdo instanceof PDO)) die('Conexão indisponível.');
 
 require_once __DIR__ . '/../../../lib/util.php';
 
+/* ========================= helpers ========================= */
 function h($s): string
 {
     return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
+}
+function onlynum($s)
+{
+    return preg_replace('/\D+/', '', (string)$s);
 }
 function money($v): string
 {
@@ -25,10 +30,6 @@ function money($v): string
 function nf($v, int $d = 3): string
 {
     return number_format((float)$v, $d, ',', '.');
-}
-function onlynum($s)
-{
-    return preg_replace('/\D+/', '', (string)$s);
 }
 function fmt_doc($doc): string
 {
@@ -44,35 +45,63 @@ function fmt_chave($chave): string
     return trim(implode(' ', str_split($c, 4)));
 }
 
-/* ===== Emitente (opcionais via GET) ===== */
-$empresaNome = empresa_nome_logada($pdo) ?: 'Minha Empresa';
+/* ========================= empresa (empresas_peca) ========================= */
 $empresaCnpj = onlynum($_SESSION['user_empresa_cnpj'] ?? '');
-$emit_ie     = $_GET['emit_ie']     ?? '';
-$emit_im     = $_GET['emit_im']     ?? '';
-$emit_regime = $_GET['emit_regime'] ?? '';
-$emit_end    = $_GET['emit_endereco'] ?? '';
-$emit_mun    = $_GET['emit_municipio'] ?? '';
-$emit_uf     = $_GET['emit_uf'] ?? '';
-$emit_fone   = $_GET['emit_fone'] ?? '';
-$emit_email  = $_GET['emit_email'] ?? '';
+$empresa = [
+    'cnpj' => $empresaCnpj,
+    'nome_fantasia' => '',
+    'razao_social' => '',
+    'telefone' => '',
+    'email' => '',
+    'endereco' => '',
+    'cidade' => '',
+    'estado' => '',
+    'cep' => '',
+];
 
-/* ===== NFC-e (opcionais via GET) ===== */
+if ($empresaCnpj) {
+    try {
+        $stE = $pdo->prepare("
+      SELECT cnpj, nome_fantasia, razao_social, telefone, email, endereco, cidade, estado, cep
+      FROM empresas_peca
+      WHERE cnpj = :c
+      LIMIT 1
+    ");
+        $stE->execute([':c' => $empresaCnpj]);
+        if ($row = $stE->fetch(PDO::FETCH_ASSOC)) {
+            foreach ($empresa as $k => $v) {
+                if (array_key_exists($k, $row) && $row[$k] !== null) $empresa[$k] = (string)$row[$k];
+            }
+        }
+    } catch (Throwable $e) { /* silencioso */
+    }
+}
+
+$empresaNome = $empresa['nome_fantasia'] ?: ($empresa['razao_social'] ?: 'Minha Empresa');
+$linhaEndereco = trim($empresa['endereco'] ?: '');
+$linhaCidadeUf = trim(($empresa['cidade'] ?: '') . ($empresa['estado'] ? ' / ' . $empresa['estado'] : ''));
+$linhaCep = $empresa['cep'] ? ('CEP: ' . $empresa['cep']) : '';
+$linhaContato = trim(($empresa['telefone'] ? ('Fone: ' . $empresa['telefone']) : '') .
+    (($empresa['telefone'] && $empresa['email']) ? ' • ' : '') .
+    ($empresa['email'] ? ('E-mail: ' . $empresa['email']) : ''));
+
+/* ========================= params NFC-e / tela ========================= */
 $vendaId   = isset($_GET['venda_id']) ? (int)$_GET['venda_id'] : 0;
 $chave     = $_GET['chave']    ?? '';
 $numero    = $_GET['numero']   ?? '';
 $serie     = $_GET['serie']    ?? '';
-$ambiente  = $_GET['ambiente'] ?? '';
+$ambiente  = $_GET['ambiente'] ?? ''; // PRODUÇÃO/HOMOLOGAÇÃO
 $protocolo = $_GET['protocolo'] ?? '';
 $autEm     = $_GET['autorizado_em'] ?? '';
 $obs       = $_GET['obs'] ?? '';
 $lei12741  = isset($_GET['tributos_aprox']) ? (float)str_replace(',', '.', $_GET['tributos_aprox']) : null;
 
-/* ===== Consumidor ===== */
+/* ========================= consumidor ========================= */
 $consDoc  = $_GET['consumidor_doc']  ?? '';
 $consNome = $_GET['consumidor_nome'] ?? '';
 $consLabel = (strlen(onlynum($consDoc)) === 14 ? 'CNPJ' : 'CPF');
 
-/* ===== Busca venda + itens ===== */
+/* ========================= venda + itens ========================= */
 $venda = null;
 $itens = [];
 if ($vendaId > 0 && $empresaCnpj) {
@@ -103,7 +132,7 @@ if ($vendaId > 0 && $empresaCnpj) {
     }
 }
 
-/* ===== Totais / pagamentos ===== */
+/* ========================= totais/pagamentos ========================= */
 $qtdTotal = 0.0;
 foreach ($itens as $i) $qtdTotal += (float)$i['qtd'];
 $subtotal   = (float)($venda['total_bruto'] ?? 0);
@@ -138,7 +167,7 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
-        /* ========= TELA (responsivo) ========= */
+        /* ===== TELA ===== */
         :root {
             --paper-w-screen: 460px;
             --paper-w-print: 80mm;
@@ -287,7 +316,7 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             white-space: pre-wrap;
         }
 
-        /* Barra inferior fixa (tela) */
+        /* Barra fixa */
         .bottom-bar {
             position: fixed;
             left: 0;
@@ -327,13 +356,12 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             filter: brightness(0.98);
         }
 
-        /* ========= IMPRESSÃO ========= */
+        /* ===== IMPRESSÃO ===== */
         @page {
             size: var(--paper-w-print) auto;
             margin: 2mm;
         }
 
-        /* 2mm evita corte em algumas térmicas */
         @media print {
             body {
                 background: #fff;
@@ -345,11 +373,10 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
                 padding: 0;
             }
 
-            /* ALINHADO À ESQUERDA (padrão DANFE NFC-e) */
             .ticket {
                 width: var(--paper-w-print);
                 margin: 0 !important;
-                /* nada de centralização */
+                /* alinhado à esquerda */
                 border-radius: 0;
                 box-shadow: none;
                 page-break-inside: avoid;
@@ -379,21 +406,15 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
         <?php else: ?>
             <div class="ticket">
 
-                <!-- EMITENTE -->
+                <!-- EMITENTE (da empresas_peca) -->
                 <div class="center" style="margin-bottom:6px;">
                     <div class="title"><?= h($empresaNome) ?></div>
-                    <div class="muted">CNPJ: <?= h(fmt_doc($empresaCnpj)) ?></div>
-                    <?php if ($emit_end || $emit_mun || $emit_uf): ?>
-                        <div class="muted subtle"><?= h(trim($emit_end . ($emit_end && ($emit_mun || $emit_uf) ? ' — ' : '') . ($emit_mun ? $emit_mun : '') . ($emit_uf ? ' / ' . $emit_uf : ''))) ?></div>
+                    <div class="muted">CNPJ: <?= h(fmt_doc($empresa['cnpj'])) ?></div>
+                    <?php if ($linhaEndereco): ?><div class="muted subtle"><?= h($linhaEndereco) ?></div><?php endif; ?>
+                    <?php if ($linhaCidadeUf || $linhaCep): ?>
+                        <div class="muted subtle"><?= h(trim($linhaCidadeUf . ($linhaCidadeUf && $linhaCep ? ' — ' : '') . $linhaCep)) ?></div>
                     <?php endif; ?>
-                    <div class="muted subtle">
-                        <?= $emit_ie ? 'IE: ' . h($emit_ie) : '' ?><?= ($emit_ie && $emit_im) ? ' • ' : '' ?><?= $emit_im ? 'IM: ' . h($emit_im) : '' ?><?= ($emit_ie || $emit_im) && $emit_regime ? ' • ' : '' ?><?= $emit_regime ? 'Regime: ' . h($emit_regime) : '' ?>
-                    </div>
-                    <?php if ($emit_fone || $emit_email): ?>
-                        <div class="muted subtle">
-                            <?= $emit_fone ? 'Fone: ' . h($emit_fone) : '' ?><?= ($emit_fone && $emit_email) ? ' • ' : '' ?><?= $emit_email ? 'E-mail: ' . h($emit_email) : '' ?>
-                        </div>
-                    <?php endif; ?>
+                    <?php if ($linhaContato): ?><div class="muted subtle"><?= h($linhaContato) ?></div><?php endif; ?>
                 </div>
 
                 <div class="hr"></div>
