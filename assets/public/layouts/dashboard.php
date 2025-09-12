@@ -54,12 +54,7 @@ if (!isset($menuAtivo)) {
             <i class="bi bi-file-earmark-text icon"></i><span class="item-name">Orçamentos</span>
           </a>
         </li>
-        <!-- LAVA JATO -->
-        <li class="nav-item">
-          <a class="nav-link <?= ($menuAtivo === 'lavagemRapida' ? 'active' : '') ?>" href="./lavajato/pages/lavagemRapida.php">
-            <i class="bi bi-plus-circle icon"></i><span class="item-name">Lavagem Rápida</span>
-          </a>
-        </li>
+        
         <li class="nav-item">
           <a class="nav-link <?= ($menuAtivo === 'vendas-abriCaixa' ? 'active' : '') ?>" href="./vendas/pages/caixaAbrir.php">
             <i class="bi bi-cash-coin icon"></i><span class="item-name">Abri Caixa</span>
@@ -72,41 +67,7 @@ if (!isset($menuAtivo)) {
           </a>
         </li>
 
-        <li class="nav-item">
-          <a class="nav-link" data-bs-toggle="collapse" href="#sidebar-lavajato" role="button"
-            aria-expanded="<?= str_starts_with($menuAtivo, 'lavajato-') ? 'true' : 'false' ?>"
-            aria-controls="sidebar-lavajato">
-            <i class="bi bi-droplet icon"></i><span class="item-name">Lava Jato</span><i class="bi bi-chevron-right right-icon"></i>
-          </a>
-          <ul class="sub-nav collapse <?= str_starts_with($menuAtivo, 'lavajato-') ? 'show' : '' ?>" id="sidebar-lavajato" data-bs-parent="#sidebar-menu">
-            <li class="nav-item">
-              <a class="nav-link <?= ($menuAtivo === 'lavajato-lavagens' ? 'active' : '') ?>" href="./lavajato/pages/lavagens.php">
-                <i class="bi bi-list icon"></i><span class="item-name">Lista Lavagens</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link <?= ($menuAtivo === 'lavajato-lavadores' ? 'active' : '') ?>" href="./lavajato/pages/lavadores.php">
-                <i class="bi bi-people icon"></i><span class="item-name">Lista Lavadores</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link <?= ($menuAtivo === 'lavajato-servicos' ? 'active' : '') ?>" href="./lavajato/pages/servicos.php">
-                <i class="bi bi-wrench icon"></i><span class="item-name">Lista Serviços</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link <?= ($menuAtivo === 'lavajato-add-lavador' ? 'active' : '') ?>" href="./lavajato/pages/lavadoresNovo.php">
-                <i class="bi bi-person-plus icon"></i><span class="item-name">Add Lavador</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link <?= ($menuAtivo === 'lavajato-add-servico' ? 'active' : '') ?>" href="./lavajato/pages/servicosNovo.php">
-                <i class="bi bi-plus-circle icon"></i><span class="item-name">Add Serviço</span>
-              </a>
-            </li>
-          </ul>
-        </li>
-
+       
         <!-- ESTOQUE -->
         <li class="nav-item">
           <a class="nav-link" data-bs-toggle="collapse" href="#sidebar-estoque" role="button"
@@ -194,7 +155,7 @@ if (!isset($menuAtivo)) {
           <hr class="hr-horizontal">
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="./actions/logout.php">
+          <a class="nav-link" href="../../actions/logout.php">
             <i class="bi bi-box-arrow-right icon"></i><span class="item-name">Sair</span>
           </a>
         </li>
