@@ -5,7 +5,7 @@ declare(strict_types=1);
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/../../../lib/auth_guard.php';
-guard_empresa_user(['dono','administrativo','caixa']);
+guard_empresa_user(['dono', 'administrativo', 'caixa']);
 
 // Conexão
 $pdo = null;
@@ -16,15 +16,21 @@ if (!isset($pdo) || !($pdo instanceof PDO)) die('Conexão indisponível.');
 require_once __DIR__ . '/../../../lib/util.php';
 
 // Helpers
-function back(string $msg, int $ok = 0): never {
-  $qs = http_build_query(['ok'=>$ok, 'err'=>$ok?0:1, 'msg'=>$msg]);
+function back(string $msg, int $ok = 0): never
+{
+  $qs = http_build_query(['ok' => $ok, 'err' => $ok ? 0 : 1, 'msg' => $msg]);
   header("Location: ../pages/vendaRapida.php?$qs");
   exit;
 }
-function p($k,$d=null){ return $_POST[$k] ?? $d; }
-function numBR($v): float {
-  // aceita "1234,56" ou "1234.56"
-  $s = str_replace(['.',','], ['','.'], (string)$v);
+function p($k, $d = null)
+{
+  return $_POST[$k] ?? $d;
+}
+function numBR($v): float
+{
+  // aceita "1.234,56" ou "1234.56"
+  $s = str_replace('.', '', (string)$v);
+  $s = str_replace(',', '.', $s);
   return (float)$s;
 }
 
@@ -45,14 +51,15 @@ $userId       = (string)($_SESSION['user_id'] ?? '');
 if ($operadorCpf === '' && $userEmail !== '') {
   try {
     $st = $pdo->prepare("SELECT cpf, nome FROM usuarios_peca WHERE email=:e LIMIT 1");
-    $st->execute([':e'=>$userEmail]);
+    $st->execute([':e' => $userEmail]);
     if ($row = $st->fetch(PDO::FETCH_ASSOC)) {
       $operadorCpf = preg_replace('/\D+/', '', (string)($row['cpf'] ?? ''));
       if (!$operadorNome && !empty($row['nome'])) $operadorNome = $row['nome'];
       $_SESSION['user_cpf'] = $operadorCpf;
       if (!empty($row['nome'])) $_SESSION['user_nome'] = $row['nome'];
     }
-  } catch (Throwable $e) {}
+  } catch (Throwable $e) { /* ignora */
+  }
 }
 if ($operadorCpf === '') {
   if ($userId !== '') {
@@ -72,7 +79,7 @@ try {
     ORDER BY aberto_em DESC
     LIMIT 1
   ");
-  $st->execute([':c'=>$empresaCnpj]);
+  $st->execute([':c' => $empresaCnpj]);
   $caixa = $st->fetch(PDO::FETCH_ASSOC) ?: null;
 } catch (Throwable $e) {
   $caixa = null;
@@ -91,7 +98,7 @@ if (($caixa['tipo'] ?? '') === 'individual') {
       WHERE caixa_id=:cid AND empresa_cnpj=:c AND operador_cpf=:cpf AND ativo=1
       LIMIT 1
     ");
-    $stp->execute([':cid'=>$caixa['id'], ':c'=>$empresaCnpj, ':cpf'=>$operadorCpf]);
+    $stp->execute([':cid' => $caixa['id'], ':c' => $empresaCnpj, ':cpf' => $operadorCpf]);
     if (!$stp->fetch()) {
       $ins = $pdo->prepare("
         INSERT INTO caixa_participantes_peca
@@ -100,24 +107,24 @@ if (($caixa['tipo'] ?? '') === 'individual') {
           (:cid, :c, :cpf, :nome, NOW(), 1)
       ");
       $ins->execute([
-        ':cid'=>$caixa['id'], ':c'=>$empresaCnpj,
-        ':cpf'=>$operadorCpf, ':nome'=>$operadorNome ?: null
+        ':cid' => $caixa['id'],
+        ':c' => $empresaCnpj,
+        ':cpf' => $operadorCpf,
+        ':nome' => $operadorNome ?: null
       ]);
     }
-  } catch (Throwable $e) {
-    // não bloqueia a venda se falhar inserir participação
+  } catch (Throwable $e) { /* não bloqueia a venda */
   }
 }
 
 // Entrada do formulário
-$forma = (string)p('forma_pagamento','dinheiro'); // dinheiro|pix|debito|credito
-$desconto = numBR(p('desconto','0'));
-$itensJson = (string)p('itens_json','[]');
-$valorRecebido = numBR(p('valor_recebido','0')); // só se dinheiro (precisa name="valor_recebido" na view)
+$forma          = (string)p('forma_pagamento', 'dinheiro'); // dinheiro|pix|debito|credito
+$desconto       = numBR(p('desconto', '0'));
+$itensJson      = (string)p('itens_json', '[]');
+$valorRecebido  = numBR(p('valor_recebido', '0')); // agora a view envia name="valor_recebido"
 
 $itens = json_decode($itensJson, true);
 if (!is_array($itens)) $itens = [];
-
 if (empty($itens)) back('Adicione ao menos um item.');
 
 // Calcula totais
@@ -141,7 +148,7 @@ $troco = ($forma === 'dinheiro') ? max($valorRecebido - $total, 0.0) : 0.0;
 try {
   $pdo->beginTransaction();
 
-  // 1) Insere venda_peca
+  // 1) Insere vendas_peca
   $insVenda = $pdo->prepare("
     INSERT INTO vendas_peca
       (empresa_cnpj, vendedor_cpf, origem, status, total_bruto, desconto, total_liquido, forma_pagamento, criado_em)
@@ -151,14 +158,14 @@ try {
   $insVenda->execute([
     ':c'    => $empresaCnpj,
     ':cpf'  => $operadorCpf,
-    ':bruto'=> $subtotal,
+    ':bruto' => $subtotal,
     ':desc' => $desconto,
     ':liq'  => $total,
     ':fp'   => $forma,
   ]);
   $vendaId = (int)$pdo->lastInsertId();
 
-  // 2) Insere itens (nota: como a sua view atual não envia ID do produto, usamos 0)
+  // 2) Insere itens (sem ID de produto vindo da view => item_id=0)
   $insItem = $pdo->prepare("
     INSERT INTO venda_itens_peca
       (venda_id, item_tipo, item_id, descricao, qtd, valor_unit, valor_total)
@@ -171,9 +178,6 @@ try {
     $qtd  = (float)($i['qtd']  ?? 0);
     $unit = (float)($i['unit'] ?? 0);
     $tot  = $qtd * $unit;
-
-    // Se quiser tentar resolver ID do produto pelo nome/sku/ean,
-    // este é o ponto para buscar no BD. Por ora, vai com 0 (permitido pelo schema).
     $itemId = 0;
 
     $insItem->execute([
@@ -199,16 +203,16 @@ try {
     ':cx'  => (int)$caixa['id'],
     ':fp'  => $forma,
     ':val' => $total,
-    ':desc'=> $descMov,
+    ':desc' => $descMov,
   ]);
 
   $pdo->commit();
 
-  // sucesso
   back("Venda #$vendaId registrada com sucesso!", 1);
-
 } catch (Throwable $e) {
   if ($pdo->inTransaction()) $pdo->rollBack();
-  // Para debug, troque a linha abaixo por: back('Falha ao salvar: '.$e->getMessage());
+  // Para depuração, você pode trocar a linha abaixo por:
+  // back('Falha ao salvar: '.$e->getMessage());
   back('Falha ao salvar a venda.');
 }
+?>
