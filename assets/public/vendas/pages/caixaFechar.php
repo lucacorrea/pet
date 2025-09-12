@@ -180,7 +180,7 @@ function fmt($v)
         </div>
 
       <?php else: ?>
-        <div class="row g-3">
+        <div class="row ">
           <!-- ESQUERDA: resumo -->
           <div class="col-12 col-lg-7">
             <div class="card">
