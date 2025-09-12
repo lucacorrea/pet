@@ -22,11 +22,11 @@ $ok  = isset($_GET['ok'])  ? (int)$_GET['ok']  : 0;
 $err = isset($_GET['err']) ? (int)$_GET['err'] : 0;
 $msg = isset($_GET['msg']) ? (string)$_GET['msg'] : '';
 
-// CSRF
-if (empty($_SESSION['csrf_caixa_fechar'])) {
-  $_SESSION['csrf_caixa_fechar'] = bin2hex(random_bytes(32));
+// CSRF (nome alinhado com o arquivo de POST)
+if (empty($_SESSION['csrf_fechar_caixa'])) {
+  $_SESSION['csrf_fechar_caixa'] = bin2hex(random_bytes(32));
 }
-$csrf = $_SESSION['csrf_caixa_fechar'];
+$csrf = $_SESSION['csrf_fechar_caixa'];
 
 /** Busca caixa ABERTO mais recente */
 $caixa = null;
@@ -59,8 +59,8 @@ $resumo = [
 if ($caixa) {
   $caixaId = (int)$caixa['id'];
 
-  // Uma consulta só: entradas/saídas por forma (forma vazia = suprimento)
   try {
+    // Entradas/saídas agrupadas por forma; forma vazia => suprimento
     $st = $pdo->prepare("
       SELECT
         LOWER(COALESCE(forma_pagamento,'')) AS fp,
@@ -71,33 +71,34 @@ if ($caixa) {
       GROUP BY LOWER(COALESCE(forma_pagamento,''))
     ");
     $st->execute([':c' => $empresaCnpj, ':id' => $caixaId]);
-    $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
-
-    foreach ($rows as $r) {
+    foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $r) {
       $fp       = (string)$r['fp']; // 'dinheiro','pix','debito','credito' ou ''
       $entradas = (float)($r['entradas'] ?? 0);
       $saidas   = (float)($r['saidas']   ?? 0);
 
       if ($fp === '') {
-        // Entradas sem forma = Suprimentos (não são vendas)
+        // Entradas sem forma => suprimentos
         $resumo['suprimentos'] += $entradas;
       } else {
         if (isset($resumo[$fp])) $resumo[$fp] += $entradas;
       }
-
-      // Todas as saídas contam como sangria
+      // Toda saída conta como sangria
       $resumo['sangrias'] += $saidas;
     }
-  } catch (Throwable $e) { /* silencioso */
+  } catch (Throwable $e) { /* best-effort */
   }
 }
 
-// totais e saldo esperado (dinheiro físico)
-$saldoInicial     = (float)($caixa['saldo_inicial'] ?? 0);
-$totalRecebido    = $resumo['dinheiro'] + $resumo['pix'] + $resumo['debito'] + $resumo['credito'];
-$entradasDinheiro = $resumo['dinheiro'];     // só as vendas em dinheiro
+/** >>> Regra: PIX conta como caixa físico (conforme sua necessidade) */
+$contarPixComoCaixaFisico = true;
+
+// Totais e saldo esperado (caixa físico)
+$saldoInicial  = (float)($caixa['saldo_inicial'] ?? 0);
+$totalRecebido = $resumo['dinheiro'] + $resumo['pix'] + $resumo['debito'] + $resumo['credito'];
+
 $suprimentos      = $resumo['suprimentos'];  // entradas sem forma
 $sangrias         = $resumo['sangrias'];     // todas as saídas
+$entradasDinheiro = $resumo['dinheiro'] + ($contarPixComoCaixaFisico ? $resumo['pix'] : 0);
 
 $saldoEsperado = $saldoInicial + $entradasDinheiro + $suprimentos - $sangrias;
 
@@ -174,7 +175,7 @@ function fmt($v)
 <body>
   <?php
   if (session_status() === PHP_SESSION_NONE) session_start();
-  $menuAtivo = 'fechaCaixa';
+  $menuAtivo = 'caixa-fechar';
   include '../../layouts/sidebar.php';
   ?>
 
@@ -189,10 +190,9 @@ function fmt($v)
         </div>
       </nav>
 
-      <!-- TOAST 1.3s -->
+      <!-- TOAST 1,3s -->
       <?php if ($ok || $err): ?>
-        <div
-          id="toastMsg"
+        <div id="toastMsg"
           class="position-fixed top-0 end-0 m-3 shadow-lg"
           style="z-index:2000;min-width:360px;border-radius:12px;overflow:hidden;animation:slideIn .4s ease-out;">
           <div class="<?= $ok ? 'bg-success' : 'bg-danger' ?> text-white p-3 d-flex align-items-center justify-content-between">
@@ -210,11 +210,10 @@ function fmt($v)
         </div>
         <script>
           (function() {
-            const DURATION = 1300;
+            const DURATION = 1300; // 1,3s
             const progress = document.getElementById('toastProgress');
             const toast = document.getElementById('toastMsg');
             const closeBtn = document.getElementById('toastCloseBtn');
-
             let start = performance.now();
 
             function tick(t) {
@@ -313,7 +312,7 @@ function fmt($v)
                           <span class="fw-bold money">R$ <?= fmt($saldoEsperado) ?></span>
                         </div>
                         <div class="text-muted small">
-                          Saldo inicial + (Dinheiro das vendas + Suprimentos) − Sangrias
+                          Saldo inicial + (Dinheiro<?= $contarPixComoCaixaFisico ? ' + PIX' : '' ?> + Suprimentos) − Sangrias
                         </div>
                       </div>
                     </div>
@@ -323,7 +322,7 @@ function fmt($v)
 
               <!-- DIREITA: Fechamento -->
               <div class="col-12 col-lg-4">
-                <form method="post" action="../actions/caixaFecharPost.php" class="card h-100">
+                <form method="post" action="../actions/caixaFecharSalvar.php" class="card h-100">
                   <div class="card-header">
                     <h6 class="mb-0"><i class="bi bi-lock-fill me-1"></i> Finalizar</h6>
                   </div>
