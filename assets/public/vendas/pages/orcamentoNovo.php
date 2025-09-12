@@ -103,9 +103,20 @@ try {
 
   <main class="main-content">
     <div class="position-relative iq-banner">
-      <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
+       <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
         <div class="container-fluid navbar-inner">
-          <a href="../../dashboard.php" class="navbar-brand"><h4 class="logo-title">Mundo Pets</h4></a>
+          <a href="../../dashboard.php" class="navbar-brand">
+            <h4 class="logo-title">Mundo Pets</h4>
+          </a>
+
+          <div class="input-group search-input">
+            <span class="input-group-text" id="search-input">
+              <svg class="icon-18" width="18" viewBox="0 0 24 24" fill="none">
+                
+              </svg>
+            </span>
+           
+          </div>
         </div>
       </nav>
 
