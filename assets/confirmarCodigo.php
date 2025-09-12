@@ -80,7 +80,7 @@ $emailSafe = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
                                              style="width: 8rem; height: 6rem; margin-left: -9rem;">
                                     </div>
                                 </div>
-                                <h4 class="logo-title" style="margin-left: -3rem; margin-top: -1rem;">Mundo Pets</h4>
+                                <h4 class="logo-title" style="margin-left: -2.5rem; margin-top: -1rem;">Mundo Pets</h4>
                             </a>
 
                             <h2 class="mb-2">Confirmar Código</h2>
