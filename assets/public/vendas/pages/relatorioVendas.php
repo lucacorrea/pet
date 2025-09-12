@@ -233,7 +233,7 @@ function fmt3($v)
   <meta charset="utf-8">
   <title>Mundo Pets — Relatório de Vendas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="../../assets/images/dashboard/logo.png">
+  <link rel="icon" type="image/png" href="../../assets/images/dashboard/icon.png">
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
   <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
   <link rel="stylesheet" href="../../assets/css/hope-ui.min.css?v=4.0.0">
@@ -297,53 +297,57 @@ function fmt3($v)
     <div class="container-fluid content-inner mt-n3 py-0">
 
       <!-- Filtros -->
-      <div class="card" data-aos="fade-up" data-aos-delay="150">
-        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="card shadow-sm" data-aos="fade-up" data-aos-delay="150">
+        <div class="card-header border-0 bg-body d-flex align-items-center justify-content-between flex-wrap gap-2">
           <h4 class="card-title mb-0 d-flex align-items-center gap-2">
-            <i class="bi bi-funnel"></i> Filtros
+            <i class="bi bi-funnel"></i>
+            Filtros
           </h4>
 
           <!-- Atalhos rápidos -->
           <div class="d-flex flex-wrap gap-2">
-            <button type="button" class="btn btn-soft-primary btn-sm" data-range="hoje">
+            <button type="button" class="btn btn-soft-primary btn-sm" data-range="hoje" title="Definir De/Até para hoje">
               <i class="bi bi-lightning-charge"></i> Hoje
             </button>
-            <button type="button" class="btn btn-soft-primary btn-sm" data-range="ontem">
+            <button type="button" class="btn btn-soft-primary btn-sm" data-range="ontem" title="Definir De/Até para ontem">
               <i class="bi bi-arrow-left"></i> Ontem
             </button>
-            <button type="button" class="btn btn-soft-primary btn-sm" data-range="semana">
+            <button type="button" class="btn btn-soft-primary btn-sm" data-range="semana" title="Definir semana (seg-dom)">
               <i class="bi bi-calendar-week"></i> Semana
             </button>
-            <button type="button" class="btn btn-soft-primary btn-sm" data-range="mes">
+            <button type="button" class="btn btn-soft-primary btn-sm" data-range="mes" title="Definir mês corrente">
               <i class="bi bi-calendar3"></i> Mês
             </button>
           </div>
         </div>
 
-        <div class="card-body">
-          <form class="row g-3" method="get" action="">
+        <div class="card-body pt-3">
+          <form id="filtros-form" class="row g-3 align-items-end" method="get" action="">
             <!-- Período -->
-            <div class="col-sm-3">
+            <div class="col-12 col-md-6 col-xl-3">
               <label class="form-label">De</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
-                <input id="inp-de" type="date" class="form-control" name="de" value="<?= htmlspecialchars($de, ENT_QUOTES, 'UTF-8') ?>">
-              </div>
-            </div>
-            <div class="col-sm-3">
-              <label class="form-label">Até</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-calendar2-event"></i></span>
-                <input id="inp-ate" type="date" class="form-control" name="ate" value="<?= htmlspecialchars($ate, ENT_QUOTES, 'UTF-8') ?>">
+                <input id="inp-de" type="date" class="form-control" name="de"
+                  value="<?= htmlspecialchars($de, ENT_QUOTES, 'UTF-8') ?>">
               </div>
             </div>
 
-            <!-- Forma / Status -->
-            <div class="col-sm-3">
+            <div class="col-12 col-md-6 col-xl-3">
+              <label class="form-label">Até</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-calendar2-event"></i></span>
+                <input id="inp-ate" type="date" class="form-control" name="ate"
+                  value="<?= htmlspecialchars($ate, ENT_QUOTES, 'UTF-8') ?>">
+              </div>
+            </div>
+
+            <!-- Forma -->
+            <div class="col-12 col-md-6 col-xl-3">
               <label class="form-label">Forma</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-wallet2"></i></span>
-                <select class="form-select" name="fp">
+                <select class="form-select" name="fp" aria-label="Forma de pagamento">
                   <option value="">Todas</option>
                   <?php foreach (['dinheiro' => 'Dinheiro', 'pix' => 'PIX', 'debito' => 'Débito', 'credito' => 'Crédito'] as $k => $v): ?>
                     <option value="<?= $k ?>" <?= $fp === $k ? 'selected' : '' ?>><?= $v ?></option>
@@ -351,11 +355,13 @@ function fmt3($v)
                 </select>
               </div>
             </div>
-            <div class="col-sm-3">
+
+            <!-- Status -->
+            <div class="col-12 col-md-6 col-xl-3">
               <label class="form-label">Status</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-check2-square"></i></span>
-                <select class="form-select" name="status">
+                <select class="form-select" name="status" aria-label="Status da venda">
                   <?php foreach (['' => 'Todos', 'aberta' => 'Aberta', 'fechada' => 'Fechada', 'cancelada' => 'Cancelada'] as $k => $v): ?>
                     <option value="<?= $k ?>" <?= $status === $k ? 'selected' : '' ?>><?= $v ?></option>
                   <?php endforeach; ?>
@@ -364,23 +370,25 @@ function fmt3($v)
             </div>
 
             <!-- Busca -->
-            <div class="col-lg-9">
+            <div class="col-12 col-lg-9">
               <label class="form-label">Buscar</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input id="inp-q" type="text" class="form-control" name="q" value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>"
+                <input id="inp-q" type="text" class="form-control" name="q"
+                  value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>"
                   placeholder="ID, CPF do vendedor ou origem (balcao/lavajato/orcamento)">
                 <button class="btn btn-outline-secondary" type="button" id="btn-clear-q" title="Limpar busca">
                   <i class="bi bi-x-lg"></i>
                 </button>
               </div>
+              <div class="form-text mt-1">Dica: você pode buscar por <strong>ID</strong>, <strong>CPF</strong> do vendedor ou <strong>origem</strong>.</div>
             </div>
 
             <!-- Ações -->
-            <div class="col-lg-3 d-flex align-items-end">
-              <div class="d-flex w-100 gap-2 flex-wrap">
-                <button class="btn btn-primary flex-fill" type="submit">
-                  <i class="bi bi-search me-1"></i> Filtrar
+            <div class="col-12 col-lg-3">
+              <div class="d-grid gap-2">
+                <button class="btn btn-primary" type="submit">
+                  <i class="bi bi-search me-1"></i> Aplicar filtros
                 </button>
                 <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters, ['csv' => 1])) ?>">
                   <i class="bi bi-filetype-csv me-1"></i> CSV Vendas
@@ -388,7 +396,7 @@ function fmt3($v)
                 <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters, ['csv_it' => 1])) ?>">
                   <i class="bi bi-filetype-csv me-1"></i> CSV Itens
                 </a>
-                <a class="btn btn-soft-danger w-100" href="?de=&ate=&fp=&status=&q=" title="Limpar todos os filtros">
+                <a class="btn btn-soft-danger" href="?de=&ate=&fp=&status=&q=" title="Limpar todos os filtros">
                   <i class="bi bi-eraser"></i> Limpar Filtros
                 </a>
               </div>
@@ -397,7 +405,7 @@ function fmt3($v)
         </div>
       </div>
 
-      <!-- Estilo sutil para os botões 'soft' (compatível com Hope UI/Bootstrap) -->
+      <!-- Estilos suaves / micro-ajustes -->
       <style>
         .btn-soft-primary {
           background: rgba(13, 110, 253, .08);
@@ -424,54 +432,89 @@ function fmt3($v)
         .input-group>.input-group-text {
           background: #f8fafc
         }
+
+        .card-header.bg-body {
+          background: var(--bs-body-bg, #fff)
+        }
+
+        @media (max-width: 575.98px) {
+          .card-header .btn {
+            padding: .35rem .6rem
+          }
+        }
       </style>
 
       <script>
-        // Limpar campo de busca rapidamente
-        document.getElementById('btn-clear-q')?.addEventListener('click', function() {
-          const q = document.getElementById('inp-q');
-          if (q) {
-            q.value = '';
-            q.focus();
-          }
-        });
+        (function() {
+          const form = document.getElementById('filtros-form');
+          const de = document.getElementById('inp-de');
+          const ate = document.getElementById('inp-ate');
+          const qInp = document.getElementById('inp-q');
 
-        // Atalhos de período
-        const pad = n => String(n).padStart(2, '0');
-        const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-        const setRange = (de, ate) => {
-          const a = document.getElementById('inp-ate'),
-            d = document.getElementById('inp-de');
-          if (d) d.value = fmt(de);
-          if (a) a.value = fmt(ate);
-        };
-
-        document.querySelectorAll('[data-range]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const now = new Date();
-            const hoje = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const tipo = btn.getAttribute('data-range');
-
-            if (tipo === 'hoje') {
-              setRange(hoje, hoje);
-            } else if (tipo === 'ontem') {
-              const ontem = new Date(hoje);
-              ontem.setDate(ontem.getDate() - 1);
-              setRange(ontem, ontem);
-            } else if (tipo === 'semana') {
-              const dow = hoje.getDay(); // 0=Dom
-              const ini = new Date(hoje);
-              ini.setDate(hoje.getDate() - (dow === 0 ? 6 : dow - 1)); // inicia na segunda
-              const fim = new Date(ini);
-              fim.setDate(ini.getDate() + 6);
-              setRange(ini, fim);
-            } else if (tipo === 'mes') {
-              const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-              const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
-              setRange(ini, fim);
-            }
+          // Limpar busca e enviar
+          document.getElementById('btn-clear-q')?.addEventListener('click', () => {
+            if (!qInp) return;
+            qInp.value = '';
+            qInp.focus();
+            form?.requestSubmit(); // aplica limpeza
           });
-        });
+
+          // Sincronizar min/max entre De/Até
+          const syncBounds = () => {
+            if (de && ate) {
+              if (de.value) ate.min = de.value;
+              else ate.removeAttribute('min');
+              if (ate.value) de.max = ate.value;
+              else de.removeAttribute('max');
+            }
+          };
+          de?.addEventListener('change', syncBounds);
+          ate?.addEventListener('change', syncBounds);
+          syncBounds();
+
+          // Helpers de data
+          const pad = n => String(n).padStart(2, '0');
+          const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+          const setRange = (d1, d2) => {
+            if (de) de.value = fmt(d1);
+            if (ate) ate.value = fmt(d2);
+            syncBounds();
+          };
+
+          // Atalhos com auto-submit
+          document.querySelectorAll('[data-range]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const now = new Date();
+              const base = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              const tipo = btn.getAttribute('data-range');
+
+              if (tipo === 'hoje') {
+                setRange(base, base);
+              } else if (tipo === 'ontem') {
+                const y = new Date(base);
+                y.setDate(y.getDate() - 1);
+                setRange(y, y);
+              } else if (tipo === 'semana') {
+                const dow = base.getDay(); // 0=Dom
+                const ini = new Date(base);
+                ini.setDate(base.getDate() - (dow === 0 ? 6 : dow - 1)); // segunda
+                const fim = new Date(ini);
+                fim.setDate(ini.getDate() + 6);
+                setRange(ini, fim);
+              } else if (tipo === 'mes') {
+                const ini = new Date(base.getFullYear(), base.getMonth(), 1);
+                const fim = new Date(base.getFullYear(), base.getMonth() + 1, 0);
+                setRange(ini, fim);
+              }
+              form?.requestSubmit();
+            });
+          });
+
+          // Enter no campo de busca foca no submit padrão do form (já nativo),
+          // mas se quiser aplicar ao digitar, descomente abaixo:
+          // let t; qInp?.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>form?.requestSubmit(), 600); });
+
+        })();
       </script>
 
       <div class="row g-3">
