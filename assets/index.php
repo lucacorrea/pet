@@ -61,7 +61,7 @@ if (isset($_GET['erro'])) {
                         <!-- Logo -->
                         <div class="logo-main">
                            <div class="logo-normal">
-                              <img src="./public/assets/images/dashboard/logo.png" style="width: 100px; margin-top: -20px;"
+                              <img src="./public/assets/images/dashboard/logo.png" style="width: 80px; margin-top: -20px;"
                                  alt="AutoERP">
                            </div>
                            <div class="logo-mini">
@@ -70,7 +70,7 @@ if (isset($_GET['erro'])) {
                         </div>
                         <!-- /Logo -->
                         <!-- /Logo -->
-                        <h4 class="logo-title ms-2" style="margin-top: -20px; margin-left: -30px !important;">Mundo Pets</h4>
+                        <h4 class="logo-title ms-2" style="margin-top: -20px; margin-left: -25px !important;">Mundo Pets</h4>
                      </a>
 
 
