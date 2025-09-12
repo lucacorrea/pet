@@ -77,7 +77,7 @@ try {
     /* ——— Look & feel PDV supermercado ——— */
     .pdv-visor {
       background: #0b1220;
-      color: #8df59c;
+      color: #f0f0f0;
       border-radius: 14px;
       padding: 16px 20px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
