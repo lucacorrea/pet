@@ -62,7 +62,7 @@ $msg = (string)($_GET['msg'] ?? '');
 </head>
 
 <body>
- <?php
+  <?php
   if (session_status() === PHP_SESSION_NONE) session_start();
   $menuAtivo = 'estoque-add-produto'; // ID do menu atual
   include '../../layouts/sidebar.php';
@@ -73,7 +73,7 @@ $msg = (string)($_GET['msg'] ?? '');
       <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
         <div class="container-fluid navbar-inner">
           <a href="#" class="navbar-brand">
-            <h4 class="logo-title">AutoERP</h4>
+            <h4 class="logo-title">Mundo Pets</h4>
           </a>
           <div class="input-group search-input">
             <span class="input-group-text" id="search-input">
@@ -85,55 +85,69 @@ $msg = (string)($_GET['msg'] ?? '');
           </div>
         </div>
       </nav>
-  <?php if ($ok || $err): ?>
-  <div 
-    id="toastMsg" 
-    class="position-fixed top-0 end-0 m-3 shadow-lg" 
-    style="z-index: 2000; min-width: 360px; border-radius: 12px; overflow: hidden; animation: slideIn .4s ease-out;"
-  >
-    <div class="bg-success text-white p-3 d-flex align-items-center justify-content-between">
-      <div class="d-flex align-items-center gap-3">
-        <i class="bi bi-check-circle-fill fs-3"></i>
-        <div class="fw-semibold fs-6">
-          <?= htmlspecialchars($msg ?: 'Operação realizada com sucesso!', ENT_QUOTES, 'UTF-8') ?>
+      <?php if ($ok || $err): ?>
+        <div
+          id="toastMsg"
+          class="position-fixed top-0 end-0 m-3 shadow-lg"
+          style="z-index: 2000; min-width: 360px; border-radius: 12px; overflow: hidden; animation: slideIn .4s ease-out;">
+          <div class="bg-success text-white p-3 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <i class="bi bi-check-circle-fill fs-3"></i>
+              <div class="fw-semibold fs-6">
+                <?= htmlspecialchars($msg ?: 'Operação realizada com sucesso!', ENT_QUOTES, 'UTF-8') ?>
+              </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="toast" aria-label="Fechar"></button>
+          </div>
+          <div class="progress" style="height: 4px;">
+            <div id="toastProgress" class="progress-bar bg-light" style="width: 100%; transition: width 5s linear;"></div>
+          </div>
         </div>
-      </div>
-      <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="toast" aria-label="Fechar"></button>
-    </div>
-    <div class="progress" style="height: 4px;">
-      <div id="toastProgress" class="progress-bar bg-light" style="width: 100%; transition: width 5s linear;"></div>
-    </div>
-  </div>
 
-  <style>
-    @keyframes slideIn {
-      from { transform: translateX(120%); opacity: 0; }
-      to   { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-      from { transform: translateX(0); opacity: 1; }
-      to   { transform: translateX(120%); opacity: 0; }
-    }
-  </style>
+        <style>
+          @keyframes slideIn {
+            from {
+              transform: translateX(120%);
+              opacity: 0;
+            }
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const toastEl = document.getElementById("toastMsg");
-      const progress = document.getElementById("toastProgress");
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
 
-      if (toastEl) {
-        // anima barra
-        setTimeout(() => progress.style.width = "0%", 50);
+          @keyframes slideOut {
+            from {
+              transform: translateX(0);
+              opacity: 1;
+            }
 
-        // remove após 5s
-        setTimeout(() => {
-          toastEl.style.animation = "slideOut .4s ease-in forwards";
-          setTimeout(() => toastEl.remove(), 400);
-        }, 5000);
-      }
-    });
-  </script>
-<?php endif; ?>
+            to {
+              transform: translateX(120%);
+              opacity: 0;
+            }
+          }
+        </style>
+
+        <script>
+          document.addEventListener("DOMContentLoaded", function() {
+            const toastEl = document.getElementById("toastMsg");
+            const progress = document.getElementById("toastProgress");
+
+            if (toastEl) {
+              // anima barra
+              setTimeout(() => progress.style.width = "0%", 50);
+
+              // remove após 5s
+              setTimeout(() => {
+                toastEl.style.animation = "slideOut .4s ease-in forwards";
+                setTimeout(() => toastEl.remove(), 400);
+              }, 5000);
+            }
+          });
+        </script>
+      <?php endif; ?>
 
       <div class="iq-navbar-header" style="height: 150px; margin-bottom: 80px ;">
         <div class="container-fluid iq-container">
@@ -142,7 +156,7 @@ $msg = (string)($_GET['msg'] ?? '');
               <h1 class="mb-0">Cadastrar Produto</h1>
               <p>Informe os dados do produto e escolha o setor (Auto Peças ou Lava Jato).</p>
 
-             
+
             </div>
           </div>
         </div>
@@ -169,7 +183,7 @@ $msg = (string)($_GET['msg'] ?? '');
                     <label class="form-label">Setor</label>
                     <select name="setor" class="form-select" required>
                       <option value="petshop">Pet Shop</option>
-                      
+
                     </select>
                   </div>
 
@@ -205,7 +219,7 @@ $msg = (string)($_GET['msg'] ?? '');
 
                   <div class="col-md-3">
                     <label class="form-label">Unidade</label>
-                    <input type="text" name="unidade" class="form-control"maxlength="10">
+                    <input type="text" name="unidade" class="form-control" maxlength="10">
                   </div>
 
                   <div class="col-md-3">
