@@ -85,6 +85,7 @@ $msg = (string)($_GET['msg'] ?? '');
           </div>
         </div>
       </nav>
+      <!-- card de exibição de status de erros ou sucesso -->
       <?php if ($ok || $err): ?>
         <div
           id="toastMsg"
