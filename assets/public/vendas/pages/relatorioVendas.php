@@ -324,7 +324,7 @@ function fmt3($v)
         <div class="card-body pt-3">
           <form id="filtros-form" class="row g-3 align-items-end" method="get" action="">
             <!-- Período -->
-            <div class="col-12 col-md-6 col-xl-4">
+            <div class="col-12 col-md-6 col-xl-3">
               <label class="form-label">De</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
@@ -333,7 +333,7 @@ function fmt3($v)
               </div>
             </div>
 
-            <div class="col-12 col-md-6 col-xl-4">
+            <div class="col-12 col-md-6 col-xl-3">
               <label class="form-label">Até</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-calendar2-event"></i></span>
@@ -343,7 +343,7 @@ function fmt3($v)
             </div>
 
             <!-- Forma -->
-            <div class="col-12 col-md-6 col-xl-4">
+            <div class="col-12 col-md-6 col-xl-3">
               <label class="form-label">Forma</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-wallet2"></i></span>
@@ -357,7 +357,7 @@ function fmt3($v)
             </div>
 
             <!-- Status -->
-            <div class="col-12 col-md-6 col-xl-4">
+            <div class="col-12 col-md-6 col-xl-3">
               <label class="form-label">Status</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-check2-square"></i></span>
@@ -400,23 +400,7 @@ function fmt3($v)
               <div class="form-text mt-1">Dica: você pode buscar por <strong>ID</strong>, <strong>CPF</strong> do vendedor ou <strong>origem</strong>.</div>
             </div>
 
-            <!-- Ações -->
-            <div class="col-12 col-lg-3">
-              <div class="d-grid gap-2">
-                <button class="btn btn-primary" type="submit">
-                  <i class="bi bi-search me-1"></i> Aplicar filtros
-                </button>
-                <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters, ['csv' => 1])) ?>">
-                  <i class="bi bi-filetype-csv me-1"></i> CSV Vendas
-                </a>
-                <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters, ['csv_it' => 1])) ?>">
-                  <i class="bi bi-filetype-csv me-1"></i> CSV Itens
-                </a>
-                <a class="btn btn-soft-danger" href="?de=&ate=&fp=&status=&q=" title="Limpar todos os filtros">
-                  <i class="bi bi-eraser"></i> Limpar Filtros
-                </a>
-              </div>
-            </div>
+           
           </form>
         </div>
       </div>
