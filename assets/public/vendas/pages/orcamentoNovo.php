@@ -5,7 +5,7 @@ declare(strict_types=1);
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/../../../lib/auth_guard.php';
-guard_empresa_user(['dono','administrativo','funcionario']);
+guard_empresa_user(['dono', 'administrativo', 'funcionario']);
 
 $pdo = null;
 $pathCon = realpath(__DIR__ . '/../../../conexao/conexao.php');
@@ -56,6 +56,7 @@ try {
 ?>
 <!doctype html>
 <html lang="pt-BR" dir="ltr">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -71,13 +72,20 @@ try {
   <link rel="stylesheet" href="../../assets/css/rtl.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
-    .itens-table td { vertical-align: middle; }
-    .search-box { position: relative; }
+    .itens-table td {
+      vertical-align: middle;
+    }
+
+    .search-box {
+      position: relative;
+    }
 
     /* Sugestões: ficam por cima de tudo */
-    .suggest-box{
+    .suggest-box {
       position: absolute;
-      left: 0; right: 0; top: 100%;
+      left: 0;
+      right: 0;
+      top: 100%;
       background: #fff;
       border: 1px solid #e5e7eb;
       border-top: 0;
@@ -85,25 +93,50 @@ try {
       overflow-y: auto;
       display: none;
 
-      z-index: 50000; /* acima de botões/headers */
-      box-shadow: 0 10px 24px rgba(0,0,0,.12);
+      z-index: 50000;
+      /* acima de botões/headers */
+      box-shadow: 0 10px 24px rgba(0, 0, 0, .12);
     }
-    .suggest-item { padding: .5rem .75rem; cursor: pointer; }
-    .suggest-item:hover { background: #f3f4f6; }
-    .muted { color:#6b7280; font-size: .85em; }
+
+    .suggest-item {
+      padding: .5rem .75rem;
+      cursor: pointer;
+    }
+
+    .suggest-item:hover {
+      background: #f3f4f6;
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: .85em;
+    }
 
     /* evitar corte por containers do tema */
-    .card, .card-body, .table-responsive { overflow: visible !important; }
-    .itens-table { position: relative; z-index: 1; }
+    .card,
+    .card-body,
+    .table-responsive {
+      overflow: visible !important;
+    }
+
+    .itens-table {
+      position: relative;
+      z-index: 1;
+    }
   </style>
 </head>
+
 <body>
 
-  <?php include __DIR__ . '/../../layouts/sidebar.php'; ?>
+  <?php
+  if (session_status() === PHP_SESSION_NONE) session_start();
+  $menuAtivo = 'vendas-orcamentos';
+  include '../../layouts/sidebar.php';
+  ?>
 
   <main class="main-content">
     <div class="position-relative iq-banner">
-       <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
+      <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
         <div class="container-fluid navbar-inner">
           <a href="../../dashboard.php" class="navbar-brand">
             <h4 class="logo-title">Mundo Pets</h4>
@@ -112,10 +145,10 @@ try {
           <div class="input-group search-input">
             <span class="input-group-text" id="search-input">
               <svg class="icon-18" width="18" viewBox="0 0 24 24" fill="none">
-                
+
               </svg>
             </span>
-           
+
           </div>
         </div>
       </nav>
@@ -137,7 +170,7 @@ try {
 
     <div class="container-fluid content-inner mt-n3 py-0">
       <form method="post" action="../actions/orcamentosSalvar.php" id="form-orc">
-        <input type="hidden" name="op"   value="orc_novo">
+        <input type="hidden" name="op" value="orc_novo">
         <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
 
         <div class="card mb-3">
@@ -176,7 +209,9 @@ try {
         </div>
 
         <div class="card mb-3">
-          <div class="card-header"><h5 class="mb-0">Itens</h5></div>
+          <div class="card-header">
+            <h5 class="mb-0">Itens</h5>
+          </div>
           <div class="card-body">
             <div class="table-responsive">
               <table class="table itens-table" id="itens-table">
@@ -205,7 +240,7 @@ try {
               <strong>Total:</strong> R$ <span id="total">0,00</span>
             </div>
             <div class="d-flex gap-2">
-              
+
               <button type="submit" class="btn btn-primary w-100"><i class="bi bi-save me-1"></i>Salvar</button>
             </div>
           </div>
@@ -215,7 +250,9 @@ try {
 
     <footer class="footer">
       <div class="footer-body d-flex justify-content-between align-items-center">
-        <div class="left-panel">© <script>document.write(new Date().getFullYear())</script> <?= htmlspecialchars($empresaNome, ENT_QUOTES, 'UTF-8') ?></div>
+        <div class="left-panel">© <script>
+            document.write(new Date().getFullYear())
+          </script> <?= htmlspecialchars($empresaNome, ENT_QUOTES, 'UTF-8') ?></div>
         <div class="right-panel">Desenvolvido por Lucas de S. Correa.</div>
       </div>
     </footer>
@@ -229,7 +266,7 @@ try {
 
   <script>
     // ===== Produtos vindos do banco =====
-    const PRODUTOS = <?= json_encode($produtos, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?>;
+    const PRODUTOS = <?= json_encode($produtos, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
 
     // Portal global para “fixed dropdown” (evita cortes por overflow/transform)
     let SUGGEST_PORTAL = document.getElementById('suggest-portal');
@@ -241,9 +278,18 @@ try {
 
     const tbody = document.querySelector('#itens-table tbody');
     const btnAdd = document.getElementById('btn-add-item');
-    const fmt = (v)=> (Number(v||0)).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+    const fmt = (v) => (Number(v || 0)).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
 
-    function rowTemplate({desc='', qtd='1.000', unit='0.00', tipo='produto', prodId=''}) {
+    function rowTemplate({
+      desc = '',
+      qtd = '1.000',
+      unit = '0.00',
+      tipo = 'produto',
+      prodId = ''
+    }) {
       return `
         <tr>
           <td>
@@ -268,7 +314,7 @@ try {
       `;
     }
 
-    function addRow(preset={}) {
+    function addRow(preset = {}) {
       const tr = document.createElement('tr');
       tr.innerHTML = rowTemplate(preset);
       tbody.appendChild(tr);
@@ -278,10 +324,10 @@ try {
 
     function recalc() {
       let subtotal = 0;
-      tbody.querySelectorAll('tr').forEach(tr=>{
-        const qtd  = parseFloat(tr.querySelector('input[name="qtd[]"]').value || '0');
+      tbody.querySelectorAll('tr').forEach(tr => {
+        const qtd = parseFloat(tr.querySelector('input[name="qtd[]"]').value || '0');
         const unit = parseFloat(tr.querySelector('input[name="valor_unit[]"]').value || '0');
-        const tot  = qtd*unit;
+        const tot = qtd * unit;
         tr.querySelector('.vlr-total').textContent = fmt(tot);
         subtotal += tot;
       });
@@ -291,20 +337,24 @@ try {
     }
 
     function filtraProdutos(q) {
-      q = (q||'').trim().toLowerCase();
+      q = (q || '').trim().toLowerCase();
       if (!q) return [];
-      return PRODUTOS.filter(p=>{
-        return (p.nome||'').toLowerCase().includes(q)
-            || (p.sku||'').toLowerCase().includes(q)
-            || (p.ean||'').toLowerCase().includes(q)
-            || (p.marca||'').toLowerCase().includes(q);
+      return PRODUTOS.filter(p => {
+        return (p.nome || '').toLowerCase().includes(q) ||
+          (p.sku || '').toLowerCase().includes(q) ||
+          (p.ean || '').toLowerCase().includes(q) ||
+          (p.marca || '').toLowerCase().includes(q);
       }).slice(0, 30);
     }
 
     function renderSugestoesFixed(box, anchorInput, lista) {
-      if (!lista.length) { box.style.display='none'; box.innerHTML=''; return; }
+      if (!lista.length) {
+        box.style.display = 'none';
+        box.innerHTML = '';
+        return;
+      }
 
-      box.innerHTML = lista.map(p=>`
+      box.innerHTML = lista.map(p => `
         <div class="suggest-item" data-id="${p.id}">
           <div><strong>${escapeHtml(p.nome||'-')}</strong></div>
           <div class="muted">${escapeHtml([p.marca, p.sku, p.ean].filter(Boolean).join(' • '))}</div>
@@ -317,7 +367,7 @@ try {
       const r = anchorInput.getBoundingClientRect();
       box.style.position = 'fixed';
       box.style.left = (r.left) + 'px';
-      box.style.top  = (r.bottom) + 'px';
+      box.style.top = (r.bottom) + 'px';
       box.style.width = (r.width) + 'px';
       box.style.display = 'block';
     }
@@ -325,12 +375,12 @@ try {
     function wireRow(tr) {
       const tipoSel = tr.querySelector('.item-tipo');
       const descInp = tr.querySelector('.item-desc');
-      const idInp   = tr.querySelector('input[name="item_id[]"]');
+      const idInp = tr.querySelector('input[name="item_id[]"]');
       const unitInp = tr.querySelector('input[name="valor_unit[]"]');
-      const hint    = tr.querySelector('.hint');
-      const box     = tr.querySelector('.suggest-box'); // será movida para o portal
+      const hint = tr.querySelector('.hint');
+      const box = tr.querySelector('.suggest-box'); // será movida para o portal
 
-      tipoSel.addEventListener('change', ()=>{
+      tipoSel.addEventListener('change', () => {
         if (tipoSel.value === 'produto') {
           hint.style.display = 'block';
           descInp.placeholder = 'Digite para buscar produto...';
@@ -339,54 +389,70 @@ try {
           descInp.placeholder = 'Descrição do serviço';
           idInp.value = '';
         }
-        box.style.display='none';
+        box.style.display = 'none';
       });
 
-      descInp.addEventListener('input', ()=>{
-        if (tipoSel.value !== 'produto') { box.style.display='none'; return; }
+      descInp.addEventListener('input', () => {
+        if (tipoSel.value !== 'produto') {
+          box.style.display = 'none';
+          return;
+        }
         const lista = filtraProdutos(descInp.value);
         renderSugestoesFixed(box, descInp, lista);
       });
 
-      box.addEventListener('click', (e)=>{
+      box.addEventListener('click', (e) => {
         const item = e.target.closest('.suggest-item');
         if (!item) return;
         const id = parseInt(item.getAttribute('data-id'));
-        const p  = PRODUTOS.find(x=> Number(x.id) === id);
+        const p = PRODUTOS.find(x => Number(x.id) === id);
         if (!p) return;
 
-        idInp.value   = p.id;
+        idInp.value = p.id;
         descInp.value = p.nome || '';
         unitInp.value = Number(p.preco_venda || 0).toFixed(2); // <<< PREÇO VEM AUTOMÁTICO
-        box.style.display='none';
+        box.style.display = 'none';
         recalc();
       });
 
       // Fecha ao clicar fora / rolar
-      document.addEventListener('click', (e)=>{
+      document.addEventListener('click', (e) => {
         if (!tr.contains(e.target) && e.target !== box && !box.contains(e.target)) {
-          box.style.display='none';
+          box.style.display = 'none';
         }
-      }, {capture:true});
+      }, {
+        capture: true
+      });
 
-      window.addEventListener('scroll', ()=>{ box.style.display='none'; }, {passive:true});
+      window.addEventListener('scroll', () => {
+        box.style.display = 'none';
+      }, {
+        passive: true
+      });
 
-      tr.addEventListener('input', (e)=>{
+      tr.addEventListener('input', (e) => {
         if (e.target.matches('input')) recalc();
       });
     }
 
     function escapeHtml(s) {
-      return String(s||'').replace(/[&<>"'`=\/]/g, function (c) {
+      return String(s || '').replace(/[&<>"'`=\/]/g, function(c) {
         return ({
-          '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;',
+          '/': '&#x2F;',
+          '`': '&#x60;',
+          '=': '&#x3D;'
         })[c];
       });
     }
 
     // Eventos de tabela
-    btnAdd.addEventListener('click', ()=> addRow());
-    tbody.addEventListener('click', (e)=>{
+    btnAdd.addEventListener('click', () => addRow());
+    tbody.addEventListener('click', (e) => {
       if (e.target.closest('.btn-del')) {
         e.target.closest('tr').remove();
         recalc();
@@ -398,4 +464,5 @@ try {
     addRow();
   </script>
 </body>
+
 </html>

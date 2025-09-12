@@ -1,3 +1,0 @@
-<?php
-// Page: listar.php
-?>
