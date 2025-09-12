@@ -238,7 +238,7 @@ function fmt($v)
           </div>
 
           <!-- DIREITA: formulário de fechamento -->
-          <div class="col-12 col-xxl-4">
+          <div class="col-12 col-4">
             <div class="aside-sticky">
               <form method="post" action="../actions/caixaFecharSalvar.php" class="card">
                 <div class="card-header">
