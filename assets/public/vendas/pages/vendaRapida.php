@@ -24,11 +24,12 @@ if (empty($_SESSION['csrf_venda_rapida'])) {
 $csrf = $_SESSION['csrf_venda_rapida'];
 
 // ===== toast (ok/err/msg) via GET =====
-$ok  = isset($_GET['ok'])  ? (int)$_GET['ok']  : 0;
-$err = isset($_GET['err']) ? (int)$_GET['err'] : 0;
-$msg = isset($_GET['msg']) ? (string)$_GET['msg'] : '';
+$ok       = isset($_GET['ok'])  ? (int)$_GET['ok']  : 0;
+$err      = isset($_GET['err']) ? (int)$_GET['err'] : 0;
+$msg      = isset($_GET['msg']) ? (string)$_GET['msg'] : '';
+$vendaId  = isset($_GET['venda_id']) ? (int)$_GET['venda_id'] : 0;
 
-// ===== Verifica se existe caixa ABERTO para a empresa =====
+// ===== Verifica se existe caixa ABERTO =====
 $caixaAberto = null;
 try {
   $stCx = $pdo->prepare("
@@ -83,7 +84,7 @@ try {
       --input-lg-h: 48px;
     }
 
-    /* ——— Look & feel PDV supermercado ——— */
+    /* visor */
     .pdv-visor {
       background: #002f8cff;
       color: #f0f0f0;
@@ -186,7 +187,7 @@ try {
       color: #dc2626;
     }
 
-    /* ——— Normalização de alturas e alinhamentos ——— */
+    /* normalização */
     .form-label {
       margin-bottom: .35rem;
     }
@@ -212,7 +213,7 @@ try {
       min-height: 22px;
     }
 
-    /* mesma “barriga” sob as 3 colunas para alinhar tudo */
+    /* mesma “barriga” sob as 3 colunas */
 
     @media (max-width: 1199px) {
       .pdv-visor .linha2 {
@@ -242,7 +243,7 @@ try {
         </div>
       </nav>
 
-      <!-- TOAST topo direito (delay 1.4s) -->
+      <!-- TOAST (1,4s) + REDIRECIONA PARA DANFE QUANDO SUCESSO -->
       <?php if ($ok || $err): ?>
         <div id="toastMsg" class="toast show align-items-center border-0 position-fixed top-0 end-0 m-3 shadow-lg"
           role="alert" aria-live="assertive" aria-atomic="true"
@@ -252,7 +253,7 @@ try {
               <i class="bi <?= $ok ? 'bi-check-circle-fill' : 'bi-x-circle-fill' ?> fs-4"></i>
               <?= htmlspecialchars($msg ?: ($ok ? 'Venda registrada com sucesso!' : 'Falha ao registrar venda.'), ENT_QUOTES, 'UTF-8') ?>
             </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+            <button id="toastClose" type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
           </div>
           <div class="progress" style="height:3px;">
             <div id="toastProgress" class="progress-bar <?= $ok ? 'bg-light' : 'bg-warning' ?>" style="width:100%"></div>
@@ -262,21 +263,32 @@ try {
           document.addEventListener("DOMContentLoaded", function() {
             const toastEl = document.getElementById("toastMsg");
             const progress = document.getElementById("toastProgress");
-            if (toastEl) {
-              const DURATION = 1400; // 1.4s
-              const toast = new bootstrap.Toast(toastEl, {
-                delay: DURATION
-              });
-              toast.show();
-              let width = 100;
-              const stepMs = 20;
-              const step = 100 * stepMs / DURATION;
-              const itv = setInterval(() => {
-                width = Math.max(0, width - step);
-                progress.style.width = width + "%";
-                if (width <= 0) clearInterval(itv);
-              }, stepMs);
-            }
+            if (!toastEl) return;
+
+            const DURATION = 1400; // 1.4s
+            const toast = new bootstrap.Toast(toastEl, {
+              delay: DURATION,
+              autohide: true
+            });
+            toast.show();
+
+            // barra de tempo sincronizada
+            let width = 100;
+            const stepMs = 20,
+              step = 100 * stepMs / DURATION;
+            const itv = setInterval(() => {
+              width = Math.max(0, width - step);
+              if (progress) progress.style.width = width + "%";
+              if (width <= 0) clearInterval(itv);
+            }, stepMs);
+
+            // redireciona para DANFE quando o toast some (auto ou clique)
+            <?php if ($ok && $vendaId > 0): ?>
+              const goDanfe = () => {
+                window.location.href = './danfe_nfce.php?venda_id=<?= (int)$vendaId ?>';
+              };
+              toastEl.addEventListener('hidden.bs.toast', goDanfe);
+            <?php endif; ?>
           });
         </script>
       <?php endif; ?>
@@ -426,18 +438,10 @@ try {
               </div>
               <div class="card-body">
                 <div class="row g-2">
-                  <div class="col-6">
-                    <button type="button" class="btn btn-success w-100 pay-btn" data-pay="dinheiro" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-cash-coin me-1"></i> Dinheiro</button>
-                  </div>
-                  <div class="col-6">
-                    <button type="button" class="btn btn-primary w-100 pay-btn" data-pay="pix" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-upc-scan me-1"></i> PIX</button>
-                  </div>
-                  <div class="col-6">
-                    <button type="button" class="btn btn-outline-dark w-100 pay-btn" data-pay="debito" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-credit-card-2-back me-1"></i> Débito</button>
-                  </div>
-                  <div class="col-6">
-                    <button type="button" class="btn btn-outline-dark w-100 pay-btn" data-pay="credito" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-credit-card me-1"></i> Crédito</button>
-                  </div>
+                  <div class="col-6"><button type="button" class="btn btn-success w-100 pay-btn" data-pay="dinheiro" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-cash-coin me-1"></i> Dinheiro</button></div>
+                  <div class="col-6"><button type="button" class="btn btn-primary w-100 pay-btn" data-pay="pix" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-upc-scan me-1"></i> PIX</button></div>
+                  <div class="col-6"><button type="button" class="btn btn-outline-dark w-100 pay-btn" data-pay="debito" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-credit-card-2-back me-1"></i> Débito</button></div>
+                  <div class="col-6"><button type="button" class="btn btn-outline-dark w-100 pay-btn" data-pay="credito" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-credit-card me-1"></i> Crédito</button></div>
                 </div>
 
                 <div class="mt-3">
@@ -486,38 +490,38 @@ try {
   <script>
     const PRODUTOS = <?= json_encode($produtos, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
 
-    // ===== helpers
+    // helpers
     const fmt = v => (Number(v || 0)).toLocaleString('pt-BR', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
     const el = sel => document.querySelector(sel);
     const tbody = document.querySelector('#tbl-itens tbody');
-    let itens = []; // {nome,qtd,unit}
+    let itens = [];
     const form = document.getElementById('form-venda');
     const temCaixa = form.getAttribute('data-caixa') === '1';
 
     function totalGeral() {
       let subtotal = 0;
       itens.forEach(i => subtotal += i.qtd * i.unit);
-      const desconto = parseFloat(el('#inp-desconto').value || '0');
-      return Math.max(subtotal - desconto, 0);
+      const d = parseFloat(el('#inp-desconto').value || '0');
+      return Math.max(subtotal - d, 0);
     }
 
     function recalc() {
       let subtotal = 0,
-        itensCount = 0;
+        count = 0;
       itens.forEach(i => {
         subtotal += i.qtd * i.unit;
-        itensCount += 1;
+        count++;
       });
-      const desconto = parseFloat(el('#inp-desconto').value || '0');
-      const total = Math.max(subtotal - desconto, 0);
+      const d = parseFloat(el('#inp-desconto').value || '0'),
+        total = Math.max(subtotal - d, 0);
       el('#tot-subtotal').textContent = 'R$ ' + fmt(subtotal);
       el('#tot-geral').textContent = 'R$ ' + fmt(total);
-      el('#tot-itens').textContent = itensCount;
+      el('#tot-itens').textContent = count;
       el('#visor-subtotal').textContent = 'R$ ' + fmt(total);
-      el('#desconto_hidden').value = (desconto || 0).toFixed(2);
+      el('#desconto_hidden').value = (d || 0).toFixed(2);
       el('#itens_json').value = JSON.stringify(itens);
       renderTable();
       recalcTroco();
@@ -528,16 +532,11 @@ try {
       tbody.innerHTML = itens.map((i, idx) => `
         <tr>
           <td>${escapeHtml(i.nome)}</td>
-          <td class="text-end">
-            <input type="number" min="0.001" step="0.001" class="form-control form-control-sm text-end inp-qtd" data-idx="${idx}" value="${i.qtd.toFixed(3)}" ${temCaixa?'':'disabled'}>
-          </td>
-          <td class="text-end">
-            <input type="number" min="0" step="0.01" class="form-control form-control-sm text-end inp-unit" data-idx="${idx}" value="${i.unit.toFixed(2)}" ${temCaixa?'':'disabled'}>
-          </td>
-          <td class="text-end money">R$ ${fmt(i.qtd * i.unit)}</td>
+          <td class="text-end"><input type="number" min="0.001" step="0.001" class="form-control form-control-sm text-end inp-qtd" data-idx="${idx}" value="${i.qtd.toFixed(3)}" ${temCaixa?'':'disabled'}></td>
+          <td class="text-end"><input type="number" min="0" step="0.01" class="form-control form-control-sm text-end inp-unit" data-idx="${idx}" value="${i.unit.toFixed(2)}" ${temCaixa?'':'disabled'}></td>
+          <td class="text-end money">R$ ${fmt(i.qtd*i.unit)}</td>
           <td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger btn-del" data-idx="${idx}" ${temCaixa?'':'disabled'}><i class="bi bi-x"></i></button></td>
-        </tr>
-      `).join('');
+        </tr>`).join('');
     }
 
     function escapeHtml(s) {
@@ -553,7 +552,7 @@ try {
       } [c]));
     }
 
-    // ===== busca / autocomplete
+    // busca
     const box = el('#box-suggest'),
       inpBusca = el('#inp-busca'),
       inpQtd = el('#inp-qtd'),
@@ -562,12 +561,7 @@ try {
     function filtra(q) {
       q = (q || '').trim().toLowerCase();
       if (!q) return [];
-      return PRODUTOS.filter(p =>
-        (p.nome || '').toLowerCase().includes(q) ||
-        (p.sku || '').toLowerCase().includes(q) ||
-        (p.ean || '').toLowerCase().includes(q) ||
-        (p.marca || '').toLowerCase().includes(q)
-      ).slice(0, 50);
+      return PRODUTOS.filter(p => (p.nome || '').toLowerCase().includes(q) || (p.sku || '').toLowerCase().includes(q) || (p.ean || '').toLowerCase().includes(q) || (p.marca || '').toLowerCase().includes(q)).slice(0, 50);
     }
 
     function showSugestoes(lista) {
@@ -581,11 +575,9 @@ try {
           <div><strong>${escapeHtml(p.nome||'-')}</strong></div>
           <div class="muted">${escapeHtml([p.marca,p.sku,p.ean].filter(Boolean).join(' • '))}</div>
           <div class="muted">R$ ${fmt(p.preco_venda||0)} ${p.unidade?(' / '+escapeHtml(p.unidade)) : ''}</div>
-        </div>
-      `).join('');
+        </div>`).join('');
       box.style.display = 'block';
     }
-
     if (temCaixa) {
       inpBusca.addEventListener('input', () => {
         showSugestoes(filtra(inpBusca.value));
@@ -596,42 +588,34 @@ try {
       box.addEventListener('click', (e) => {
         const it = e.target.closest('.item');
         if (!it) return;
-        const nome = it.getAttribute('data-nome');
-        const preco = parseFloat(it.getAttribute('data-preco') || '0');
-        el('#visor-produto').textContent = nome || '—';
-        inpPreco.value = preco.toFixed(2);
+        el('#visor-produto').textContent = it.getAttribute('data-nome') || '—';
+        inpPreco.value = parseFloat(it.getAttribute('data-preco') || '0').toFixed(2);
         box.style.display = 'none';
         setTimeout(() => inpQtd.focus(), 10);
       });
     }
 
-    // ===== adicionar item
+    // adicionar item
     function addItemFromInputs() {
       if (!temCaixa) return;
       const nomeVisor = (el('#visor-produto').textContent || '').trim();
-      const qtd = parseFloat(inpQtd.value || '0');
-      const unit = parseFloat(inpPreco.value || '0');
-      const termo = (inpBusca.value || '').trim();
-
+      const qtd = parseFloat(inpQtd.value || '0'),
+        unit = parseFloat(inpPreco.value || '0'),
+        termo = (inpBusca.value || '').trim();
       let finalNome = nomeVisor;
       if (!finalNome || finalNome === '—') {
         const lista = filtra(termo);
         if (lista[0]) {
           finalNome = lista[0].nome || '';
-          if (!inpPreco.value || parseFloat(inpPreco.value || '0') <= 0)
-            inpPreco.value = Number(lista[0].preco_venda || 0).toFixed(2);
-        } else {
-          finalNome = termo || 'Item';
-        }
+          if (!inpPreco.value || parseFloat(inpPreco.value || '0') <= 0) inpPreco.value = Number(lista[0].preco_venda || 0).toFixed(2);
+        } else finalNome = termo || 'Item';
       }
-
       if (qtd <= 0 || unit < 0) return;
       itens.push({
         nome: finalNome,
         qtd,
         unit
       });
-
       inpBusca.value = '';
       el('#visor-produto').textContent = '—';
       inpQtd.value = '1.000';
@@ -652,40 +636,39 @@ try {
       });
       el('#btn-qtd').addEventListener('click', () => inpQtd.select());
       el('#btn-desc').addEventListener('click', () => el('#inp-desconto').select());
-
       tbody.addEventListener('input', (e) => {
         if (e.target.matches('.inp-qtd')) {
-          const idx = +e.target.dataset.idx,
+          const i = +e.target.dataset.idx,
             v = parseFloat(e.target.value || '0');
-          if (itens[idx]) itens[idx].qtd = Math.max(v, 0);
+          if (itens[i]) itens[i].qtd = Math.max(v, 0);
           recalc();
         } else if (e.target.matches('.inp-unit')) {
-          const idx = +e.target.dataset.idx,
+          const i = +e.target.dataset.idx,
             v = parseFloat(e.target.value || '0');
-          if (itens[idx]) itens[idx].unit = Math.max(v, 0);
+          if (itens[i]) itens[i].unit = Math.max(v, 0);
           recalc();
         }
       });
       tbody.addEventListener('click', (e) => {
         if (e.target.closest('.btn-del')) {
-          const idx = +e.target.closest('.btn-del').dataset.idx;
-          itens.splice(idx, 1);
+          const i = +e.target.closest('.btn-del').dataset.idx;
+          itens.splice(i, 1);
           recalc();
         }
       });
       el('#inp-desconto').addEventListener('input', recalc);
     }
 
-    // ===== Pagamento — Dinheiro (Recebido/Troco)
-    const selFP = el('#forma_pagamento');
-    const grpDin = el('#grp-dinheiro');
-    const inpRec = el('#inp-recebido');
-    const lblTroco = el('#lbl-troco');
+    // pagamento
+    const selFP = el('#forma_pagamento'),
+      grpDin = el('#grp-dinheiro'),
+      inpRec = el('#inp-recebido'),
+      lblTroco = el('#lbl-troco');
 
     function toggleDinheiroUI() {
-      const isDinheiro = selFP.value === 'dinheiro';
-      grpDin.style.display = isDinheiro ? 'block' : 'none';
-      if (isDinheiro) setTimeout(() => inpRec.focus(), 50);
+      const isDin = selFP.value === 'dinheiro';
+      grpDin.style.display = isDin ? 'block' : 'none';
+      if (isDin) setTimeout(() => inpRec.focus(), 50);
       validateFinalizeButton();
     }
 
@@ -695,33 +678,26 @@ try {
         lblTroco.className = 'money';
         return;
       }
-      const total = totalGeral();
-      const recebido = parseFloat(inpRec.value || '0');
-      const troco = recebido - total;
-      lblTroco.textContent = 'R$ ' + fmt(troco);
-      lblTroco.className = 'money ' + (troco >= 0 ? 'troco-ok' : 'troco-neg');
+      const t = totalGeral(),
+        r = parseFloat(inpRec.value || '0'),
+        tr = r - t;
+      lblTroco.textContent = 'R$ ' + fmt(tr);
+      lblTroco.className = 'money ' + (tr >= 0 ? 'troco-ok' : 'troco-neg');
       validateFinalizeButton();
     }
 
     function validateFinalizeButton() {
-      const btn = el('#btn-finalizar');
-      if (!temCaixa) {
-        btn.disabled = true;
-        return;
-      }
-      if (!itens.length) {
-        btn.disabled = true;
+      const b = el('#btn-finalizar');
+      if (!temCaixa || !itens.length) {
+        b.disabled = true;
         return;
       }
       if (selFP.value === 'dinheiro') {
-        const total = totalGeral();
-        const recebido = parseFloat(inpRec.value || '0');
-        btn.disabled = !(recebido >= total);
-      } else {
-        btn.disabled = false;
-      }
+        const t = totalGeral(),
+          r = parseFloat(inpRec.value || '0');
+        b.disabled = !(r >= t);
+      } else b.disabled = false;
     }
-
     if (temCaixa) {
       document.querySelectorAll('[data-pay]').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -733,7 +709,7 @@ try {
       inpRec.addEventListener('input', recalcTroco);
     }
 
-    // ===== atalhos teclado
+    // atalhos
     if (temCaixa) {
       form.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
