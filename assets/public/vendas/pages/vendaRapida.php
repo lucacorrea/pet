@@ -276,7 +276,7 @@ try {
                   <div class="col-lg-7">
                     <label class="form-label">Código / Nome / SKU / EAN</label>
                     <div class="pdv-busca">
-                      <input type="text" class="form-control form-control-lg" id="inp-busca" placeholder="digite o Nome do Produto" autocomplete="off" <?= $caixaAberto ? '' : 'disabled' ?>>
+                      <input type="text" class="form-control form-control-lg" id="inp-busca" placeholder="Digite o Nome do Produto" autocomplete="off" <?= $caixaAberto ? '' : 'disabled' ?>>
                       <div class="pdv-suggest" id="box-suggest"></div>
                     </div>
                     <div class="form-text">Use leitor de código de barras ou digite e pressione <span class="kbd">Enter</span>.</div>
