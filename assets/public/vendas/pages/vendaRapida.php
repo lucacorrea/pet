@@ -303,7 +303,7 @@ try {
                 <div style="font-weight:900;color:#f73232ff;">
                   <i class="bi bi-exclamation-triangle me-1"></i>
                   Nenhum caixa aberto no momento.
-                  <a href="../../caixa/pages/caixaAbrir.php" class="alert-link text-white">Clique aqui</a> para abrir ou entrar em um caixa.
+                  <a href="./caixaAbrir.php" class="alert-link text-white">Clique aqui</a> para abrir ou entrar em um caixa.
                 </div>
               <?php else: ?>
                 <i class="bi bi-cash-coin me-1"></i>
