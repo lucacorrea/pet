@@ -138,11 +138,10 @@ function fmt($v) { return number_format((float)$v, 2, ',', '.'); }
           <div class="input-group search-input">
             <span class="input-group-text" id="search-input">
               <svg class="icon-18" width="18" viewBox="0 0 24 24" fill="none">
-                <circle cx="11.7669" cy="11.7666" r="8.98856" stroke="currentColor" stroke-width="1.5"></circle>
-                <path d="M18.0186 18.4851L21.5426 22" stroke="currentColor" stroke-width="1.5"></path>
+               
               </svg>
             </span>
-            <input type="search" class="form-control" placeholder="Pesquisar...">
+           
           </div>
         </div>
       </nav>
