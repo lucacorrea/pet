@@ -12,7 +12,7 @@ if ($pathCon && file_exists($pathCon)) require_once $pathCon;
 if (!isset($pdo) || !($pdo instanceof PDO)) die('Conexão indisponível.');
 require_once __DIR__ . '/../../../lib/util.php';
 
-/* ---------- helpers ---------- */
+/* ------------ helpers ------------ */
 function h($s): string
 {
     return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
@@ -46,7 +46,7 @@ function fmt_chave($chave): string
     return $c ? trim(implode(' ', str_split($c, 4))) : '';
 }
 
-/* ---------- empresa (empresas_peca) ---------- */
+/* ------------ empresa ------------ */
 $empresaCnpj = onlynum($_SESSION['user_empresa_cnpj'] ?? '');
 $emp = ['cnpj' => '', 'nome_fantasia' => '', 'razao_social' => '', 'telefone' => '', 'email' => '', 'endereco' => '', 'cidade' => '', 'estado' => '', 'cep' => ''];
 if ($empresaCnpj) {
@@ -61,7 +61,7 @@ if ($empresaCnpj) {
 }
 $emitNome = $emp['nome_fantasia'] ?: ($emp['razao_social'] ?: 'EMPRESA');
 
-/* ---------- params opcionais ---------- */
+/* ------------ params opcionais ------------ */
 $vendaId   = isset($_GET['venda_id']) ? (int)$_GET['venda_id'] : 0;
 $numero    = $_GET['numero']   ?? '';
 $serie     = $_GET['serie']    ?? '';
@@ -73,25 +73,25 @@ $obs       = $_GET['obs'] ?? '';
 $lei12741  = isset($_GET['tributos_aprox']) ? (float)str_replace(',', '.', $_GET['tributos_aprox']) : null;
 $defaultUn = $_GET['un'] ?? 'un';
 
-/* ---------- consumidor (opcional) ---------- */
+/* ------------ consumidor ------------ */
 $consDoc  = $_GET['consumidor_doc']  ?? '';
 $consNome = $_GET['consumidor_nome'] ?? '';
 $consLabel = (strlen(onlynum($consDoc)) === 14 ? 'CNPJ' : 'CPF');
 
-/* ---------- venda + itens ---------- */
+/* ------------ venda + itens ------------ */
 $venda = null;
 $itens = [];
 if ($vendaId > 0 && $empresaCnpj) {
     try {
         $st = $pdo->prepare("SELECT id,empresa_cnpj,vendedor_cpf,total_bruto,desconto,total_liquido,forma_pagamento,
-                                DATE_FORMAT(criado_em,'%d/%m/%Y %H:%i:%s') AS criado_quando
-                         FROM vendas_peca WHERE id=:id AND empresa_cnpj=:c LIMIT 1");
+                              DATE_FORMAT(criado_em,'%d/%m/%Y %H:%i:%s') AS criado_quando
+                       FROM vendas_peca WHERE id=:id AND empresa_cnpj=:c LIMIT 1");
         $st->execute([':id' => $vendaId, ':c' => $empresaCnpj]);
         $venda = $st->fetch(PDO::FETCH_ASSOC) ?: null;
 
         if ($venda) {
             $sti = $pdo->prepare("SELECT item_id,descricao,qtd,valor_unit,valor_total
-                            FROM venda_itens_peca WHERE venda_id=:v ORDER BY id");
+                          FROM venda_itens_peca WHERE venda_id=:v ORDER BY id");
             $sti->execute([':v' => $vendaId]);
             $itens = $sti->fetchAll(PDO::FETCH_ASSOC) ?: [];
         }
@@ -101,14 +101,13 @@ if ($vendaId > 0 && $empresaCnpj) {
     }
 }
 
-/* ---------- totais/pagamentos ---------- */
+/* ------------ totais/pagamentos ------------ */
 $qtdTotal = 0.0;
 foreach ($itens as $i) $qtdTotal += (float)$i['qtd'];
 $subtotal   = (float)($venda['total_bruto'] ?? 0);
 $desconto   = (float)($venda['desconto'] ?? 0);
 $valorTotal = (float)($venda['total_liquido'] ?? 0);
 $formaVenda = strtoupper((string)($venda['forma_pagamento'] ?? ''));
-
 $pgBrutos = (array)($_GET['pg'] ?? []);
 $pagamentos = [];
 $totalPg = 0;
@@ -138,10 +137,8 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
     <style>
         :root {
             --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-            --paper-w-screen: 440px;
-            /* largura do cartão na tela */
             --paper-w-print: 80mm;
-            /* mude p/ 58mm se necessário */
+            /* mude para 58mm se sua bobina for 58 */
         }
 
         /* ===== Tela ===== */
@@ -166,18 +163,22 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             padding: 0 12px
         }
 
+        /* >>> mesma largura/estilo da impressão, mas CENTRALIZADO na tela */
         .cupom {
-            width: min(var(--paper-w-screen), 96vw);
+            width: var(--paper-w-print);
+            /* mesma largura da impressão */
             margin: 0 auto;
+            /* centraliza na tela */
             background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 14px;
-            box-shadow: 0 10px 24px rgba(0, 0, 0, .07);
-            padding: 16px 14px;
+            border: 1px dashed #cbd5e1;
+            /* visual de DANFE */
+            border-radius: 8px;
+            padding: 12px 10px;
             font-family: var(--mono);
-            /* >>> todo o cupom monoespaçado */
             font-size: 12px;
             line-height: 1.38;
+            box-shadow: none;
+            /* sem cartão/shadow */
         }
 
         .center {
@@ -194,6 +195,7 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             letter-spacing: .3px
         }
 
+        /* linha tracejada larga */
         .linha {
             height: 1px;
             background:
@@ -245,7 +247,7 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             font-weight: 800
         }
 
-        /* Barra inferior fixa */
+        /* Barra inferior fixa na tela */
         .bottom {
             position: fixed;
             left: 0;
@@ -280,7 +282,7 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             border-color: #0ea5e9
         }
 
-        /* ===== Impressão: alinhado à esquerda (bobina) ===== */
+        /* ===== Impressão: ALINHADO À ESQUERDA ===== */
         @page {
             size: var(--paper-w-print) auto;
             margin: 2mm;
@@ -300,6 +302,7 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             .cupom {
                 width: var(--paper-w-print);
                 margin: 0 !important;
+                /* >>> encosta à ESQUERDA no papel */
                 border-radius: 0;
                 box-shadow: none
             }
@@ -310,6 +313,13 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
 
             .linha {
                 margin: 8px 0
+            }
+        }
+
+        /* fallback: em telas muito estreitas, deixa com margens */
+        @media (max-width:420px) {
+            .cupom {
+                width: calc(100vw - 24px);
             }
         }
     </style>
