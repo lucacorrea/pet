@@ -54,6 +54,12 @@ if (!isset($menuAtivo)) {
         </li>
 
         <!-- CAIXA -->
+          <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="collapse" href="#sidebar-estoque" role="button"
+            aria-expanded="<?= str_starts_with($menuAtivo, 'estoque-') ? 'true' : 'false' ?>"
+            aria-controls="sidebar-estoque">
+            <i class="bi bi-truck icon"></i><span class="item-name">Caixa</span><i class="bi bi-chevron-right right-icon"></i>
+          </a>
         <li class="nav-item">
           <a class="nav-link <?= ($menuAtivo === 'caixa-abrir' ? 'active' : '') ?>" href="../../caixa/pages/caixaAbrir.php">
             <i class="bi bi-cash-stack icon"></i><span class="item-name">Abrir Caixa</span>
