@@ -182,7 +182,7 @@ function fmt($v)
           Não há caixa aberto para esta empresa.
           <a class="alert-link" href="../../caixa/pages/caixaAbrir.php">Clique aqui</a> para abrir.
         </div>
-    </div>
+   
   <?php else: ?>
     <div class="row g-3">
       <!-- ESQUERDA: resumo -->
