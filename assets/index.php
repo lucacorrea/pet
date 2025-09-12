@@ -65,12 +65,12 @@ if (isset($_GET['erro'])) {
                                  alt="AutoERP">
                            </div>
                            <div class="logo-mini">
-                              <img src="./public/assets/images/auth/ode.png" class="icon-30" alt="AutoERP">
+                              <img src="./public/assets/images/auth/logo.png" class="icon-30" alt="AutoERP">
                            </div>
                         </div>
                         <!-- /Logo -->
                         <!-- /Logo -->
-                        <h4 class="logo-title ms-2" style="margin-top: -20px; margin-left: -30px !important;">PetERP</h4>
+                        <h4 class="logo-title ms-2" style="margin-top: -20px; margin-left: -30px !important;">Mundo Pets</h4>
                      </a>
 
 
