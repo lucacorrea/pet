@@ -65,7 +65,7 @@ if (isset($_GET['erro'])) {
                                  alt="AutoERP">
                            </div>
                            <div class="logo-mini">
-                              <img src="./public/assets/images/auth/logo.png" class="icon-30" alt="AutoERP">
+                              <img src="./public/assets/images/dashboard/logo.png" class="icon-30" alt="AutoERP">
                            </div>
                         </div>
                         <!-- /Logo -->
