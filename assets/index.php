@@ -118,7 +118,7 @@ if (isset($_GET['erro'])) {
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mb-3 text-success">
-                           <a href="./confirmaEmail.php" class="text-success">Esqueceu a senha?</a>
+                           <a href="./confirmaEmail.php" class="text-primary">Esqueceu a senha?</a>
                         </div>
 
                         <button id="btnLogin" type="submit" class="btn btn-primary w-100">Entrar</button>
