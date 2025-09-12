@@ -175,7 +175,7 @@ function fmt($v)
 <body>
   <?php
   if (session_status() === PHP_SESSION_NONE) session_start();
-  $menuAtivo = 'fechaCaixa';
+  $menuAtivo = 'caixa-fechar';
   include '../../layouts/sidebar.php';
   ?>
 
