@@ -1,6 +1,5 @@
 <?php
 // autoErp/public/vendas/pages/relatorioVendas.php
-
 declare(strict_types=1);
 
 if (session_status() === PHP_SESSION_NONE) session_start();
@@ -14,23 +13,24 @@ if ($pathCon && file_exists($pathCon)) require_once $pathCon;
 if (!isset($pdo) || !($pdo instanceof PDO)) die('Conexão indisponível.');
 
 require_once __DIR__ . '/../../../lib/util.php';
+$empresaNome = empresa_nome_logada($pdo);
 
 $empresaCnpj = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj'] ?? ''));
 if (!preg_match('/^\d{14}$/', $empresaCnpj)) die('Empresa não vinculada ao usuário.');
 
 $hoje = (new DateTime('today'))->format('Y-m-d');
 
-// ===== Filtros (GET) =====
+/* ========= Filtros ========= */
 $de     = (string)($_GET['de'] ?? $hoje);
 $ate    = (string)($_GET['ate'] ?? $hoje);
-$fp     = strtolower((string)($_GET['fp'] ?? ''));            // '', dinheiro, pix, debito, credito, etc
+$fp     = strtolower((string)($_GET['fp'] ?? ''));            // '', dinheiro, pix, debito, credito
 $status = strtolower((string)($_GET['status'] ?? ''));        // '', aberta, fechada, cancelada
-$q      = trim((string)($_GET['q'] ?? ''));                   // busca livre (id, vendedor_cpf, origem)
+$q      = trim((string)($_GET['q'] ?? ''));                   // id / vendedor_cpf / origem
 $page   = max(1, (int)($_GET['page'] ?? 1));
 $limit  = max(1, min(200, (int)($_GET['limit'] ?? 50)));
 $csv    = (int)($_GET['csv'] ?? 0);
+$csv_it = (int)($_GET['csv_it'] ?? 0);
 
-// Datas normalizadas
 try {
   $dtDe  = new DateTime($de . ' 00:00:00');
   $dtAte = new DateTime($ate . ' 23:59:59');
@@ -42,19 +42,13 @@ $deIso  = $dtDe->format('Y-m-d H:i:s');
 $ateIso = $dtAte->format('Y-m-d H:i:s');
 
 $filters = [
-  'de' => $dtDe->format('Y-m-d'),
-  'ate' => $dtAte->format('Y-m-d'),
-  'fp' => $fp,
-  'status' => $status,
-  'q' => $q,
-  'page' => $page,
-  'limit' => $limit,
-  'csv' => $csv,
+  'de'=>$dtDe->format('Y-m-d'),'ate'=>$dtAte->format('Y-m-d'),
+  'fp'=>$fp,'status'=>$status,'q'=>$q,'page'=>$page,'limit'=>$limit
 ];
 
-// ===== WHERE comum =====
+/* ========= WHERE comum (vendas) ========= */
 $where = ["v.empresa_cnpj = :c", "v.criado_em BETWEEN :de AND :ate"];
-$params = [':c' => $empresaCnpj, ':de' => $deIso, ':ate' => $ateIso];
+$params = [':c'=>$empresaCnpj, ':de'=>$deIso, ':ate'=>$ateIso];
 
 if ($status !== '') {
   $where[] = "LOWER(v.status) = :status";
@@ -62,28 +56,21 @@ if ($status !== '') {
 }
 if ($fp !== '') {
   $where[] = "LOWER(v.forma_pagamento) = :fp";
-  $params[':fp'] = $fp === 'crédito' ? 'credito' : $fp;
+  $params[':fp'] = ($fp === 'crédito') ? 'credito' : $fp;
 }
 if ($q !== '') {
-  // busca simples: id, vendedor_cpf, origem
-  $where[] = "(
-      CAST(v.id AS CHAR) LIKE :q
-      OR v.vendedor_cpf LIKE :q
-      OR LOWER(v.origem) LIKE :q
-    )";
+  $where[] = "(CAST(v.id AS CHAR) LIKE :q OR v.vendedor_cpf LIKE :q OR LOWER(v.origem) LIKE :q)";
   $params[':q'] = '%' . strtolower($q) . '%';
 }
-
 $whereSql = implode(' AND ', $where);
 
-// ===== Totais por forma e geral (apenas vendas fechadas contam no total consolidado) =====
+/* ========= Totais por forma (apenas vendas FECHADAS) ========= */
 $totais = ['dinheiro'=>0.0,'pix'=>0.0,'debito'=>0.0,'credito'=>0.0,'geral'=>0.0];
 try {
   $sqlTot = "
     SELECT LOWER(v.forma_pagamento) AS fp, SUM(v.total_liquido) AS total
     FROM vendas_peca v
-    WHERE $whereSql
-      AND LOWER(v.status) = 'fechada'
+    WHERE $whereSql AND LOWER(v.status) = 'fechada'
     GROUP BY LOWER(v.forma_pagamento)
   ";
   $st = $pdo->prepare($sqlTot);
@@ -93,107 +80,134 @@ try {
     if (isset($totais[$key])) $totais[$key] += (float)$r['total'];
   }
   $totais['geral'] = $totais['dinheiro'] + $totais['pix'] + $totais['debito'] + $totais['credito'];
-} catch (Throwable $e) { /* ignore */ }
+} catch (Throwable $e) {}
 
-// ===== Paginação =====
+/* ========= Movimentos do caixa (suprimento/sangria) na data filtrada ========= */
+$mov = ['suprimentos'=>0.0,'sangrias'=>0.0];
+try {
+  $sqlMov = "
+    SELECT 
+      SUM(CASE WHEN cm.tipo = 'entrada' THEN cm.valor ELSE 0 END) AS suprimentos,
+      SUM(CASE WHEN cm.tipo = 'saida'   THEN cm.valor ELSE 0 END) AS sangrias
+    FROM caixa_movimentos_peca cm
+    WHERE cm.empresa_cnpj = :c AND cm.criado_em BETWEEN :de AND :ate
+  ";
+  $stm = $pdo->prepare($sqlMov);
+  $stm->execute([':c'=>$empresaCnpj, ':de'=>$deIso, ':ate'=>$ateIso]);
+  $rowm = $stm->fetch(PDO::FETCH_ASSOC) ?: [];
+  $mov['suprimentos'] = (float)($rowm['suprimentos'] ?? 0);
+  $mov['sangrias']    = (float)($rowm['sangrias'] ?? 0);
+} catch (Throwable $e) {}
+
+/* ========= Itens vendidos (sumário por produto) – apenas vendas FECHADAS ========= */
+$itensVendidos = [];
+try {
+  $sqlItens = "
+    SELECT 
+      i.item_id,
+      i.descricao,
+      SUM(i.qtd)            AS qtd_total,
+      SUM(i.valor_total)    AS total_itens
+    FROM venda_itens_peca i
+    INNER JOIN vendas_peca v ON v.id = i.venda_id
+    WHERE v.empresa_cnpj = :c
+      AND v.criado_em BETWEEN :de AND :ate
+      AND LOWER(v.status) = 'fechada'
+      AND i.item_tipo = 'produto'
+    GROUP BY i.item_id, i.descricao
+    ORDER BY total_itens DESC, qtd_total DESC, i.descricao ASC
+    LIMIT 1000
+  ";
+  $sti = $pdo->prepare($sqlItens);
+  $sti->execute([':c'=>$empresaCnpj, ':de'=>$deIso, ':ate'=>$ateIso]);
+  $itensVendidos = $sti->fetchAll(PDO::FETCH_ASSOC) ?: [];
+} catch (Throwable $e) {}
+
+/* ========= Paginação + lista de vendas ========= */
 $totalRows = 0;
 try {
   $sqlCount = "SELECT COUNT(*) FROM vendas_peca v WHERE $whereSql";
-  $st = $pdo->prepare($sqlCount);
-  $st->execute($params);
-  $totalRows = (int)$st->fetchColumn();
-} catch (Throwable $e) { /* ignore */ }
+  $stc = $pdo->prepare($sqlCount);
+  $stc->execute($params);
+  $totalRows = (int)$stc->fetchColumn();
+} catch (Throwable $e) {}
 
 $totalPages = max(1, (int)ceil($totalRows / $limit));
 $page = max(1, min($page, $totalPages));
 $offset = ($page - 1) * $limit;
 
-$mkUrl = function(array $overrides = []) use ($filters) {
-  $q = array_merge($filters, $overrides);
-  return '?' . http_build_query($q);
-};
-
-// ===== Listagem =====
 $rows = [];
 try {
   $sql = "
     SELECT 
-      v.id,
-      v.criado_em,
-      v.status,
-      v.origem,
-      v.vendedor_cpf,
-      v.total_bruto,
-      v.desconto,
-      v.total_liquido,
-      v.forma_pagamento
+      v.id, v.criado_em, v.status, v.origem, v.vendedor_cpf,
+      v.total_bruto, v.desconto, v.total_liquido, v.forma_pagamento
     FROM vendas_peca v
     WHERE $whereSql
     ORDER BY v.criado_em DESC, v.id DESC
     LIMIT :limit OFFSET :offset
   ";
   $st = $pdo->prepare($sql);
-  foreach ($params as $k => $v) $st->bindValue($k, $v);
+  foreach ($params as $k=>$v) $st->bindValue($k, $v);
   $st->bindValue(':limit', $limit, PDO::PARAM_INT);
   $st->bindValue(':offset', $offset, PDO::PARAM_INT);
   $st->execute();
   $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
-} catch (Throwable $e) { /* ignore */ }
+} catch (Throwable $e) {}
 
-// ===== CSV =====
+/* ========= CSV (vendas) ========= */
 if ($csv) {
   header('Content-Type: text/csv; charset=utf-8');
   header('Content-Disposition: attachment; filename="relatorio_vendas.csv"');
   $out = fopen('php://output', 'w');
-  fputcsv($out, [
-    'ID','Data/Hora','Status','Origem','Vendedor (CPF)',
-    'Total Bruto','Desconto','Total Líquido','Forma Pagamento'
-  ], ';');
-
-  try {
-    $sqlAll = "
-      SELECT 
-        v.id, v.criado_em, v.status, v.origem, v.vendedor_cpf,
-        v.total_bruto, v.desconto, v.total_liquido, v.forma_pagamento
-      FROM vendas_peca v
-      WHERE $whereSql
-      ORDER BY v.criado_em DESC, v.id DESC
-    ";
-    $st = $pdo->prepare($sqlAll);
-    $st->execute($params);
-    while ($r = $st->fetch(PDO::FETCH_ASSOC)) {
-      fputcsv($out, [
-        (int)$r['id'],
-        (new DateTime($r['criado_em']))->format('d/m/Y H:i'),
-        (string)$r['status'],
-        (string)$r['origem'],
-        (string)($r['vendedor_cpf'] ?? ''),
-        number_format((float)$r['total_bruto'], 2, ',', '.'),
-        number_format((float)$r['desconto'], 2, ',', '.'),
-        number_format((float)$r['total_liquido'], 2, ',', '.'),
-        (string)($r['forma_pagamento'] ?? ''),
-      ], ';');
-    }
-  } catch (Throwable $e) { /* ignore */ }
+  fputcsv($out, ['ID','Data/Hora','Status','Origem','Vendedor (CPF)','Bruto','Desconto','Líquido','Forma Pagamento'], ';');
+  $sqlAll = "
+    SELECT v.id, v.criado_em, v.status, v.origem, v.vendedor_cpf,
+           v.total_bruto, v.desconto, v.total_liquido, v.forma_pagamento
+    FROM vendas_peca v
+    WHERE $whereSql
+    ORDER BY v.criado_em DESC, v.id DESC
+  ";
+  $sta = $pdo->prepare($sqlAll);
+  $sta->execute($params);
+  while ($r = $sta->fetch(PDO::FETCH_ASSOC)) {
+    fputcsv($out, [
+      (int)$r['id'],
+      (new DateTime($r['criado_em']))->format('d/m/Y H:i'),
+      (string)$r['status'],
+      (string)$r['origem'],
+      (string)($r['vendedor_cpf'] ?? ''),
+      number_format((float)$r['total_bruto'], 2, ',', '.'),
+      number_format((float)$r['desconto'], 2, ',', '.'),
+      number_format((float)$r['total_liquido'], 2, ',', '.'),
+      (string)($r['forma_pagamento'] ?? ''),
+    ], ';');
+  }
   fclose($out);
   exit;
 }
 
-// ===== Helpers =====
-function fmt_money($v){ return number_format((float)$v, 2, ',', '.'); }
+/* ========= CSV (itens vendidos) ========= */
+if ($csv_it) {
+  header('Content-Type: text/csv; charset=utf-8');
+  header('Content-Disposition: attachment; filename="relatorio_itens_vendidos.csv"');
+  $out = fopen('php://output', 'w');
+  fputcsv($out, ['Item ID','Descrição','Qtd Total','Total Itens (R$)'], ';');
+  foreach ($itensVendidos as $it) {
+    fputcsv($out, [
+      (int)$it['item_id'],
+      (string)$it['descricao'],
+      number_format((float)$it['qtd_total'], 3, ',', '.'),
+      number_format((float)$it['total_itens'], 2, ',', '.'),
+    ], ';');
+  }
+  fclose($out);
+  exit;
+}
 
-// ===== Saídas para a View =====
-$pagination = [
-  'page' => $page,
-  'total_rows' => $totalRows,
-  'total_pages' => $totalPages,
-  'limit' => $limit,
-  'offset' => $offset,
-  'make_url' => $mkUrl,
-];
-
-// A view deve incluir este arquivo e usar:
-// $filters, $rows, $totais, $pagination, fmt_money()
+/* ========= Helpers ========= */
+function fmt($v){ return number_format((float)$v, 2, ',', '.'); }
+function fmt3($v){ return number_format((float)$v, 3, ',', '.'); }
 
 ?>
 <!doctype html>
@@ -219,194 +233,247 @@ $pagination = [
   </style>
 </head>
 <body>
-  <?php
-    if (session_status() === PHP_SESSION_NONE) session_start();
-    $menuAtivo = 'relatorios-vendas';
-    include '../../layouts/sidebar.php';
-  ?>
+<?php
+  if (session_status() === PHP_SESSION_NONE) session_start();
+  $menuAtivo = 'relatorios-vendas';
+  include '../../layouts/sidebar.php';
+?>
 
-  <main class="main-content">
-    <div class="position-relative iq-banner">
-      <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
-        <div class="container-fluid navbar-inner">
-          <a href="../../dashboard.php" class="navbar-brand"><h4 class="logo-title">Mundo Pets</h4></a>
-          <div class="ms-auto"></div>
-        </div>
-      </nav>
+<main class="main-content">
+  <div class="position-relative iq-banner">
+    <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
+      <div class="container-fluid navbar-inner">
+        <a href="../../dashboard.php" class="navbar-brand"><h4 class="logo-title">Mundo Pets</h4></a>
+        <div class="ms-auto"></div>
+      </div>
+    </nav>
 
-      <div class="iq-navbar-header" style="height:150px; margin-bottom:50px;">
-        <div class="container-fluid iq-container">
-          <div class="row">
-            <div class="col-12">
-              <h1 class="mb-0">Relatório de Vendas</h1>
-              <p>Filtre por período, forma de pagamento e status. Exporte para CSV quando precisar.</p>
-            </div>
+    <div class="iq-navbar-header" style="height:150px; margin-bottom:50px;">
+      <div class="container-fluid iq-container">
+        <div class="row">
+          <div class="col-12">
+            <h1 class="mb-0">Relatório de Vendas</h1>
+            <p>Resumo de vendas, itens vendidos, suprimentos e sangrias no período.</p>
           </div>
         </div>
-        <div class="iq-header-img">
-          <img src="../../assets/images/dashboard/top-header.png" class="img-fluid w-100 h-100 animated-scaleX" alt="">
-        </div>
+      </div>
+      <div class="iq-header-img">
+        <img src="../../assets/images/dashboard/top-header.png" class="img-fluid w-100 h-100 animated-scaleX" alt="">
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid content-inner mt-n3 py-0">
+
+    <!-- Filtros -->
+    <div class="card" data-aos="fade-up" data-aos-delay="150">
+      <div class="card-header"><h4 class="card-title mb-0">Filtros</h4></div>
+      <div class="card-body">
+        <form class="row g-3" method="get" action="">
+          <div class="col-sm-3">
+            <label class="form-label">De</label>
+            <input type="date" class="form-control" name="de" value="<?= htmlspecialchars($de, ENT_QUOTES, 'UTF-8') ?>">
+          </div>
+          <div class="col-sm-3">
+            <label class="form-label">Até</label>
+            <input type="date" class="form-control" name="ate" value="<?= htmlspecialchars($ate, ENT_QUOTES, 'UTF-8') ?>">
+          </div>
+          <div class="col-sm-3">
+            <label class="form-label">Forma</label>
+            <select class="form-select" name="fp">
+              <option value="">Todas</option>
+              <?php foreach (['dinheiro'=>'Dinheiro','pix'=>'PIX','debito'=>'Débito','credito'=>'Crédito'] as $k=>$v): ?>
+                <option value="<?= $k ?>" <?= $fp===$k?'selected':'' ?>><?= $v ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="col-sm-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status">
+              <?php foreach ([''=>'Todos','aberta'=>'Aberta','fechada'=>'Fechada','cancelada'=>'Cancelada'] as $k=>$v): ?>
+                <option value="<?= $k ?>" <?= $status===$k?'selected':'' ?>><?= $v ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="col-lg-9">
+            <label class="form-label">Buscar</label>
+            <input type="text" class="form-control" name="q" value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>" placeholder="ID, CPF do vendedor ou origem (balcao/lavajato/orcamento)">
+          </div>
+          <div class="col-lg-3 d-flex align-items-end gap-2">
+            <button class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1"></i> Filtrar</button>
+            <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters,['csv'=>1])) ?>">
+              <i class="bi bi-filetype-csv me-1"></i> CSV Vendas
+            </a>
+            <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters,['csv_it'=>1])) ?>">
+              <i class="bi bi-filetype-csv me-1"></i> CSV Itens
+            </a>
+          </div>
+        </form>
       </div>
     </div>
 
-    <div class="container-fluid content-inner mt-n3 py-0">
-      <div class="card" data-aos="fade-up" data-aos-delay="150">
-        <div class="card-header">
-          <h4 class="card-title mb-0">Filtros</h4>
-        </div>
-        <div class="card-body">
-          <form class="row g-3" method="get" action="">
-            <div class="col-sm-3">
-              <label class="form-label">De</label>
-              <input type="date" class="form-control" name="de" value="<?= htmlspecialchars($de, ENT_QUOTES, 'UTF-8') ?>">
-            </div>
-            <div class="col-sm-3">
-              <label class="form-label">Até</label>
-              <input type="date" class="form-control" name="ate" value="<?= htmlspecialchars($ate, ENT_QUOTES, 'UTF-8') ?>">
-            </div>
-            <div class="col-sm-3">
-              <label class="form-label">Forma</label>
-              <select class="form-select" name="fp">
-                <option value="">Todas</option>
-                <?php
-                  foreach (['dinheiro'=>'Dinheiro','pix'=>'PIX','debito'=>'Débito','credito'=>'Crédito'] as $k=>$v){
-                    $sel = $fp===$k ? 'selected' : '';
-                    echo "<option value=\"$k\" $sel>$v</option>";
-                  }
-                ?>
-              </select>
-            </div>
-            <div class="col-sm-3">
-              <label class="form-label">Status</label>
-              <select class="form-select" name="status">
-                <?php
-                  $opts = [''=>'Todos','concluida'=>'Concluída','finalizada'=>'Finalizada','paga'=>'Paga','pendente'=>'Pendente','cancelada'=>'Cancelada'];
-                  foreach ($opts as $k=>$v){ $sel = ($status===$k?'selected':''); echo "<option value=\"$k\" $sel>$v</option>"; }
-                ?>
-              </select>
-            </div>
-            <div class="col-lg-9">
-              <label class="form-label">Buscar</label>
-              <input type="text" class="form-control" name="q" value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>" placeholder="Cliente, documento, observação...">
-            </div>
-            <div class="col-lg-3 d-flex align-items-end gap-2">
-              <button class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1"></i> Filtrar</button>
-              <a class="btn btn-outline-secondary" href="?de=<?= urlencode($de) ?>&ate=<?= urlencode($ate) ?>&fp=<?= urlencode($fp) ?>&status=<?= urlencode($status) ?>&q=<?= urlencode($q) ?>&csv=1">
-                <i class="bi bi-filetype-csv me-1"></i> CSV
-              </a>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <div class="row g-3">
-        <div class="col-12 col-xxl-8">
-          <div class="card" data-aos="fade-up" data-aos-delay="200">
-            <div class="card-body">
-              <div class="table-responsive">
-                <table class="table table-striped align-middle">
-                  <thead>
+    <div class="row g-3">
+      <!-- Lista de vendas -->
+      <div class="col-12 col-xxl-8">
+        <div class="card" data-aos="fade-up" data-aos-delay="200">
+          <div class="card-header"><h5 class="mb-0">Vendas</h5></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped align-middle">
+                <thead>
+                  <tr>
+                    <th style="width:120px;"># / Data</th>
+                    <th>Origem</th>
+                    <th>Vendedor (CPF)</th>
+                    <th class="text-end">Bruto</th>
+                    <th class="text-end">Desc.</th>
+                    <th class="text-end">Líquido</th>
+                    <th>Forma</th>
+                    <th class="text-end">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php if (!$rows): ?>
+                    <tr><td colspan="8" class="text-center text-muted">Nenhuma venda encontrada.</td></tr>
+                  <?php else: foreach ($rows as $r): ?>
                     <tr>
-                      <th style="width:110px;"># / Data</th>
-                      <th>Cliente</th>
-                      <th>Documento</th>
-                      <th class="text-end">Bruto</th>
-                      <th class="text-end">Desc.</th>
-                      <th class="text-end">Líquido</th>
-                      <th class="text-end">Pago</th>
-                      <th>Formas</th>
-                      <th class="text-end">Status</th>
+                      <td>
+                        <div class="fw-semibold">#<?= (int)$r['id'] ?></div>
+                        <div class="small text-muted"><?= (new DateTime($r['criado_em']))->format('d/m/Y H:i') ?></div>
+                      </td>
+                      <td><?= htmlspecialchars((string)$r['origem'], ENT_QUOTES, 'UTF-8') ?></td>
+                      <td><?= htmlspecialchars((string)($r['vendedor_cpf'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
+                      <td class="text-end money">R$ <?= fmt($r['total_bruto']) ?></td>
+                      <td class="text-end money">R$ <?= fmt($r['desconto']) ?></td>
+                      <td class="text-end money">R$ <?= fmt($r['total_liquido']) ?></td>
+                      <td><?= htmlspecialchars((string)($r['forma_pagamento'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
+                      <td class="text-end">
+                        <?php $st = strtolower((string)$r['status']); $map = ['fechada'=>'success','aberta'=>'warning','cancelada'=>'secondary']; ?>
+                        <span class="badge bg-<?= $map[$st] ?? 'secondary' ?> badge-status"><?= htmlspecialchars($st, ENT_QUOTES, 'UTF-8') ?></span>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    <?php if (!$rows): ?>
-                      <tr><td colspan="9" class="text-center text-muted">Nenhuma venda encontrada para o filtro.</td></tr>
-                    <?php else: foreach ($rows as $r): ?>
-                      <tr>
-                        <td>
-                          <div class="fw-semibold">#<?= (int)$r['id'] ?></div>
-                          <div class="small text-muted"><?= (new DateTime($r['created_at']))->format('d/m/Y H:i') ?></div>
-                        </td>
-                        <td><?= htmlspecialchars((string)($r['cliente_nome'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars((string)($r['documento'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
-                        <td class="text-end money">R$ <?= fmt($r['total_bruto']) ?></td>
-                        <td class="text-end money">R$ <?= fmt($r['desconto']) ?></td>
-                        <td class="text-end money">R$ <?= fmt($r['total_liquido']) ?></td>
-                        <td class="text-end money">R$ <?= fmt($r['total_pago']) ?></td>
-                        <td><?= htmlspecialchars((string)($r['formas'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
-                        <td class="text-end">
-                          <?php
-                            $st = strtolower((string)$r['status']);
-                            $map = ['paga'=>'success','finalizada'=>'primary','concluida'=>'primary','pendente'=>'warning','cancelada'=>'secondary'];
-                            $cls = $map[$st] ?? 'secondary';
-                          ?>
-                          <span class="badge bg-<?= $cls ?> badge-status"><?= htmlspecialchars($st, ENT_QUOTES, 'UTF-8') ?></span>
-                        </td>
-                      </tr>
-                    <?php endforeach; endif; ?>
-                  </tbody>
-                </table>
-              </div>
+                  <?php endforeach; endif; ?>
+                </tbody>
+              </table>
+            </div>
 
-              <?php
-                $totalPages = max(1, (int)ceil($totalRows / $limit));
-                $mk = function($p) use($de,$ate,$fp,$status,$q){ 
-                  return '?de='.urlencode($de).'&ate='.urlencode($ate).'&fp='.urlencode($fp).'&status='.urlencode($status).'&q='.urlencode($q).'&page='.$p;
-                };
-              ?>
-              <?php if ($totalPages > 1): ?>
-                <nav aria-label="Paginação">
-                  <ul class="pagination justify-content-end mb-0">
-                    <li class="page-item <?= $page<=1?'disabled':'' ?>"><a class="page-link" href="<?= $mk(max(1,$page-1)) ?>">«</a></li>
-                    <li class="page-item disabled"><span class="page-link">Página <?= $page ?> de <?= $totalPages ?></span></li>
-                    <li class="page-item <?= $page>=$totalPages?'disabled':'' ?>"><a class="page-link" href="<?= $mk(min($totalPages,$page+1)) ?>">»</a></li>
-                  </ul>
-                </nav>
-              <?php endif; ?>
+            <?php if ($totalPages > 1): ?>
+              <?php $mk = fn($p)=>'?'.http_build_query(array_merge($filters,['page'=>$p])); ?>
+              <nav aria-label="Paginação">
+                <ul class="pagination justify-content-end mb-0">
+                  <li class="page-item <?= $page<=1?'disabled':'' ?>"><a class="page-link" href="<?= $mk(max(1,$page-1)) ?>">«</a></li>
+                  <li class="page-item disabled"><span class="page-link">Página <?= $page ?> de <?= $totalPages ?></span></li>
+                  <li class="page-item <?= $page>=$totalPages?'disabled':'' ?>"><a class="page-link" href="<?= $mk(min($totalPages,$page+1)) ?>">»</a></li>
+                </ul>
+              </nav>
+            <?php endif; ?>
+          </div>
+        </div>
 
+        <!-- Itens vendidos -->
+        <div class="card mt-3" data-aos="fade-up" data-aos-delay="230">
+          <div class="card-header"><h5 class="mb-0">Itens Vendidos (Produtos) — Período</h5></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped align-middle">
+                <thead>
+                  <tr>
+                    <th style="width:110px;">Item ID</th>
+                    <th>Descrição</th>
+                    <th class="text-end">Qtd</th>
+                    <th class="text-end">Total Itens (R$)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php if (!$itensVendidos): ?>
+                    <tr><td colspan="4" class="text-center text-muted">Nenhum item vendido no período.</td></tr>
+                  <?php else: foreach ($itensVendidos as $it): ?>
+                    <tr>
+                      <td>#<?= (int)$it['item_id'] ?></td>
+                      <td><?= htmlspecialchars((string)$it['descricao'], ENT_QUOTES, 'UTF-8') ?></td>
+                      <td class="text-end"><?= fmt3($it['qtd_total']) ?></td>
+                      <td class="text-end money">R$ <?= fmt($it['total_itens']) ?></td>
+                    </tr>
+                  <?php endforeach; endif; ?>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
 
-        <div class="col-12 col-xxl-4">
-          <div class="aside-sticky">
-            <div class="card" data-aos="fade-up" data-aos-delay="220">
-              <div class="card-header"><h5 class="mb-0">Totais do Período</h5></div>
-              <div class="card-body">
-                <div class="d-flex justify-content-between mb-1"><span class="text-muted">Dinheiro</span><strong class="money">R$ <?= fmt($totais['dinheiro']) ?></strong></div>
-                <div class="d-flex justify-content-between mb-1"><span class="text-muted">PIX</span><strong class="money">R$ <?= fmt($totais['pix']) ?></strong></div>
-                <div class="d-flex justify-content-between mb-1"><span class="text-muted">Débito</span><strong class="money">R$ <?= fmt($totais['debito']) ?></strong></div>
-                <div class="d-flex justify-content-between"><span class="text-muted">Crédito</span><strong class="money">R$ <?= fmt($totais['credito']) ?></strong></div>
-                <hr>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="fs-6">TOTAL</span>
-                  <span class="fs-5 fw-bold money">R$ <?= fmt($totais['geral']) ?></span>
-                </div>
-                <div class="mt-3 d-grid gap-2">
-                  <a class="btn btn-outline-secondary" href="?de=<?= urlencode($de) ?>&ate=<?= urlencode($ate) ?>&fp=<?= urlencode($fp) ?>&status=<?= urlencode($status) ?>&q=<?= urlencode($q) ?>&csv=1">
-                    <i class="bi bi-download me-1"></i> Baixar CSV
-                  </a>
-                  <button class="btn btn-outline-primary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimir</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div><!--/row-->
-    </div>
-
-    <footer class="footer">
-      <div class="footer-body d-flex justify-content-between align-items-center">
-        <div class="left-panel">© <script>document.write(new Date().getFullYear())</script> <?= htmlspecialchars($empresaNome, ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="right-panel">Desenvolvido por Lucas de S. Correa.</div>
       </div>
-    </footer>
-  </main>
 
-  <script src="../../assets/js/core/libs.min.js"></script>
-  <script src="../../assets/js/core/external.min.js"></script>
-  <script src="../../assets/vendor/aos/dist/aos.js"></script>
-  <script src="../../assets/js/hope-ui.js" defer></script>
+      <!-- Cards de totais -->
+      <div class="col-12 col-xxl-4">
+        <div class="aside-sticky">
+
+          <!-- Totais por forma -->
+          <div class="card" data-aos="fade-up" data-aos-delay="220">
+            <div class="card-header"><h5 class="mb-0">Totais — Vendas Fechadas</h5></div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between mb-1"><span class="text-muted">Dinheiro</span><strong class="money">R$ <?= fmt($totais['dinheiro']) ?></strong></div>
+              <div class="d-flex justify-content-between mb-1"><span class="text-muted">PIX</span><strong class="money">R$ <?= fmt($totais['pix']) ?></strong></div>
+              <div class="d-flex justify-content-between mb-1"><span class="text-muted">Débito</span><strong class="money">R$ <?= fmt($totais['debito']) ?></strong></div>
+              <div class="d-flex justify-content-between"><span class="text-muted">Crédito</span><strong class="money">R$ <?= fmt($totais['credito']) ?></strong></div>
+              <hr>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fs-6">TOTAL</span>
+                <span class="fs-5 fw-bold money">R$ <?= fmt($totais['geral']) ?></span>
+              </div>
+              <div class="mt-3 d-grid gap-2">
+                <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters,['csv'=>1])) ?>">
+                  <i class="bi bi-download me-1"></i> CSV Vendas
+                </a>
+                <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters,['csv_it'=>1])) ?>">
+                  <i class="bi bi-download me-1"></i> CSV Itens
+                </a>
+                <button class="btn btn-outline-primary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimir</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Suprimentos / Sangrias -->
+          <div class="card mt-3" data-aos="fade-up" data-aos-delay="240">
+            <div class="card-header"><h5 class="mb-0">Movimentações de Caixa</h5></div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Suprimentos (Entradas)</span>
+                <strong class="money">R$ <?= fmt($mov['suprimentos']) ?></strong>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Sangrias (Saídas)</span>
+                <strong class="money">R$ <?= fmt($mov['sangrias']) ?></strong>
+              </div>
+              <hr>
+              <?php
+                // Caixa físico do período (aproximação): dinheiro de vendas fechadas + suprimentos - sangrias
+                $caixaFisico = $totais['dinheiro'] + $mov['suprimentos'] - $mov['sangrias'];
+              ?>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fs-6">Estimativa Caixa (Dinheiro)</span>
+                <span class="fs-6 fw-bold money">R$ <?= fmt($caixaFisico) ?></span>
+              </div>
+              <div class="form-text mt-1">Estimativa: Dinheiro (vendas fechadas) + Suprimentos − Sangrias</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div><!-- /row -->
+
+  </div>
+
+  <footer class="footer">
+    <div class="footer-body d-flex justify-content-between align-items-center">
+      <div class="left-panel">© <script>document.write(new Date().getFullYear())</script> <?= htmlspecialchars($empresaNome, ENT_QUOTES, 'UTF-8') ?></div>
+      <div class="right-panel">Desenvolvido por Lucas de S. Correa.</div>
+    </div>
+  </footer>
+</main>
+
+<script src="../../assets/js/core/libs.min.js"></script>
+<script src="../../assets/js/core/external.min.js"></script>
+<script src="../../assets/vendor/aos/dist/aos.js"></script>
+<script src="../../assets/js/hope-ui.js" defer></script>
 </body>
 </html>
