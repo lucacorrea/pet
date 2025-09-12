@@ -24,7 +24,7 @@ $isInvalidEmail = ($err === 1 && stripos($rawMsg, 'email') !== false);
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>AutoERP - Redefinir Senha</title>
+    <title>Mundo Pets - Redefinir Senha</title>
 
     <link rel="shortcut icon" href="./public/assets/images/favicon.ico">
     <link rel="stylesheet" href="./public/assets/css/core/libs.min.css">
@@ -51,17 +51,17 @@ $isInvalidEmail = ($err === 1 && stripos($rawMsg, 'email') !== false);
                             <a href="./index.php" class="navbar-brand d-flex align-items-center mb-3">
                                 <div class="logo-main">
                                     <div class="logo-normal">
-                                        <img src="./public/assets/images/auth/ode.png" style="width: 100px; margin-top: -20px;" alt="AutoERP">
+                                        <img src="./public/assets/images/dashboard/logo.png" style="width: 80px; margin-top: -20px;" alt="AutoERP">
                                     </div>
                                 </div>
-                                <h4 class="logo-title ms-2" style="margin-top: -20px; margin-left: -30px !important;">AutoERP</h4>
+                                <h4 class="logo-title ms-2" style="margin-top: -20px; margin-left: -15px !important;">Mundo Pets</h4>
                             </a>
 
                             <h2 class="mb-2">Redefinir Senha</h2>
                             <p>Digite seu e-mail. Enviaremos um <strong>código de 6 dígitos</strong> para confirmar a redefinição.</p>
 
                             <?php if ($ok === 1): ?>
-                                <div class="alert alert-success">
+                                <div class="alert alert-primary">
                                     Se o e-mail existir no sistema, o código foi enviado. Verifique sua caixa de entrada.
                                 </div>
                             <?php elseif ($err === 1): ?>
@@ -98,9 +98,9 @@ $isInvalidEmail = ($err === 1 && stripos($rawMsg, 'email') !== false);
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-success">Enviar código</button>
-                                <a class="btn btn-link text-success" href="./confirmarCodigo.php?email=<?=$prefill?>">Já tenho o código</a>
-                                <a class="btn btn-link text-success" href="./index.php">Voltar</a>
+                                <button type="submit" class="btn btn-primary">Enviar código</button>
+                                <a class="btn btn-link text-primary" href="./confirmarCodigo.php?email=<?=$prefill?>">Já tenho o código</a>
+                                <a class="btn btn-link text-primary" href="./index.php">Voltar</a>
                             </form>
                         </div>
                     </div>
