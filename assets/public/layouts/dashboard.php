@@ -9,7 +9,6 @@ if (!isset($menuAtivo)) {
 
 <aside class="sidebar sidebar-default sidebar-white sidebar-base navs-rounded-all <?= (!empty($sidebarMini) ? 'sidebar-mini' : '') ?>">
 
-
   <div class="sidebar-header d-flex align-items-center justify-content-start">
     <a href="./dashboard.php" class="navbar-brand">
       <div class="logo-main">
@@ -38,12 +37,9 @@ if (!isset($menuAtivo)) {
             <i class="bi bi-grid icon"></i><span class="item-name">Dashboard</span>
           </a>
         </li>
-        <li>
-          <hr class="hr-horizontal">
-        </li>
+        <li><hr class="hr-horizontal"></li>
 
         <!-- VENDAS -->
-
         <li class="nav-item">
           <a class="nav-link <?= ($menuAtivo === 'vendas-rapida' ? 'active' : '') ?>" href="./vendas/pages/vendaRapida.php">
             <i class="bi bi-cash-coin icon"></i><span class="item-name">Venda Rápida</span>
@@ -54,25 +50,43 @@ if (!isset($menuAtivo)) {
             <i class="bi bi-file-earmark-text icon"></i><span class="item-name">Orçamentos</span>
           </a>
         </li>
-        
+
+        <!-- CAIXA (agora dentro de /vendas/pages e com collapse próprio) -->
         <li class="nav-item">
-          <a class="nav-link <?= ($menuAtivo === 'vendas-abriCaixa' ? 'active' : '') ?>" href="./vendas/pages/caixaAbrir.php">
-            <i class="bi bi-cash-coin icon"></i><span class="item-name">Abri Caixa</span>
+          <a class="nav-link" data-bs-toggle="collapse" href="#sidebar-caixa" role="button"
+             aria-expanded="<?= str_starts_with($menuAtivo, 'caixa-') ? 'true' : 'false' ?>"
+             aria-controls="sidebar-caixa">
+            <i class="bi bi-wallet2 icon"></i><span class="item-name">Caixa</span><i class="bi bi-chevron-right right-icon"></i>
           </a>
+          <ul class="sub-nav collapse <?= str_starts_with($menuAtivo, 'caixa-') ? 'show' : '' ?>" id="sidebar-caixa" data-bs-parent="#sidebar-menu">
+            <li class="nav-item">
+              <a class="nav-link <?= ($menuAtivo === 'caixa-abrir' ? 'active' : '') ?>" href="./vendas/pages/caixaAbrir.php">
+                <i class="bi bi-cash-stack icon"></i><span class="item-name">Abrir Caixa</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <?= ($menuAtivo === 'caixa-fechar' ? 'active' : '') ?>" href="./vendas/pages/caixaFechar.php">
+                <i class="bi bi-lock icon"></i><span class="item-name">Fechar Caixa</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <?= ($menuAtivo === 'caixa-suprimento' ? 'active' : '') ?>" href="./vendas/pages/caixaSuprimento.php">
+                <i class="bi bi-arrow-up-circle icon"></i><span class="item-name">Suprimento</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <?= ($menuAtivo === 'caixa-sangria' ? 'active' : '') ?>" href="./vendas/pages/caixaSangria.php">
+                <i class="bi bi-arrow-down-circle icon"></i><span class="item-name">Sangria</span>
+              </a>
+            </li>
+          </ul>
         </li>
 
-        <li class="nav-item">
-          <a class="nav-link <?= ($menuAtivo === 'vendas-fechaCaixa' ? 'active' : '') ?>" href="./vendas/pages/caixaFechar.php">
-            <i class="bi bi-cash-coin icon"></i><span class="item-name">Fechar Caixa</span>
-          </a>
-        </li>
-
-       
         <!-- ESTOQUE -->
         <li class="nav-item">
           <a class="nav-link" data-bs-toggle="collapse" href="#sidebar-estoque" role="button"
-            aria-expanded="<?= str_starts_with($menuAtivo, 'estoque-') ? 'true' : 'false' ?>"
-            aria-controls="sidebar-estoque">
+             aria-expanded="<?= str_starts_with($menuAtivo, 'estoque-') ? 'true' : 'false' ?>"
+             aria-controls="sidebar-estoque">
             <i class="bi bi-truck icon"></i><span class="item-name">Estoque</span><i class="bi bi-chevron-right right-icon"></i>
           </a>
           <ul class="sub-nav collapse <?= str_starts_with($menuAtivo, 'estoque-') ? 'show' : '' ?>" id="sidebar-estoque" data-bs-parent="#sidebar-menu">
@@ -107,8 +121,8 @@ if (!isset($menuAtivo)) {
         <!-- RELATÓRIOS -->
         <li class="nav-item">
           <a class="nav-link" data-bs-toggle="collapse" href="#sidebar-relatorios" role="button"
-            aria-expanded="<?= str_starts_with($menuAtivo, 'relatorios-') ? 'true' : 'false' ?>"
-            aria-controls="sidebar-relatorios">
+             aria-expanded="<?= str_starts_with($menuAtivo, 'relatorios-') ? 'true' : 'false' ?>"
+             aria-controls="sidebar-relatorios">
             <i class="bi bi-clipboard-data icon"></i><span class="item-name">Relatórios</span><i class="bi bi-chevron-right right-icon"></i>
           </a>
           <ul class="sub-nav collapse <?= str_starts_with($menuAtivo, 'relatorios-') ? 'show' : '' ?>" id="sidebar-relatorios" data-bs-parent="#sidebar-menu">
@@ -128,8 +142,8 @@ if (!isset($menuAtivo)) {
         <!-- CONFIGURAÇÕES -->
         <li class="nav-item">
           <a class="nav-link" data-bs-toggle="collapse" href="#sidebar-config" role="button"
-            aria-expanded="<?= str_starts_with($menuAtivo, 'config-') ? 'true' : 'false' ?>"
-            aria-controls="sidebar-config">
+             aria-expanded="<?= str_starts_with($menuAtivo, 'config-') ? 'true' : 'false' ?>"
+             aria-controls="sidebar-config">
             <i class="bi bi-gear icon"></i><span class="item-name">Configurações</span><i class="bi bi-chevron-right right-icon"></i>
           </a>
           <ul class="sub-nav collapse <?= str_starts_with($menuAtivo, 'config-') ? 'show' : '' ?>" id="sidebar-config" data-bs-parent="#sidebar-menu">
@@ -151,11 +165,9 @@ if (!isset($menuAtivo)) {
           </ul>
         </li>
 
-        <li>
-          <hr class="hr-horizontal">
-        </li>
+        <li><hr class="hr-horizontal"></li>
         <li class="nav-item">
-          <a class="nav-link" href="../../actions/logout.php">
+          <a class="nav-link" href="./actions/logout.php">
             <i class="bi bi-box-arrow-right icon"></i><span class="item-name">Sair</span>
           </a>
         </li>
