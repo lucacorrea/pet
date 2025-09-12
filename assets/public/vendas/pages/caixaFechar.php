@@ -278,10 +278,7 @@ function fmt($v)
             </div>
           </form>
 
-          <a href="../../dashboard.php" class="btn btn-outline-secondary w-100 mt-2">
-            <i class="bi bi-arrow-left"></i> Voltar
-          </a>
-        </div>
+         
       </div>
     </div><!--/row-->
   <?php endif; ?>
