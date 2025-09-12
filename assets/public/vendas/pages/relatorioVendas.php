@@ -285,11 +285,11 @@ $pagination = [
                 ?>
               </select>
             </div>
-            <div class="col-lg-8">
+            <div class="col-lg-9">
               <label class="form-label">Buscar</label>
               <input type="text" class="form-control" name="q" value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>" placeholder="Cliente, documento, observação...">
             </div>
-            <div class="col-lg-4 d-flex align-items-end gap-2">
+            <div class="col-lg-3 d-flex align-items-end gap-2">
               <button class="btn btn-primary w-90" type="submit"><i class="bi bi-search me-1"></i> Filtrar</button>
               <a class="btn btn-outline-secondary" href="?de=<?= urlencode($de) ?>&ate=<?= urlencode($ate) ?>&fp=<?= urlencode($fp) ?>&status=<?= urlencode($status) ?>&q=<?= urlencode($q) ?>&csv=1">
                 <i class="bi bi-filetype-csv me-1"></i> CSV
