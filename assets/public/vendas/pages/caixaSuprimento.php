@@ -1,11 +1,10 @@
 <?php
-// autoErp/public/caixa/pages/caixaMovNova.php
+// autoErp/public/caixa/pages/caixaSuprimento.php
 declare(strict_types=1);
-
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/../../../lib/auth_guard.php';
-guard_empresa_user(['dono', 'administrativo', 'caixa']);
+guard_empresa_user(['dono','administrativo','caixa']);
 
 $pdo = null;
 $pathCon = realpath(__DIR__ . '/../../../conexao/conexao.php');
@@ -18,15 +17,11 @@ $empresaCnpj = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj']
 $usuarioCpf  = preg_replace('/\D+/', '', (string)($_SESSION['user_cpf'] ?? ''));
 if (!preg_match('/^\d{14}$/', $empresaCnpj)) die('Empresa não vinculada ao usuário.');
 
-// tipo vindo da URL
-$tipo = strtolower((string)($_GET['tipo'] ?? ''));
-if (!in_array($tipo, ['sangria','suprimento'], true)) $tipo = 'suprimento';
-
-// CSRF
-if (empty($_SESSION['csrf_caixa_mov'])) {
-  $_SESSION['csrf_caixa_mov'] = bin2hex(random_bytes(32));
+// CSRF exclusivo
+if (empty($_SESSION['csrf_suprimento'])) {
+  $_SESSION['csrf_suprimento'] = bin2hex(random_bytes(32));
 }
-$csrf = $_SESSION['csrf_caixa_mov'];
+$csrf = $_SESSION['csrf_suprimento'];
 
 // caixa aberto
 $caixa = null;
@@ -43,7 +38,7 @@ try {
   $caixa = $st->fetch(PDO::FETCH_ASSOC) ?: null;
 } catch (Throwable $e) { $caixa = null; }
 
-// feedback via querystring
+// feedback
 $ok  = (int)($_GET['ok'] ?? 0);
 $err = (int)($_GET['err'] ?? 0);
 $msg = (string)($_GET['msg'] ?? '');
@@ -52,7 +47,7 @@ $msg = (string)($_GET['msg'] ?? '');
 <html lang="pt-BR" dir="ltr">
 <head>
   <meta charset="utf-8">
-  <title><?= $tipo === 'sangria' ? 'Sangria' : 'Suprimento' ?> — Caixa</title>
+  <title>Suprimento — Caixa</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="../../assets/images/dashboard/icon.png">
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
@@ -65,7 +60,6 @@ $msg = (string)($_GET['msg'] ?? '');
   <link rel="stylesheet" href="../../assets/css/rtl.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
-    /* Toast verde no topo-direito */
     .toast-wrap{position:fixed; top:16px; right:16px; z-index:2000; min-width:360px}
     .toast-card{border-radius:12px; overflow:hidden; box-shadow:0 10px 28px rgba(0,0,0,.18); animation:slideIn .35s ease-out}
     @keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
@@ -75,10 +69,9 @@ $msg = (string)($_GET['msg'] ?? '');
 <body>
 <?php
   if (session_status() === PHP_SESSION_NONE) session_start();
-  $menuAtivo = 'caixa-fechar'; // usa o mesmo grupo de menu Caixa
+  $menuAtivo = 'caixa-fechar'; // agrupa no mesmo menu de Caixa
   include '../../layouts/sidebar.php';
 ?>
-
 <main class="main-content">
   <div class="position-relative iq-banner">
     <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
@@ -92,8 +85,8 @@ $msg = (string)($_GET['msg'] ?? '');
       <div class="container-fluid iq-container">
         <div class="row">
           <div class="col-12">
-            <h1 class="mb-0"><?= $tipo === 'sangria' ? 'Sangria do Caixa' : 'Suprimento do Caixa' ?></h1>
-            <p>Registre uma movimentação de <strong><?= $tipo ?></strong> no caixa aberto.</p>
+            <h1 class="mb-0">Suprimento do Caixa</h1>
+            <p>Registre a entrada de dinheiro no caixa aberto para troco/ajustes.</p>
             <?php if (!$caixa): ?>
               <div class="alert alert-warning mt-2 mb-0">
                 Não há caixa aberto para esta empresa.
@@ -118,14 +111,16 @@ $msg = (string)($_GET['msg'] ?? '');
   <div class="container-fluid content-inner mt-n3 py-0">
     <div class="row justify-content-center">
       <div class="col-12 col-lg-7">
-        <form method="post" action="../actions/caixaMovSalvar.php" class="card" autocomplete="off">
+        <form method="post" action="../actions/caixaSuprimentoSalvar.php" class="card" autocomplete="off">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><?= $tipo === 'sangria' ? 'Nova Sangria' : 'Novo Suprimento' ?></h5>
-            <a href="./caixaFechar.php" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Voltar</a>
+            <h5 class="mb-0"><i class="bi bi-arrow-up-circle me-1"></i> Novo Suprimento</h5>
+            <div class="d-flex gap-2">
+              <a href="./caixaSangria.php" class="btn btn-outline-dark btn-sm"><i class="bi bi-arrow-down-circle"></i> Sangria</a>
+              <a href="./caixaFechar.php" class="btn btn-outline-secondary btn-sm"><i class="bi bi-lock"></i> Fechar Caixa</a>
+            </div>
           </div>
           <div class="card-body">
             <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
-            <input type="hidden" name="tipo" value="<?= htmlspecialchars($tipo, ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="empresa_cnpj" value="<?= htmlspecialchars($empresaCnpj, ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="criado_por_cpf" value="<?= htmlspecialchars($usuarioCpf, ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="caixa_id" value="<?= (int)($caixa['id'] ?? 0) ?>">
@@ -136,20 +131,17 @@ $msg = (string)($_GET['msg'] ?? '');
                 <span class="input-group-text">R$</span>
                 <input type="number" step="0.01" min="0.01" name="valor" class="form-control text-end" placeholder="0,00" required <?= $caixa?'':'disabled' ?>>
               </div>
-              <div class="form-text">
-                Para sangria: retirada de dinheiro do caixa. • Para suprimento: entrada de dinheiro no caixa.
-              </div>
+              <div class="form-text">Entrada de dinheiro no caixa (ex.: reforço de troco).</div>
             </div>
 
             <div class="mb-3">
               <label class="form-label">Observação</label>
-              <textarea name="observacao" class="form-control" rows="3" placeholder="Ex.: sangria para depósito / suprimento para troco" <?= $caixa?'':'disabled' ?>></textarea>
+              <textarea name="observacao" class="form-control" rows="3" placeholder="Ex.: suprimento para troco" <?= $caixa?'':'disabled' ?>></textarea>
             </div>
 
             <div class="d-grid">
-              <button type="submit" class="btn <?= $tipo === 'sangria' ? 'btn-danger' : 'btn-success' ?>" <?= $caixa?'':'disabled' ?>>
-                <i class="bi <?= $tipo === 'sangria' ? 'bi-arrow-down-circle' : 'bi-arrow-up-circle' ?> me-1"></i>
-                Confirmar <?= $tipo === 'sangria' ? 'Sangria' : 'Suprimento' ?>
+              <button type="submit" class="btn btn-success" <?= $caixa?'':'disabled' ?>>
+                <i class="bi bi-check2-circle me-1"></i> Confirmar Suprimento
               </button>
             </div>
           </div>
@@ -164,7 +156,7 @@ $msg = (string)($_GET['msg'] ?? '');
         <div class="p-3 d-flex align-items-center gap-3">
           <i class="bi <?= $err ? 'bi-x-circle-fill' : 'bi-check-circle-fill' ?> fs-3"></i>
           <div class="fw-semibold">
-            <?= htmlspecialchars($msg ?: ($err ? 'Falha ao registrar movimentação.' : 'Movimentação registrada com sucesso!'), ENT_QUOTES, 'UTF-8') ?>
+            <?= htmlspecialchars($msg ?: ($err ? 'Falha ao registrar suprimento.' : 'Suprimento registrado com sucesso!'), ENT_QUOTES, 'UTF-8') ?>
           </div>
           <button class="btn-close btn-close-white ms-auto" onclick="closeToast()" aria-label="Fechar"></button>
         </div>
@@ -174,17 +166,8 @@ $msg = (string)($_GET['msg'] ?? '');
       </div>
     </div>
     <script>
-      function closeToast(){
-        const wrap = document.getElementById('toastWrap');
-        if(!wrap) return;
-        wrap.style.animation = 'slideOut .35s ease-in forwards';
-        setTimeout(()=>wrap.remove(), 350);
-      }
-      (function(){
-        const bar = document.getElementById('toastBar');
-        setTimeout(()=> bar && (bar.style.width='0%'), 50);
-        setTimeout(closeToast, 5000);
-      })();
+      function closeToast(){const w=document.getElementById('toastWrap');if(!w)return;w.style.animation='slideOut .35s ease-in forwards';setTimeout(()=>w.remove(),350);}
+      (function(){const b=document.getElementById('toastBar');setTimeout(()=>b&&(b.style.width='0%'),50);setTimeout(closeToast,5000);})();
     </script>
   <?php endif; ?>
 </main>
