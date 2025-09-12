@@ -356,18 +356,6 @@ function fmt3($v)
               </div>
             </div>
 
-            <!-- Status -->
-            <div class="col-12 col-md-6 col-xl-3">
-              <label class="form-label">Status</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-check2-square"></i></span>
-                <select class="form-select" name="status" aria-label="Status da venda">
-                  <?php foreach (['' => 'Todos', 'aberta' => 'Aberta', 'fechada' => 'Fechada', 'cancelada' => 'Cancelada'] as $k => $v): ?>
-                    <option value="<?= $k ?>" <?= $status === $k ? 'selected' : '' ?>><?= $v ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-            </div>
    <!-- Ações -->
             <div class="col-12 col-lg-3">
               <div class="d-grid gap-2">
@@ -383,6 +371,18 @@ function fmt3($v)
                 <a class="btn btn-soft-danger" href="?de=&ate=&fp=&status=&q=" title="Limpar todos os filtros">
                   <i class="bi bi-eraser"></i> Limpar Filtros
                 </a>
+              </div>
+            </div>
+            <!-- Status -->
+            <div class="col-12 col-md-6 col-xl-6">
+              <label class="form-label">Status</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-check2-square"></i></span>
+                <select class="form-select" name="status" aria-label="Status da venda">
+                  <?php foreach (['' => 'Todos', 'aberta' => 'Aberta', 'fechada' => 'Fechada', 'cancelada' => 'Cancelada'] as $k => $v): ?>
+                    <option value="<?= $k ?>" <?= $status === $k ? 'selected' : '' ?>><?= $v ?></option>
+                  <?php endforeach; ?>
+                </select>
               </div>
             </div>
             <!-- Busca -->
