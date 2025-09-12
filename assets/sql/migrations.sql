@@ -34,15 +34,6 @@ CREATE TABLE caixa_participantes_peca (
   ativo                                           TINYINT(1) NOT NULL DEFAULT 1
 );
 
-CREATE TABLE categorias_lavagem_peca (
-  id                                              INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  empresa_cnpj                                    VARCHAR(20) NOT NULL,
-  nome                                            VARCHAR(120) NOT NULL,
-  descricao                                       TEXT,
-  valor_padrao                                    DECIMAL(12,2) DEFAULT 0.00,
-  ativo                                           TINYINT(1) NOT NULL DEFAULT 1,
-  criado_em                                       TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
-);
 
 CREATE TABLE categorias_produto_peca (
   id                                              INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -82,34 +73,7 @@ CREATE TABLE fornecedores_peca (
   criado_em                                       TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE lavadores_peca (
-  id                                              INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  empresa_cnpj                                    VARCHAR(20) NOT NULL,
-  nome                                            VARCHAR(150) NOT NULL,
-  cpf                                             VARCHAR(20) DEFAULT NULL,
-  telefone                                        VARCHAR(20) DEFAULT NULL,
-  email                                           VARCHAR(150) DEFAULT NULL,
-  ativo                                           TINYINT(1) NOT NULL DEFAULT 1,
-  criado_em                                       TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
-);
 
-CREATE TABLE lavagens_peca (
-  id                                              INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  empresa_cnpj                                    VARCHAR(20) NOT NULL,
-  lavador_cpf                                     VARCHAR(20) NOT NULL,
-  placa                                           VARCHAR(10) DEFAULT NULL,
-  modelo                                          VARCHAR(120) DEFAULT NULL,
-  cor                                             VARCHAR(30) DEFAULT NULL,
-  categoria_id                                    INT DEFAULT NULL,
-  categoria_nome                                  VARCHAR(120) DEFAULT NULL,
-  valor                                           DECIMAL(12,2) NOT NULL,
-  forma_pagamento                                 VARCHAR(40) DEFAULT 'dinheiro',
-  status                                          ENUM('aberta','concluida','cancelada') NOT NULL DEFAULT 'aberta',
-  checkin_at                                      DATETIME DEFAULT NULL,
-  checkout_at                                     DATETIME DEFAULT NULL,
-  observacoes                                     TEXT,
-  criado_em                                       TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
-);
 
 CREATE TABLE mov_estoque_peca (
   id                                              INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
