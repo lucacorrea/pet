@@ -13,7 +13,7 @@ $emailSafe = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>AutoERP - Confirmar Código</title>
+    <title>Mundo Pets - Confirmar Código</title>
 
     <!-- Favicon -->
     <link rel="shortcut icon" href="./public/assets/images/favicon.ico">
@@ -75,12 +75,12 @@ $emailSafe = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
                             <a href="#" class="navbar-brand d-flex align-items-center mb-3">
                                 <div class="logo-main">
                                     <div class="logo-normal">
-                                        <img src="./public/assets/images/auth/ode.png" class="logo-icon"
+                                        <img src="./public/assets/images/dashboard/logo.png" class="logo-icon"
                                              alt="logo"
-                                             style="width: 8rem; height: 8rem; margin-left: -9rem; margin-top: -20rem;">
+                                             style="width: 8rem; height: 8rem; margin-left: -9rem;">
                                     </div>
                                 </div>
-                                <h4 class="logo-title" style="margin-left: -3rem; margin-top: -20rem;">AutoERP</h4>
+                                <h4 class="logo-title" style="margin-left: -3rem; margin-top: -15rem;">Mundo Pets</h4>
                             </a>
 
                             <h2 class="mb-2">Confirmar Código</h2>
