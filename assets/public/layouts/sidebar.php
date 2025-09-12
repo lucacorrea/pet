@@ -60,7 +60,7 @@ if (!isset($menuAtivo)) {
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link <?= ($menuAtivo === 'vendas-fechaCaixa' ? 'active' : '') ?>" href="../../vendas/pages/caixaFechar.php">
+          <a class="nav-link <?= ($menuAtivo === 'fechaCaixa' ? 'active' : '') ?>" href="../../vendas/pages/caixaFechar.php">
             <i class="bi bi-cash-coin icon"></i><span class="item-name">Fechar Caixa</span>
           </a>
         </li>

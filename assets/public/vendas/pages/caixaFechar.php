@@ -123,7 +123,7 @@ function fmt($v) { return number_format((float)$v, 2, ',', '.'); }
 <body>
   <?php
   if (session_status() === PHP_SESSION_NONE) session_start();
-  $menuAtivo = 'caixa-fechar';
+  $menuAtivo = 'fechaCaixa';
   include '../../layouts/sidebar.php';
   ?>
 
