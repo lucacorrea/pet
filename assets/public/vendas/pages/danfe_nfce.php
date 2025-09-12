@@ -26,44 +26,60 @@ function nf($v, int $d = 3): string
 {
     return number_format((float)$v, $d, ',', '.');
 }
+function onlynum($s)
+{
+    return preg_replace('/\D+/', '', (string)$s);
+}
 function fmt_doc($doc): string
 {
-    $d = preg_replace('/\D+/', '', (string)$doc);
+    $d = onlynum($doc);
     if (strlen($d) === 11) return preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $d);
     if (strlen($d) === 14) return preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $d);
     return $doc ? (string)$doc : 'Não informado';
 }
 function fmt_chave($chave): string
 {
-    $c = preg_replace('/\D+/', '', (string)$chave);
+    $c = onlynum($chave);
+    if ($c === '') return '';
     return trim(implode(' ', str_split($c, 4)));
 }
 
-// ====== Empresa logada (nome + CNPJ; demais campos são opcionais) ======
+/* ===== Emitente (opcionais via GET) ===== */
 $empresaNome = empresa_nome_logada($pdo) ?: 'Minha Empresa';
-$empresaCnpj = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj'] ?? ''));
-$empresaEndereco = ''; // se você tiver função/dados, pode preencher aqui
+$empresaCnpj = onlynum($_SESSION['user_empresa_cnpj'] ?? '');
+$emit_ie     = $_GET['emit_ie']     ?? '';
+$emit_im     = $_GET['emit_im']     ?? '';
+$emit_regime = $_GET['emit_regime'] ?? '';
+$emit_end    = $_GET['emit_endereco'] ?? '';
+$emit_mun    = $_GET['emit_municipio'] ?? '';
+$emit_uf     = $_GET['emit_uf'] ?? '';
+$emit_fone   = $_GET['emit_fone'] ?? '';
+$emit_email  = $_GET['emit_email'] ?? '';
 
-// ====== Parâmetros / dados adicionais da NFC-e (opcionais) ======
+/* ===== NFC-e (opcionais via GET) ===== */
 $vendaId   = isset($_GET['venda_id']) ? (int)$_GET['venda_id'] : 0;
-$chave     = isset($_GET['chave']) ? (string)$_GET['chave'] : '';                  // chave de acesso (44 dígitos)
-$numero    = isset($_GET['numero']) ? (string)$_GET['numero'] : '';                // número NFC-e
-$serie     = isset($_GET['serie']) ? (string)$_GET['serie'] : '';                  // série NFC-e
-$consDoc   = isset($_GET['consumidor_doc']) ? (string)$_GET['consumidor_doc'] : ''; // CPF/CNPJ consumidor
-$consNome  = isset($_GET['consumidor_nome']) ? (string)$_GET['consumidor_nome'] : '';
-$pagoIn    = isset($_GET['pago']) ? (float)str_replace(',', '.', $_GET['pago']) : null;
-$trocoIn   = isset($_GET['troco']) ? (float)str_replace(',', '.', $_GET['troco']) : null;
-$protocolo = isset($_GET['protocolo']) ? (string)$_GET['protocolo'] : '';
-$autEm     = isset($_GET['autorizado_em']) ? (string)$_GET['autorizado_em'] : '';
+$chave     = $_GET['chave']    ?? '';
+$numero    = $_GET['numero']   ?? '';
+$serie     = $_GET['serie']    ?? '';
+$ambiente  = $_GET['ambiente'] ?? '';
+$protocolo = $_GET['protocolo'] ?? '';
+$autEm     = $_GET['autorizado_em'] ?? '';
+$obs       = $_GET['obs'] ?? '';
+$lei12741  = isset($_GET['tributos_aprox']) ? (float)str_replace(',', '.', $_GET['tributos_aprox']) : null;
 
-// ====== Busca venda + itens ======
+/* ===== Consumidor ===== */
+$consDoc  = $_GET['consumidor_doc']  ?? '';
+$consNome = $_GET['consumidor_nome'] ?? '';
+$consLabel = (strlen(onlynum($consDoc)) === 14 ? 'CNPJ' : 'CPF');
+
+/* ===== Busca venda + itens ===== */
 $venda = null;
 $itens = [];
 if ($vendaId > 0 && $empresaCnpj) {
     try {
         $st = $pdo->prepare("
       SELECT id, empresa_cnpj, vendedor_cpf, origem, status, total_bruto, desconto, total_liquido, forma_pagamento,
-             DATE_FORMAT(criado_em, '%d/%m/%Y %H:%i:%s') AS criado_quando, criado_em
+             DATE_FORMAT(criado_em, '%d/%m/%Y %H:%i:%s') AS criado_quando
       FROM vendas_peca
       WHERE id=:id AND empresa_cnpj=:c
       LIMIT 1
@@ -87,15 +103,31 @@ if ($vendaId > 0 && $empresaCnpj) {
     }
 }
 
-// Derivados para impressão
+/* ===== Totais / pagamentos ===== */
 $qtdTotal = 0.0;
 foreach ($itens as $i) $qtdTotal += (float)$i['qtd'];
-$valorTotal = $venda ? (float)$venda['total_liquido'] : 0.0;
-$valorPago  = $pagoIn !== null ? $pagoIn : $valorTotal;
-$troco      = $trocoIn !== null ? $trocoIn : max(0.0, $valorPago - $valorTotal);
-$emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
+$subtotal   = (float)($venda['total_bruto'] ?? 0);
+$desconto   = (float)($venda['desconto'] ?? 0);
+$valorTotal = (float)($venda['total_liquido'] ?? 0);
 $forma      = strtoupper((string)($venda['forma_pagamento'] ?? ''));
-$consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF';
+
+$pgBrutos = (array)($_GET['pg'] ?? []); // ex.: pg[]=pix:10.00&pg[]=debito:5.00
+$pagamentos = [];
+$totalPg = 0;
+foreach ($pgBrutos as $raw) {
+    [$tipo, $val] = array_map('trim', explode(':', (string)$raw, 2) + ['', '0']);
+    $v = (float)str_replace(',', '.', $val);
+    if ($tipo !== '' && $v > 0) {
+        $pagamentos[] = ['tipo' => $tipo, 'valor' => $v];
+        $totalPg += $v;
+    }
+}
+if (!$pagamentos) {
+    $pagamentos[] = ['tipo' => strtolower($forma ?: 'dinheiro'), 'valor' => $valorTotal];
+    $totalPg = $valorTotal;
+}
+$troco = max(0.0, $totalPg - $valorTotal);
+$emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
 ?>
 <!doctype html>
 <html lang="pt-BR">
@@ -106,9 +138,9 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
-        /* ---------- Layout base (tela) ---------- */
+        /* ========= TELA (responsivo) ========= */
         :root {
-            --paper-w-screen: 420px;
+            --paper-w-screen: 460px;
             --paper-w-print: 80mm;
             --txt: 12px;
         }
@@ -122,23 +154,24 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
             font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
             background: #f5f6f8;
             margin: 0;
-            padding-bottom: 76px;
-            /* espaço para a barra fixa */
+            padding-bottom: 80px;
             color: #111827;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
         .wrap {
-            max-width: 980px;
-            margin: 18px auto;
+            max-width: 1024px;
+            margin: 16px auto;
             padding: 0 12px;
         }
 
         .ticket {
-            width: min(92vw, var(--paper-w-screen));
+            width: min(var(--paper-w-screen), 96vw);
             margin: 0 auto;
             background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 6px 22px rgba(0, 0, 0, .09);
+            border-radius: 14px;
+            box-shadow: 0 8px 26px rgba(0, 0, 0, .08);
             padding: 16px 14px;
         }
 
@@ -151,9 +184,10 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
         }
 
         .title {
-            font-weight: 700;
+            font-weight: 800;
             font-size: 14px;
             letter-spacing: .3px;
+            text-transform: uppercase;
         }
 
         .subtle {
@@ -170,7 +204,6 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
             margin: 10px 0;
         }
 
-        /* Cabeçalho “carimbo” */
         .stamp {
             font-size: 11px;
             padding: 6px 10px;
@@ -180,19 +213,18 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
             background: #f8fafc;
         }
 
-        /* Informações de emissão (grid 2 colunas) */
-        .info-grid {
+        .grid-auto {
             display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 6px;
+            grid-template-columns: auto 1fr;
+            gap: 6px 10px;
             font-size: var(--txt);
         }
 
-        .info-grid .lbl {
+        .lbl {
             color: #6b7280;
+            white-space: nowrap;
         }
 
-        /* Tabela de itens */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -212,7 +244,6 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
         }
 
         td.qty,
-        td.un,
         td.vu,
         td.tot {
             text-align: right;
@@ -220,31 +251,25 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
         }
 
         td.code {
-            width: 44px;
+            width: 48px;
             color: #6b7280;
         }
 
-        /* Totais */
         .totais .row {
             display: flex;
             justify-content: space-between;
             margin: 4px 0;
         }
 
-        .totais .row strong {
+        .grand {
+            font-size: 14px;
             font-weight: 700;
         }
 
-        .grand {
-            font-size: 14px;
-        }
-
-        /* Chave de acesso formatada em blocos */
         .chave {
             font-size: 12px;
             letter-spacing: .4px;
-            display: block;
-            text-align: center;
+            text-align: left;
         }
 
         .chave .line {
@@ -257,19 +282,25 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
             line-height: 1.3;
         }
 
-        /* Barra inferior fixa */
+        .obs {
+            font-size: 11px;
+            white-space: pre-wrap;
+        }
+
+        /* Barra inferior fixa (tela) */
         .bottom-bar {
             position: fixed;
             left: 0;
             right: 0;
             bottom: 0;
-            background: #ffffffcc;
+            background: #ffffffdd;
             backdrop-filter: blur(6px);
             border-top: 1px solid #e5e7eb;
             padding: 10px 14px;
             display: flex;
             gap: 10px;
             justify-content: center;
+            flex-wrap: wrap;
             z-index: 999;
         }
 
@@ -296,7 +327,13 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
             filter: brightness(0.98);
         }
 
-        /* ---------- Impressão (80mm) ---------- */
+        /* ========= IMPRESSÃO ========= */
+        @page {
+            size: var(--paper-w-print) auto;
+            margin: 2mm;
+        }
+
+        /* 2mm evita corte em algumas térmicas */
         @media print {
             body {
                 background: #fff;
@@ -308,14 +345,22 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
                 padding: 0;
             }
 
+            /* ALINHADO À ESQUERDA (padrão DANFE NFC-e) */
             .ticket {
                 width: var(--paper-w-print);
-                box-shadow: none;
+                margin: 0 !important;
+                /* nada de centralização */
                 border-radius: 0;
+                box-shadow: none;
+                page-break-inside: avoid;
             }
 
             .bottom-bar {
                 display: none !important;
+            }
+
+            .hr {
+                margin: 8px 0;
             }
         }
     </style>
@@ -333,12 +378,21 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
             </div>
         <?php else: ?>
             <div class="ticket">
-                <!-- Cabeçalho -->
-                <div class="center">
-                    <div class="title" style="text-transform:uppercase;"><?= h($empresaNome) ?></div>
+
+                <!-- EMITENTE -->
+                <div class="center" style="margin-bottom:6px;">
+                    <div class="title"><?= h($empresaNome) ?></div>
                     <div class="muted">CNPJ: <?= h(fmt_doc($empresaCnpj)) ?></div>
-                    <?php if ($empresaEndereco): ?>
-                        <div class="muted subtle"><?= h($empresaEndereco) ?></div>
+                    <?php if ($emit_end || $emit_mun || $emit_uf): ?>
+                        <div class="muted subtle"><?= h(trim($emit_end . ($emit_end && ($emit_mun || $emit_uf) ? ' — ' : '') . ($emit_mun ? $emit_mun : '') . ($emit_uf ? ' / ' . $emit_uf : ''))) ?></div>
+                    <?php endif; ?>
+                    <div class="muted subtle">
+                        <?= $emit_ie ? 'IE: ' . h($emit_ie) : '' ?><?= ($emit_ie && $emit_im) ? ' • ' : '' ?><?= $emit_im ? 'IM: ' . h($emit_im) : '' ?><?= ($emit_ie || $emit_im) && $emit_regime ? ' • ' : '' ?><?= $emit_regime ? 'Regime: ' . h($emit_regime) : '' ?>
+                    </div>
+                    <?php if ($emit_fone || $emit_email): ?>
+                        <div class="muted subtle">
+                            <?= $emit_fone ? 'Fone: ' . h($emit_fone) : '' ?><?= ($emit_fone && $emit_email) ? ' • ' : '' ?><?= $emit_email ? 'E-mail: ' . h($emit_email) : '' ?>
+                        </div>
                     <?php endif; ?>
                 </div>
 
@@ -348,14 +402,60 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
 
                 <div class="hr"></div>
 
-                <!-- Itens -->
+                <!-- DADOS DA NFC-e -->
+                <div class="grid-auto">
+                    <div class="lbl">Venda:</div>
+                    <div class="monospace">#<?= (int)$venda['id'] ?></div>
+                    <div class="lbl">Número:</div>
+                    <div class="monospace"><?= h($numero ?: '—') ?></div>
+                    <div class="lbl">Série:</div>
+                    <div class="monospace"><?= h($serie ?: '—') ?></div>
+                    <div class="lbl">Emissão:</div>
+                    <div class="monospace"><?= h($emissaoStr) ?></div>
+                    <div class="lbl">Ambiente:</div>
+                    <div><?= h($ambiente ?: '—') ?></div>
+                    <div class="lbl">Vendedor (CPF):</div>
+                    <div class="monospace"><?= h(fmt_doc($venda['vendedor_cpf'] ?? '')) ?></div>
+                </div>
+
+                <?php if ($chave): ?>
+                    <div class="hr"></div>
+                    <div>
+                        <div class="muted subtle">CHAVE DE ACESSO</div>
+                        <?php
+                        $cFmt = fmt_chave($chave);
+                        $parts = $cFmt ? explode(' ', $cFmt) : [];
+                        $lines = $parts ? array_chunk($parts, 11) : [];
+                        ?>
+                        <?php if ($lines): ?>
+                            <div class="chave monospace">
+                                <?php foreach ($lines as $ln): ?>
+                                    <span class="line"><?= h(implode(' ', $ln)) ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+
+                <div class="hr"></div>
+
+                <!-- CONSUMIDOR -->
+                <div class="grid-auto">
+                    <div class="lbl">Consumidor:</div>
+                    <div><?= h($consNome ?: 'Não informado') ?></div>
+                    <div class="lbl"><?= $consLabel ?>:</div>
+                    <div class="monospace"><?= h(fmt_doc($consDoc)) ?></div>
+                </div>
+
+                <div class="hr"></div>
+
+                <!-- ITENS -->
                 <table>
                     <thead>
                         <tr>
                             <th class="code">Cód</th>
                             <th>Descrição</th>
                             <th class="qty">Qtde</th>
-                            <th class="un">Un.</th>
                             <th class="vu">V. Unit</th>
                             <th class="tot">Total</th>
                         </tr>
@@ -366,7 +466,6 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
                                 <td class="code monospace"><?= (int)($it['item_id'] ?? 0) ?: '—' ?></td>
                                 <td><?= h($it['descricao']) ?></td>
                                 <td class="qty monospace"><?= nf($it['qtd'], 3) ?></td>
-                                <td class="un">—</td>
                                 <td class="vu monospace"><?= money($it['valor_unit']) ?></td>
                                 <td class="tot monospace"><?= money($it['valor_total']) ?></td>
                             </tr>
@@ -376,56 +475,43 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
 
                 <div class="hr"></div>
 
-                <!-- Resumo / Totais -->
+                <!-- TOTAIS -->
                 <div class="totais">
                     <div class="row"><span class="muted">Qtde total de itens</span><span class="monospace"><?= nf($qtdTotal, 3) ?></span></div>
-                    <div class="row"><span class="muted">Valor total R$</span><span class="monospace"><?= money($venda['total_bruto']) ?></span></div>
-                    <div class="row"><span class="muted">Desconto</span><span class="monospace"><?= money($venda['desconto']) ?></span></div>
-                    <div class="row grand"><strong>TOTAL</strong><strong class="monospace"><?= money($valorTotal) ?></strong></div>
-                    <div class="row"><span class="muted">Forma de pagamento</span><span class="monospace"><?= h($forma ?: '—') ?></span></div>
-                    <div class="row"><span class="muted">Valor pago</span><span class="monospace"><?= money($valorPago) ?></span></div>
-                    <div class="row"><span class="muted">Troco</span><span class="monospace"><?= money($troco) ?></span></div>
+                    <div class="row"><span class="muted">Subtotal</span><span class="monospace"><?= money($subtotal) ?></span></div>
+                    <div class="row"><span class="muted">Desconto</span><span class="monospace"><?= money($desconto) ?></span></div>
+                    <div class="row grand"><span>TOTAL</span><span class="monospace"><?= money($valorTotal) ?></span></div>
                 </div>
 
                 <div class="hr"></div>
 
-                <!-- Dados fiscais / Emissão -->
-                <div class="info-grid">
-                    <div><span class="lbl">Nº:</span> <span class="monospace"><?= h($numero ?: '—') ?></span></div>
-                    <div><span class="lbl">Série:</span> <span class="monospace"><?= h($serie ?: '—') ?></span></div>
-                    <div><span class="lbl">Emissão:</span> <span class="monospace"><?= h($emissaoStr) ?></span></div>
-                    <div><span class="lbl">Vendedor (CPF):</span> <span class="monospace"><?= h(fmt_doc($venda['vendedor_cpf'] ?? '')) ?></span></div>
+                <!-- PAGAMENTOS -->
+                <div class="grid-auto">
+                    <div class="lbl">Forma(s) de Pagamento:</div>
+                    <div>
+                        <?php foreach ($pagamentos as $p): ?>
+                            <div class="monospace"><?= strtoupper($p['tipo']) ?> — <?= money($p['valor']) ?></div>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="lbl">Total Pago:</div>
+                    <div class="monospace"><?= money($totalPg) ?></div>
+                    <div class="lbl">Troco:</div>
+                    <div class="monospace"><?= money($troco) ?></div>
                 </div>
 
-                <?php if ($chave): ?>
+                <?php if ($lei12741 !== null): ?>
                     <div class="hr"></div>
-                    <div class="center">
-                        <div class="muted subtle">CHAVE DE ACESSO</div>
-                        <?php
-                        $chFmt = fmt_chave($chave);
-                        // quebra em 4 linhas para lembrar o modelo do seu print
-                        $parts = explode(' ', $chFmt);
-                        $lines = array_chunk($parts, 11); // ~44 dígitos => 11 blocos de 4
-                        ?>
-                        <div class="chave monospace">
-                            <?php foreach ($lines as $ln): ?>
-                                <span class="line"><?= h(implode(' ', $ln)) ?></span>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
+                    <div class="tiny">Tributos aproximados (Lei 12.741/2012): <strong class="monospace"><?= money($lei12741) ?></strong></div>
                 <?php endif; ?>
 
-                <div class="hr"></div>
-
-                <!-- Consumidor -->
-                <div class="info-grid">
-                    <div><span class="lbl">Consumidor:</span> <span><?= h($consNome ?: 'Não informado') ?></span></div>
-                    <div><span class="lbl"><?= $consLabel ?>:</span> <span class="monospace"><?= h(fmt_doc($consDoc)) ?></span></div>
-                </div>
+                <?php if ($obs): ?>
+                    <div class="hr"></div>
+                    <div class="obs"><strong>Informações Complementares:</strong><br><?= h($obs) ?></div>
+                <?php endif; ?>
 
                 <?php if ($protocolo || $autEm): ?>
                     <div class="hr"></div>
-                    <div class="center tiny">
+                    <div class="tiny">
                         <?php if ($protocolo): ?>
                             Protocolo de Autorização: <span class="monospace"><?= h($protocolo) ?></span>
                         <?php endif; ?>
@@ -438,12 +524,14 @@ $consLabel  = strlen(preg_replace('/\D+/', '', $consDoc)) === 14 ? 'CNPJ' : 'CPF
 
                 <div class="hr"></div>
 
-                <div class="center tiny muted">DANFE NFC-e — Documento Auxiliar<br>Válido somente com a NFC-e autorizada pela SEFAZ.</div>
+                <div class="tiny muted">
+                    DANFE NFC-e — Documento Auxiliar. Válido somente com a NFC-e autorizada pela SEFAZ.
+                </div>
             </div>
         <?php endif; ?>
     </div>
 
-    <!-- Barra fixa inferior -->
+    <!-- Barra inferior fixa (tela) -->
     <div class="bottom-bar">
         <a class="btn" href="./vendaRapida.php"><i class="bi bi-arrow-left"></i> Voltar para Consulta</a>
         <button class="btn primary" onclick="window.print()"><i class="bi bi-printer"></i> Imprimir</button>
