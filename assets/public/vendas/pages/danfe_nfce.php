@@ -44,43 +44,35 @@ function fmt_chave($chave): string
     return trim(implode(' ', str_split($c, 4)));
 }
 
-/* =======================
-   DADOS DO EMITENTE
-   ======================= */
+/* ===== Emitente (opcionais via GET) ===== */
 $empresaNome = empresa_nome_logada($pdo) ?: 'Minha Empresa';
 $empresaCnpj = onlynum($_SESSION['user_empresa_cnpj'] ?? '');
-$emit_ie     = $_GET['emit_ie']     ?? '';     // Inscrição Estadual (opcional)
-$emit_im     = $_GET['emit_im']     ?? '';     // Inscrição Municipal (opcional)
-$emit_regime = $_GET['emit_regime'] ?? '';     // Simples/Normal (opcional)
-$emit_end    = $_GET['emit_endereco'] ?? '';   // Endereço completo (opcional)
-$emit_mun    = $_GET['emit_municipio'] ?? '';  // Município (opcional)
-$emit_uf     = $_GET['emit_uf'] ?? '';         // UF (opcional)
-$emit_fone   = $_GET['emit_fone'] ?? '';       // Telefone (opcional)
-$emit_email  = $_GET['emit_email'] ?? '';      // Email (opcional)
+$emit_ie     = $_GET['emit_ie']     ?? '';
+$emit_im     = $_GET['emit_im']     ?? '';
+$emit_regime = $_GET['emit_regime'] ?? '';
+$emit_end    = $_GET['emit_endereco'] ?? '';
+$emit_mun    = $_GET['emit_municipio'] ?? '';
+$emit_uf     = $_GET['emit_uf'] ?? '';
+$emit_fone   = $_GET['emit_fone'] ?? '';
+$emit_email  = $_GET['emit_email'] ?? '';
 
-/* =======================
-   DADOS DA NFC-e (QUERY)
-   ======================= */
+/* ===== NFC-e (opcionais via GET) ===== */
 $vendaId   = isset($_GET['venda_id']) ? (int)$_GET['venda_id'] : 0;
-$chave     = $_GET['chave']    ?? '';  // 44 dígitos
+$chave     = $_GET['chave']    ?? '';
 $numero    = $_GET['numero']   ?? '';
 $serie     = $_GET['serie']    ?? '';
-$ambiente  = $_GET['ambiente'] ?? '';  // 'PRODUÇÃO' ou 'HOMOLOGAÇÃO'
+$ambiente  = $_GET['ambiente'] ?? '';
 $protocolo = $_GET['protocolo'] ?? '';
-$autEm     = $_GET['autorizado_em'] ?? ''; // "dd/mm/aaaa hh:mm:ss" ou livre
-$obs       = $_GET['obs'] ?? ''; // observações do contribuinte (livre)
+$autEm     = $_GET['autorizado_em'] ?? '';
+$obs       = $_GET['obs'] ?? '';
 $lei12741  = isset($_GET['tributos_aprox']) ? (float)str_replace(',', '.', $_GET['tributos_aprox']) : null;
 
-/* =======================
-   CONSUMIDOR
-   ======================= */
+/* ===== Consumidor ===== */
 $consDoc  = $_GET['consumidor_doc']  ?? '';
 $consNome = $_GET['consumidor_nome'] ?? '';
 $consLabel = (strlen(onlynum($consDoc)) === 14 ? 'CNPJ' : 'CPF');
 
-/* =======================
-   BUSCA A VENDA + ITENS
-   ======================= */
+/* ===== Busca venda + itens ===== */
 $venda = null;
 $itens = [];
 if ($vendaId > 0 && $empresaCnpj) {
@@ -111,9 +103,7 @@ if ($vendaId > 0 && $empresaCnpj) {
     }
 }
 
-/* =======================
-   DERIVADOS/TOTAIS
-   ======================= */
+/* ===== Totais / pagamentos ===== */
 $qtdTotal = 0.0;
 foreach ($itens as $i) $qtdTotal += (float)$i['qtd'];
 $subtotal   = (float)($venda['total_bruto'] ?? 0);
@@ -121,8 +111,7 @@ $desconto   = (float)($venda['desconto'] ?? 0);
 $valorTotal = (float)($venda['total_liquido'] ?? 0);
 $forma      = strtoupper((string)($venda['forma_pagamento'] ?? ''));
 
-// se quiser detalhar vários meios de pagamento, envie por GET: pg[]=debito:10.00&pg[]=pix:5.00 ...
-$pgBrutos = (array)($_GET['pg'] ?? []); // ex.: ['debito:10.00', 'pix:5.00']
+$pgBrutos = (array)($_GET['pg'] ?? []); // ex.: pg[]=pix:10.00&pg[]=debito:5.00
 $pagamentos = [];
 $totalPg = 0;
 foreach ($pgBrutos as $raw) {
@@ -133,15 +122,12 @@ foreach ($pgBrutos as $raw) {
         $totalPg += $v;
     }
 }
-// fallback p/ 1 forma (a mesma da venda)
 if (!$pagamentos) {
     $pagamentos[] = ['tipo' => strtolower($forma ?: 'dinheiro'), 'valor' => $valorTotal];
     $totalPg = $valorTotal;
 }
-
 $troco = max(0.0, $totalPg - $valorTotal);
 $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
-
 ?>
 <!doctype html>
 <html lang="pt-BR">
@@ -150,14 +136,11 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
     <meta charset="utf-8">
     <title>DANFE NFC-e — Venda #<?= (int)$vendaId ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-
     <style>
-        /* ====== TELA (responsivo) ====== */
+        /* ========= TELA (responsivo) ========= */
         :root {
             --paper-w-screen: 460px;
-            --paper-w-sm: 95vw;
             --paper-w-print: 80mm;
             --txt: 12px;
         }
@@ -173,6 +156,8 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             margin: 0;
             padding-bottom: 80px;
             color: #111827;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
         .wrap {
@@ -190,14 +175,6 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             padding: 16px 14px;
         }
 
-        @media (max-width: 520px) {
-            .ticket {
-                width: var(--paper-w-sm);
-                border-radius: 12px;
-                padding: 14px 12px;
-            }
-        }
-
         .center {
             text-align: center;
         }
@@ -210,6 +187,7 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             font-weight: 800;
             font-size: 14px;
             letter-spacing: .3px;
+            text-transform: uppercase;
         }
 
         .subtle {
@@ -235,13 +213,6 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             background: #f8fafc;
         }
 
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            font-size: var(--txt);
-        }
-
         .grid-auto {
             display: grid;
             grid-template-columns: auto 1fr;
@@ -253,8 +224,6 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             color: #6b7280;
             white-space: nowrap;
         }
-
-        .val {}
 
         table {
             width: 100%;
@@ -292,19 +261,15 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             margin: 4px 0;
         }
 
-        .totais .row strong {
-            font-weight: 700;
-        }
-
         .grand {
             font-size: 14px;
+            font-weight: 700;
         }
 
         .chave {
             font-size: 12px;
             letter-spacing: .4px;
-            display: block;
-            text-align: center;
+            text-align: left;
         }
 
         .chave .line {
@@ -322,7 +287,7 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             white-space: pre-wrap;
         }
 
-        /* barra fixa inferior */
+        /* Barra inferior fixa (tela) */
         .bottom-bar {
             position: fixed;
             left: 0;
@@ -362,7 +327,13 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
             filter: brightness(0.98);
         }
 
-        /* ====== IMPRESSÃO (80mm) ====== */
+        /* ========= IMPRESSÃO ========= */
+        @page {
+            size: var(--paper-w-print) auto;
+            margin: 2mm;
+        }
+
+        /* 2mm evita corte em algumas térmicas */
         @media print {
             body {
                 background: #fff;
@@ -374,10 +345,14 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
                 padding: 0;
             }
 
+            /* ALINHADO À ESQUERDA (padrão DANFE NFC-e) */
             .ticket {
                 width: var(--paper-w-print);
-                box-shadow: none;
+                margin: 0 !important;
+                /* nada de centralização */
                 border-radius: 0;
+                box-shadow: none;
+                page-break-inside: avoid;
             }
 
             .bottom-bar {
@@ -406,15 +381,13 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
 
                 <!-- EMITENTE -->
                 <div class="center" style="margin-bottom:6px;">
-                    <div class="title" style="text-transform:uppercase;"><?= h($empresaNome) ?></div>
+                    <div class="title"><?= h($empresaNome) ?></div>
                     <div class="muted">CNPJ: <?= h(fmt_doc($empresaCnpj)) ?></div>
                     <?php if ($emit_end || $emit_mun || $emit_uf): ?>
                         <div class="muted subtle"><?= h(trim($emit_end . ($emit_end && ($emit_mun || $emit_uf) ? ' — ' : '') . ($emit_mun ? $emit_mun : '') . ($emit_uf ? ' / ' . $emit_uf : ''))) ?></div>
                     <?php endif; ?>
                     <div class="muted subtle">
-                        <?php if ($emit_ie): ?>IE: <?= h($emit_ie) ?><?php endif; ?>
-                        <?php if ($emit_im): ?><?= $emit_ie ? ' • ' : '' ?>IM: <?= h($emit_im) ?><?php endif; ?>
-                        <?php if ($emit_regime): ?><?= ($emit_ie || $emit_im) ? ' • ' : '' ?>Regime: <?= h($emit_regime) ?><?php endif; ?>
+                        <?= $emit_ie ? 'IE: ' . h($emit_ie) : '' ?><?= ($emit_ie && $emit_im) ? ' • ' : '' ?><?= $emit_im ? 'IM: ' . h($emit_im) : '' ?><?= ($emit_ie || $emit_im) && $emit_regime ? ' • ' : '' ?><?= $emit_regime ? 'Regime: ' . h($emit_regime) : '' ?>
                     </div>
                     <?php if ($emit_fone || $emit_email): ?>
                         <div class="muted subtle">
@@ -432,22 +405,22 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
                 <!-- DADOS DA NFC-e -->
                 <div class="grid-auto">
                     <div class="lbl">Venda:</div>
-                    <div class="val monospace">#<?= (int)$venda['id'] ?></div>
+                    <div class="monospace">#<?= (int)$venda['id'] ?></div>
                     <div class="lbl">Número:</div>
-                    <div class="val monospace"><?= h($numero ?: '—') ?></div>
+                    <div class="monospace"><?= h($numero ?: '—') ?></div>
                     <div class="lbl">Série:</div>
-                    <div class="val monospace"><?= h($serie ?: '—') ?></div>
+                    <div class="monospace"><?= h($serie ?: '—') ?></div>
                     <div class="lbl">Emissão:</div>
-                    <div class="val monospace"><?= h($emissaoStr) ?></div>
+                    <div class="monospace"><?= h($emissaoStr) ?></div>
                     <div class="lbl">Ambiente:</div>
-                    <div class="val"><?= h($ambiente ?: '—') ?></div>
+                    <div><?= h($ambiente ?: '—') ?></div>
                     <div class="lbl">Vendedor (CPF):</div>
-                    <div class="val monospace"><?= h(fmt_doc($venda['vendedor_cpf'] ?? '')) ?></div>
+                    <div class="monospace"><?= h(fmt_doc($venda['vendedor_cpf'] ?? '')) ?></div>
                 </div>
 
                 <?php if ($chave): ?>
                     <div class="hr"></div>
-                    <div class="center">
+                    <div>
                         <div class="muted subtle">CHAVE DE ACESSO</div>
                         <?php
                         $cFmt = fmt_chave($chave);
@@ -469,9 +442,9 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
                 <!-- CONSUMIDOR -->
                 <div class="grid-auto">
                     <div class="lbl">Consumidor:</div>
-                    <div class="val"><?= h($consNome ?: 'Não informado') ?></div>
+                    <div><?= h($consNome ?: 'Não informado') ?></div>
                     <div class="lbl"><?= $consLabel ?>:</div>
-                    <div class="val monospace"><?= h(fmt_doc($consDoc)) ?></div>
+                    <div class="monospace"><?= h(fmt_doc($consDoc)) ?></div>
                 </div>
 
                 <div class="hr"></div>
@@ -507,7 +480,7 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
                     <div class="row"><span class="muted">Qtde total de itens</span><span class="monospace"><?= nf($qtdTotal, 3) ?></span></div>
                     <div class="row"><span class="muted">Subtotal</span><span class="monospace"><?= money($subtotal) ?></span></div>
                     <div class="row"><span class="muted">Desconto</span><span class="monospace"><?= money($desconto) ?></span></div>
-                    <div class="row grand"><strong>TOTAL</strong><strong class="monospace"><?= money($valorTotal) ?></strong></div>
+                    <div class="row grand"><span>TOTAL</span><span class="monospace"><?= money($valorTotal) ?></span></div>
                 </div>
 
                 <div class="hr"></div>
@@ -515,15 +488,15 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
                 <!-- PAGAMENTOS -->
                 <div class="grid-auto">
                     <div class="lbl">Forma(s) de Pagamento:</div>
-                    <div class="val">
-                        <?php foreach ($pagamentos as $k => $p): ?>
+                    <div>
+                        <?php foreach ($pagamentos as $p): ?>
                             <div class="monospace"><?= strtoupper($p['tipo']) ?> — <?= money($p['valor']) ?></div>
                         <?php endforeach; ?>
                     </div>
                     <div class="lbl">Total Pago:</div>
-                    <div class="val monospace"><?= money($totalPg) ?></div>
+                    <div class="monospace"><?= money($totalPg) ?></div>
                     <div class="lbl">Troco:</div>
-                    <div class="val monospace"><?= money($troco) ?></div>
+                    <div class="monospace"><?= money($troco) ?></div>
                 </div>
 
                 <?php if ($lei12741 !== null): ?>
@@ -538,7 +511,7 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
 
                 <?php if ($protocolo || $autEm): ?>
                     <div class="hr"></div>
-                    <div class="center tiny">
+                    <div class="tiny">
                         <?php if ($protocolo): ?>
                             Protocolo de Autorização: <span class="monospace"><?= h($protocolo) ?></span>
                         <?php endif; ?>
@@ -551,14 +524,14 @@ $emissaoStr = $venda['criado_quando'] ?? date('d/m/Y H:i:s');
 
                 <div class="hr"></div>
 
-                <div class="center tiny muted">
+                <div class="tiny muted">
                     DANFE NFC-e — Documento Auxiliar. Válido somente com a NFC-e autorizada pela SEFAZ.
                 </div>
             </div>
         <?php endif; ?>
     </div>
 
-    <!-- Barra inferior fixa -->
+    <!-- Barra inferior fixa (tela) -->
     <div class="bottom-bar">
         <a class="btn" href="./vendaRapida.php"><i class="bi bi-arrow-left"></i> Voltar para Consulta</a>
         <button class="btn primary" onclick="window.print()"><i class="bi bi-printer"></i> Imprimir</button>
