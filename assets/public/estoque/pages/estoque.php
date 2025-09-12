@@ -64,7 +64,7 @@ $usuarioCpf   = $vm['usuarioCpf'];
 <body>
  <?php
     if (session_status() === PHP_SESSION_NONE) session_start();
-    $menuAtivo = 'estoque-estoque'; // ID do menu atual
+    $menuAtivo = 'estoque-lista'; // ID do menu atual
     include '../../layouts/sidebar.php';
     ?>
 
