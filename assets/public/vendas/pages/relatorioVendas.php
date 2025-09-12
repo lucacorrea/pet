@@ -390,286 +390,281 @@ function fmt3($v)
         </div>
       </div>
 
-
-      </form>
-    </div>
-    </div>
-
-    <!-- Estilos suaves / micro-ajustes -->
-    <style>
-      .btn-soft-primary {
-        background: rgba(13, 110, 253, .08);
-        border-color: transparent;
-        color: #0d6efd
-      }
-
-      .btn-soft-primary:hover {
-        background: rgba(13, 110, 253, .14);
-        color: #0b5ed7
-      }
-
-      .btn-soft-danger {
-        background: rgba(220, 53, 69, .08);
-        border-color: transparent;
-        color: #dc3545
-      }
-
-      .btn-soft-danger:hover {
-        background: rgba(220, 53, 69, .14);
-        color: #bb2d3b
-      }
-
-      .input-group>.input-group-text {
-        background: #f8fafc
-      }
-
-      .card-header.bg-body {
-        background: var(--bs-body-bg, #fff)
-      }
-
-      @media (max-width: 575.98px) {
-        .card-header .btn {
-          padding: .35rem .6rem
+      <!-- Estilos suaves / micro-ajustes -->
+      <style>
+        .btn-soft-primary {
+          background: rgba(13, 110, 253, .08);
+          border-color: transparent;
+          color: #0d6efd
         }
-      }
-    </style>
 
-    <script>
-      (function() {
-        const form = document.getElementById('filtros-form');
-        const de = document.getElementById('inp-de');
-        const ate = document.getElementById('inp-ate');
-        const qInp = document.getElementById('inp-q');
+        .btn-soft-primary:hover {
+          background: rgba(13, 110, 253, .14);
+          color: #0b5ed7
+        }
 
-        // Limpar busca e enviar
-        document.getElementById('btn-clear-q')?.addEventListener('click', () => {
-          if (!qInp) return;
-          qInp.value = '';
-          qInp.focus();
-          form?.requestSubmit(); // aplica limpeza
-        });
+        .btn-soft-danger {
+          background: rgba(220, 53, 69, .08);
+          border-color: transparent;
+          color: #dc3545
+        }
 
-        // Sincronizar min/max entre De/Até
-        const syncBounds = () => {
-          if (de && ate) {
-            if (de.value) ate.min = de.value;
-            else ate.removeAttribute('min');
-            if (ate.value) de.max = ate.value;
-            else de.removeAttribute('max');
+        .btn-soft-danger:hover {
+          background: rgba(220, 53, 69, .14);
+          color: #bb2d3b
+        }
+
+        .input-group>.input-group-text {
+          background: #f8fafc
+        }
+
+        .card-header.bg-body {
+          background: var(--bs-body-bg, #fff)
+        }
+
+        @media (max-width: 575.98px) {
+          .card-header .btn {
+            padding: .35rem .6rem
           }
-        };
-        de?.addEventListener('change', syncBounds);
-        ate?.addEventListener('change', syncBounds);
-        syncBounds();
+        }
+      </style>
 
-        // Helpers de data
-        const pad = n => String(n).padStart(2, '0');
-        const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-        const setRange = (d1, d2) => {
-          if (de) de.value = fmt(d1);
-          if (ate) ate.value = fmt(d2);
-          syncBounds();
-        };
+      <script>
+        (function() {
+          const form = document.getElementById('filtros-form');
+          const de = document.getElementById('inp-de');
+          const ate = document.getElementById('inp-ate');
+          const qInp = document.getElementById('inp-q');
 
-        // Atalhos com auto-submit
-        document.querySelectorAll('[data-range]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const now = new Date();
-            const base = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const tipo = btn.getAttribute('data-range');
-
-            if (tipo === 'hoje') {
-              setRange(base, base);
-            } else if (tipo === 'ontem') {
-              const y = new Date(base);
-              y.setDate(y.getDate() - 1);
-              setRange(y, y);
-            } else if (tipo === 'semana') {
-              const dow = base.getDay(); // 0=Dom
-              const ini = new Date(base);
-              ini.setDate(base.getDate() - (dow === 0 ? 6 : dow - 1)); // segunda
-              const fim = new Date(ini);
-              fim.setDate(ini.getDate() + 6);
-              setRange(ini, fim);
-            } else if (tipo === 'mes') {
-              const ini = new Date(base.getFullYear(), base.getMonth(), 1);
-              const fim = new Date(base.getFullYear(), base.getMonth() + 1, 0);
-              setRange(ini, fim);
-            }
-            form?.requestSubmit();
+          // Limpar busca e enviar
+          document.getElementById('btn-clear-q')?.addEventListener('click', () => {
+            if (!qInp) return;
+            qInp.value = '';
+            qInp.focus();
+            form?.requestSubmit(); // aplica limpeza
           });
-        });
 
-        // Enter no campo de busca foca no submit padrão do form (já nativo),
-        // mas se quiser aplicar ao digitar, descomente abaixo:
-        // let t; qInp?.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>form?.requestSubmit(), 600); });
+          // Sincronizar min/max entre De/Até
+          const syncBounds = () => {
+            if (de && ate) {
+              if (de.value) ate.min = de.value;
+              else ate.removeAttribute('min');
+              if (ate.value) de.max = ate.value;
+              else de.removeAttribute('max');
+            }
+          };
+          de?.addEventListener('change', syncBounds);
+          ate?.addEventListener('change', syncBounds);
+          syncBounds();
 
-      })();
-    </script>
+          // Helpers de data
+          const pad = n => String(n).padStart(2, '0');
+          const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+          const setRange = (d1, d2) => {
+            if (de) de.value = fmt(d1);
+            if (ate) ate.value = fmt(d2);
+            syncBounds();
+          };
 
-    <div class="row g-3">
-      <!-- Lista de vendas -->
-      <div class="col-12 col-xxl-8">
-        <div class="card" data-aos="fade-up" data-aos-delay="200">
-          <div class="card-header">
-            <h5 class="mb-0">Vendas</h5>
-          </div>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table table-striped align-middle">
-                <thead>
-                  <tr>
-                    <th style="width:120px;"># / Data</th>
-                    <th>Origem</th>
-                    <th>Vendedor (CPF)</th>
-                    <th class="text-end">Bruto</th>
-                    <th class="text-end">Desc.</th>
-                    <th class="text-end">Líquido</th>
-                    <th>Forma</th>
-                    <th class="text-end">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php if (!$rows): ?>
-                    <tr>
-                      <td colspan="8" class="text-center text-muted">Nenhuma venda encontrada.</td>
-                    </tr>
-                    <?php else: foreach ($rows as $r): ?>
-                      <tr>
-                        <td>
-                          <div class="fw-semibold">#<?= (int)$r['id'] ?></div>
-                          <div class="small text-muted"><?= (new DateTime($r['criado_em']))->format('d/m/Y H:i') ?></div>
-                        </td>
-                        <td><?= htmlspecialchars((string)$r['origem'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars((string)($r['vendedor_cpf'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
-                        <td class="text-end money">R$ <?= fmt($r['total_bruto']) ?></td>
-                        <td class="text-end money">R$ <?= fmt($r['desconto']) ?></td>
-                        <td class="text-end money">R$ <?= fmt($r['total_liquido']) ?></td>
-                        <td><?= htmlspecialchars((string)($r['forma_pagamento'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
-                        <td class="text-end">
-                          <?php $st = strtolower((string)$r['status']);
-                          $map = ['fechada' => 'success', 'aberta' => 'warning', 'cancelada' => 'secondary']; ?>
-                          <span class="badge bg-<?= $map[$st] ?? 'secondary' ?> badge-status"><?= htmlspecialchars($st, ENT_QUOTES, 'UTF-8') ?></span>
-                        </td>
-                      </tr>
-                  <?php endforeach;
-                  endif; ?>
-                </tbody>
-              </table>
-            </div>
+          // Atalhos com auto-submit
+          document.querySelectorAll('[data-range]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const now = new Date();
+              const base = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              const tipo = btn.getAttribute('data-range');
 
-            <?php if ($totalPages > 1): ?>
-              <?php $mk = fn($p) => '?' . http_build_query(array_merge($filters, ['page' => $p])); ?>
-              <nav aria-label="Paginação">
-                <ul class="pagination justify-content-end mb-0">
-                  <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>"><a class="page-link" href="<?= $mk(max(1, $page - 1)) ?>">«</a></li>
-                  <li class="page-item disabled"><span class="page-link">Página <?= $page ?> de <?= $totalPages ?></span></li>
-                  <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>"><a class="page-link" href="<?= $mk(min($totalPages, $page + 1)) ?>">»</a></li>
-                </ul>
-              </nav>
-            <?php endif; ?>
-          </div>
-        </div>
+              if (tipo === 'hoje') {
+                setRange(base, base);
+              } else if (tipo === 'ontem') {
+                const y = new Date(base);
+                y.setDate(y.getDate() - 1);
+                setRange(y, y);
+              } else if (tipo === 'semana') {
+                const dow = base.getDay(); // 0=Dom
+                const ini = new Date(base);
+                ini.setDate(base.getDate() - (dow === 0 ? 6 : dow - 1)); // segunda
+                const fim = new Date(ini);
+                fim.setDate(ini.getDate() + 6);
+                setRange(ini, fim);
+              } else if (tipo === 'mes') {
+                const ini = new Date(base.getFullYear(), base.getMonth(), 1);
+                const fim = new Date(base.getFullYear(), base.getMonth() + 1, 0);
+                setRange(ini, fim);
+              }
+              form?.requestSubmit();
+            });
+          });
 
-        <!-- Itens vendidos -->
-        <div class="card mt-3" data-aos="fade-up" data-aos-delay="230">
-          <div class="card-header">
-            <h5 class="mb-0">Itens Vendidos (Produtos) — Período</h5>
-          </div>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table table-striped align-middle">
-                <thead>
-                  <tr>
-                    <th style="width:110px;">Item ID</th>
-                    <th>Descrição</th>
-                    <th class="text-end">Qtd</th>
-                    <th class="text-end">Total Itens (R$)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php if (!$itensVendidos): ?>
-                    <tr>
-                      <td colspan="4" class="text-center text-muted">Nenhum item vendido no período.</td>
-                    </tr>
-                    <?php else: foreach ($itensVendidos as $it): ?>
-                      <tr>
-                        <td>#<?= (int)$it['item_id'] ?></td>
-                        <td><?= htmlspecialchars((string)$it['descricao'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td class="text-end"><?= fmt3($it['qtd_total']) ?></td>
-                        <td class="text-end money">R$ <?= fmt($it['total_itens']) ?></td>
-                      </tr>
-                  <?php endforeach;
-                  endif; ?>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+          // Enter no campo de busca foca no submit padrão do form (já nativo),
+          // mas se quiser aplicar ao digitar, descomente abaixo:
+          // let t; qInp?.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>form?.requestSubmit(), 600); });
 
-      </div>
+        })();
+      </script>
 
-      <!-- Cards de totais -->
-      <div class="col-12 col-xxl-4">
-        <div class="aside-sticky">
-
-          <!-- Totais por forma -->
-          <div class="card" data-aos="fade-up" data-aos-delay="220">
+      <div class="row g-3">
+        <!-- Lista de vendas -->
+        <div class="col-12 col-xxl-8">
+          <div class="card" data-aos="fade-up" data-aos-delay="200">
             <div class="card-header">
-              <h5 class="mb-0">Totais — Vendas Fechadas</h5>
+              <h5 class="mb-0">Vendas</h5>
             </div>
             <div class="card-body">
-              <div class="d-flex justify-content-between mb-1"><span class="text-muted">Dinheiro</span><strong class="money">R$ <?= fmt($totais['dinheiro']) ?></strong></div>
-              <div class="d-flex justify-content-between mb-1"><span class="text-muted">PIX</span><strong class="money">R$ <?= fmt($totais['pix']) ?></strong></div>
-              <div class="d-flex justify-content-between mb-1"><span class="text-muted">Débito</span><strong class="money">R$ <?= fmt($totais['debito']) ?></strong></div>
-              <div class="d-flex justify-content-between"><span class="text-muted">Crédito</span><strong class="money">R$ <?= fmt($totais['credito']) ?></strong></div>
-              <hr>
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="fs-6">TOTAL</span>
-                <span class="fs-5 fw-bold money">R$ <?= fmt($totais['geral']) ?></span>
+              <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                  <thead>
+                    <tr>
+                      <th style="width:120px;"># / Data</th>
+                      <th>Origem</th>
+                      <th>Vendedor (CPF)</th>
+                      <th class="text-end">Bruto</th>
+                      <th class="text-end">Desc.</th>
+                      <th class="text-end">Líquido</th>
+                      <th>Forma</th>
+                      <th class="text-end">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php if (!$rows): ?>
+                      <tr>
+                        <td colspan="8" class="text-center text-muted">Nenhuma venda encontrada.</td>
+                      </tr>
+                      <?php else: foreach ($rows as $r): ?>
+                        <tr>
+                          <td>
+                            <div class="fw-semibold">#<?= (int)$r['id'] ?></div>
+                            <div class="small text-muted"><?= (new DateTime($r['criado_em']))->format('d/m/Y H:i') ?></div>
+                          </td>
+                          <td><?= htmlspecialchars((string)$r['origem'], ENT_QUOTES, 'UTF-8') ?></td>
+                          <td><?= htmlspecialchars((string)($r['vendedor_cpf'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
+                          <td class="text-end money">R$ <?= fmt($r['total_bruto']) ?></td>
+                          <td class="text-end money">R$ <?= fmt($r['desconto']) ?></td>
+                          <td class="text-end money">R$ <?= fmt($r['total_liquido']) ?></td>
+                          <td><?= htmlspecialchars((string)($r['forma_pagamento'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
+                          <td class="text-end">
+                            <?php $st = strtolower((string)$r['status']);
+                            $map = ['fechada' => 'success', 'aberta' => 'warning', 'cancelada' => 'secondary']; ?>
+                            <span class="badge bg-<?= $map[$st] ?? 'secondary' ?> badge-status"><?= htmlspecialchars($st, ENT_QUOTES, 'UTF-8') ?></span>
+                          </td>
+                        </tr>
+                    <?php endforeach;
+                    endif; ?>
+                  </tbody>
+                </table>
               </div>
-              <div class="mt-3 d-grid gap-2">
-                <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters, ['csv' => 1])) ?>">
-                  <i class="bi bi-download me-1"></i> CSV Vendas
-                </a>
-                <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters, ['csv_it' => 1])) ?>">
-                  <i class="bi bi-download me-1"></i> CSV Itens
-                </a>
-                <button class="btn btn-outline-primary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimir</button>
-              </div>
+
+              <?php if ($totalPages > 1): ?>
+                <?php $mk = fn($p) => '?' . http_build_query(array_merge($filters, ['page' => $p])); ?>
+                <nav aria-label="Paginação">
+                  <ul class="pagination justify-content-end mb-0">
+                    <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>"><a class="page-link" href="<?= $mk(max(1, $page - 1)) ?>">«</a></li>
+                    <li class="page-item disabled"><span class="page-link">Página <?= $page ?> de <?= $totalPages ?></span></li>
+                    <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>"><a class="page-link" href="<?= $mk(min($totalPages, $page + 1)) ?>">»</a></li>
+                  </ul>
+                </nav>
+              <?php endif; ?>
             </div>
           </div>
 
-          <!-- Suprimentos / Sangrias -->
-          <div class="card mt-3" data-aos="fade-up" data-aos-delay="240">
+          <!-- Itens vendidos -->
+          <div class="card mt-3" data-aos="fade-up" data-aos-delay="230">
             <div class="card-header">
-              <h5 class="mb-0">Movimentações de Caixa</h5>
+              <h5 class="mb-0">Itens Vendidos (Produtos) — Período</h5>
             </div>
             <div class="card-body">
-              <div class="d-flex justify-content-between mb-1">
-                <span class="text-muted">Suprimentos (Entradas)</span>
-                <strong class="money">R$ <?= fmt($mov['suprimentos']) ?></strong>
+              <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                  <thead>
+                    <tr>
+                      <th style="width:110px;">Item ID</th>
+                      <th>Descrição</th>
+                      <th class="text-end">Qtd</th>
+                      <th class="text-end">Total Itens (R$)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php if (!$itensVendidos): ?>
+                      <tr>
+                        <td colspan="4" class="text-center text-muted">Nenhum item vendido no período.</td>
+                      </tr>
+                      <?php else: foreach ($itensVendidos as $it): ?>
+                        <tr>
+                          <td>#<?= (int)$it['item_id'] ?></td>
+                          <td><?= htmlspecialchars((string)$it['descricao'], ENT_QUOTES, 'UTF-8') ?></td>
+                          <td class="text-end"><?= fmt3($it['qtd_total']) ?></td>
+                          <td class="text-end money">R$ <?= fmt($it['total_itens']) ?></td>
+                        </tr>
+                    <?php endforeach;
+                    endif; ?>
+                  </tbody>
+                </table>
               </div>
-              <div class="d-flex justify-content-between mb-1">
-                <span class="text-muted">Sangrias (Saídas)</span>
-                <strong class="money">R$ <?= fmt($mov['sangrias']) ?></strong>
-              </div>
-              <hr>
-              <?php
-              // Caixa físico do período (aproximação): dinheiro de vendas fechadas + suprimentos - sangrias
-              $caixaFisico = $totais['dinheiro'] + $mov['suprimentos'] - $mov['sangrias'];
-              ?>
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="fs-6">Estimativa Caixa (Dinheiro)</span>
-                <span class="fs-6 fw-bold money">R$ <?= fmt($caixaFisico) ?></span>
-              </div>
-              <div class="form-text mt-1">Estimativa: Dinheiro (vendas fechadas) + Suprimentos − Sangrias</div>
             </div>
           </div>
 
         </div>
-      </div>
-    </div><!-- /row -->
+
+        <!-- Cards de totais -->
+        <div class="col-12 col-xxl-4">
+          <div class="aside-sticky">
+
+            <!-- Totais por forma -->
+            <div class="card" data-aos="fade-up" data-aos-delay="220">
+              <div class="card-header">
+                <h5 class="mb-0">Totais — Vendas Fechadas</h5>
+              </div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between mb-1"><span class="text-muted">Dinheiro</span><strong class="money">R$ <?= fmt($totais['dinheiro']) ?></strong></div>
+                <div class="d-flex justify-content-between mb-1"><span class="text-muted">PIX</span><strong class="money">R$ <?= fmt($totais['pix']) ?></strong></div>
+                <div class="d-flex justify-content-between mb-1"><span class="text-muted">Débito</span><strong class="money">R$ <?= fmt($totais['debito']) ?></strong></div>
+                <div class="d-flex justify-content-between"><span class="text-muted">Crédito</span><strong class="money">R$ <?= fmt($totais['credito']) ?></strong></div>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fs-6">TOTAL</span>
+                  <span class="fs-5 fw-bold money">R$ <?= fmt($totais['geral']) ?></span>
+                </div>
+                <div class="mt-3 d-grid gap-2">
+                  <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters, ['csv' => 1])) ?>">
+                    <i class="bi bi-download me-1"></i> CSV Vendas
+                  </a>
+                  <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters, ['csv_it' => 1])) ?>">
+                    <i class="bi bi-download me-1"></i> CSV Itens
+                  </a>
+                  <button class="btn btn-outline-primary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimir</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Suprimentos / Sangrias -->
+            <div class="card mt-3" data-aos="fade-up" data-aos-delay="240">
+              <div class="card-header">
+                <h5 class="mb-0">Movimentações de Caixa</h5>
+              </div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between mb-1">
+                  <span class="text-muted">Suprimentos (Entradas)</span>
+                  <strong class="money">R$ <?= fmt($mov['suprimentos']) ?></strong>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                  <span class="text-muted">Sangrias (Saídas)</span>
+                  <strong class="money">R$ <?= fmt($mov['sangrias']) ?></strong>
+                </div>
+                <hr>
+                <?php
+                // Caixa físico do período (aproximação): dinheiro de vendas fechadas + suprimentos - sangrias
+                $caixaFisico = $totais['dinheiro'] + $mov['suprimentos'] - $mov['sangrias'];
+                ?>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fs-6">Estimativa Caixa (Dinheiro)</span>
+                  <span class="fs-6 fw-bold money">R$ <?= fmt($caixaFisico) ?></span>
+                </div>
+                <div class="form-text mt-1">Estimativa: Dinheiro (vendas fechadas) + Suprimentos − Sangrias</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div><!-- /row -->
 
     </div>
 
