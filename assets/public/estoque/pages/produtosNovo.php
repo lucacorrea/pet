@@ -88,29 +88,41 @@ $msg = (string)($_GET['msg'] ?? '');
       <?php if ($ok || $err): ?>
         <div
           id="toastMsg"
-          class="toast align-items-center text-white 
-           <?= $ok ? 'bg-success' : 'bg-danger' ?> 
-           border-0 position-fixed top-0 end-0 m-3"
+          class="toast show align-items-center border-0 position-fixed top-0 end-0 m-3 shadow-lg"
           role="alert"
           aria-live="assertive"
           aria-atomic="true"
-          style="z-index: 2000; min-width: 280px;">
+          style="z-index: 2000; min-width: 340px; border-radius: 12px; overflow: hidden;">
           <div class="d-flex">
-            <div class="toast-body">
-              <?= htmlspecialchars($msg ?: ($ok ? 'Produto cadastrado com sucesso.' : 'Falha ao cadastrar produto.'), ENT_QUOTES, 'UTF-8') ?>
+            <div class="toast-body d-flex align-items-center gap-2 text-white fw-semibold 
+                  <?= $ok ? 'bg-success' : 'bg-danger' ?>">
+              <i class="bi <?= $ok ? 'bi-check-circle-fill' : 'bi-x-circle-fill' ?> fs-4"></i>
+              <?= htmlspecialchars($msg ?: ($ok ? 'Produto cadastrado com sucesso!' : 'Falha ao cadastrar produto.'), ENT_QUOTES, 'UTF-8') ?>
             </div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+          </div>
+          <div class="progress" style="height: 3px;">
+            <div id="toastProgress" class="progress-bar <?= $ok ? 'bg-light' : 'bg-warning' ?>" style="width: 100%"></div>
           </div>
         </div>
 
         <script>
           document.addEventListener("DOMContentLoaded", function() {
             const toastEl = document.getElementById("toastMsg");
+            const progress = document.getElementById("toastProgress");
             if (toastEl) {
               const toast = new bootstrap.Toast(toastEl, {
                 delay: 5000
-              }); // 5 segundos
+              });
               toast.show();
+
+              // anima a barrinha de tempo
+              let width = 100;
+              const interval = setInterval(() => {
+                width -= 2;
+                progress.style.width = width + "%";
+                if (width <= 0) clearInterval(interval);
+              }, 100);
             }
           });
         </script>
