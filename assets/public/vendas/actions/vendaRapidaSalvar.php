@@ -16,9 +16,10 @@ if (!isset($pdo) || !($pdo instanceof PDO)) die('Conexão indisponível.');
 require_once __DIR__ . '/../../../lib/util.php';
 
 // Helpers
-function back(string $msg, int $ok = 0): never
+function back(string $msg, int $ok = 0, array $extra = []): never
 {
-  $qs = http_build_query(['ok' => $ok, 'err' => $ok ? 0 : 1, 'msg' => $msg]);
+  $base = ['ok' => $ok, 'err' => $ok ? 0 : 1, 'msg' => $msg];
+  $qs = http_build_query(array_merge($base, $extra));
   header("Location: ../pages/vendaRapida.php?$qs");
   exit;
 }
@@ -28,7 +29,6 @@ function p($k, $d = null)
 }
 function numBR($v): float
 {
-  // aceita "1.234,56" ou "1234.56"
   $s = str_replace('.', '', (string)$v);
   $s = str_replace(',', '.', $s);
   return (float)$s;
@@ -58,7 +58,7 @@ if ($operadorCpf === '' && $userEmail !== '') {
       $_SESSION['user_cpf'] = $operadorCpf;
       if (!empty($row['nome'])) $_SESSION['user_nome'] = $row['nome'];
     }
-  } catch (Throwable $e) { /* ignora */
+  } catch (Throwable $e) {
   }
 }
 if ($operadorCpf === '') {
@@ -69,7 +69,7 @@ if ($operadorCpf === '') {
   }
 }
 
-// Verifica caixa aberto (pega o mais recente)
+// Verifica caixa aberto
 $caixa = null;
 try {
   $st = $pdo->prepare("
@@ -86,12 +86,10 @@ try {
 }
 if (!$caixa) back('Não há caixa aberto para esta empresa.');
 
-// Regras: se for individual, precisa ser do mesmo operador
 if (($caixa['tipo'] ?? '') === 'individual') {
   $donoCpf = preg_replace('/\D+/', '', (string)($caixa['aberto_por_cpf'] ?? ''));
   if ($donoCpf !== $operadorCpf) back('O caixa individual aberto pertence a outro operador.');
 } else {
-  // se compartilhado, garante participação (se não existir, entra automaticamente)
   try {
     $stp = $pdo->prepare("
       SELECT id FROM caixa_participantes_peca
@@ -113,21 +111,21 @@ if (($caixa['tipo'] ?? '') === 'individual') {
         ':nome' => $operadorNome ?: null
       ]);
     }
-  } catch (Throwable $e) { /* não bloqueia a venda */
+  } catch (Throwable $e) {
   }
 }
 
-// Entrada do formulário
-$forma          = (string)p('forma_pagamento', 'dinheiro'); // dinheiro|pix|debito|credito
-$desconto       = numBR(p('desconto', '0'));
-$itensJson      = (string)p('itens_json', '[]');
-$valorRecebido  = numBR(p('valor_recebido', '0')); // agora a view envia name="valor_recebido"
+// Entrada
+$forma         = (string)p('forma_pagamento', 'dinheiro');
+$desconto      = numBR(p('desconto', '0'));
+$itensJson     = (string)p('itens_json', '[]');
+$valorRecebido = numBR(p('valor_recebido', '0'));
 
 $itens = json_decode($itensJson, true);
 if (!is_array($itens)) $itens = [];
 if (empty($itens)) back('Adicione ao menos um item.');
 
-// Calcula totais
+// Totais
 $subtotal = 0.0;
 foreach ($itens as $i) {
   $qtd  = (float)($i['qtd']  ?? 0);
@@ -138,7 +136,6 @@ foreach ($itens as $i) {
 $desconto = max((float)$desconto, 0.0);
 $total = max($subtotal - $desconto, 0.0);
 
-// Valida dinheiro/troco no servidor
 if ($forma === 'dinheiro') {
   if ($valorRecebido <= 0) back('Informe o valor recebido em dinheiro.');
   if ($valorRecebido + 1e-9 < $total) back('Valor recebido menor que o total.');
@@ -148,7 +145,7 @@ $troco = ($forma === 'dinheiro') ? max($valorRecebido - $total, 0.0) : 0.0;
 try {
   $pdo->beginTransaction();
 
-  // 1) Insere vendas_peca
+  // vendas_peca
   $insVenda = $pdo->prepare("
     INSERT INTO vendas_peca
       (empresa_cnpj, vendedor_cpf, origem, status, total_bruto, desconto, total_liquido, forma_pagamento, criado_em)
@@ -165,24 +162,21 @@ try {
   ]);
   $vendaId = (int)$pdo->lastInsertId();
 
-  // 2) Insere itens (sem ID de produto vindo da view => item_id=0)
+  // itens
   $insItem = $pdo->prepare("
     INSERT INTO venda_itens_peca
       (venda_id, item_tipo, item_id, descricao, qtd, valor_unit, valor_total)
     VALUES
       (:venda, 'produto', :item_id, :desc, :qtd, :unit, :tot)
   ");
-
   foreach ($itens as $i) {
     $desc = (string)($i['nome'] ?? 'Item');
     $qtd  = (float)($i['qtd']  ?? 0);
     $unit = (float)($i['unit'] ?? 0);
     $tot  = $qtd * $unit;
-    $itemId = 0;
-
     $insItem->execute([
       ':venda'   => $vendaId,
-      ':item_id' => $itemId,
+      ':item_id' => 0,
       ':desc'    => $desc,
       ':qtd'     => $qtd,
       ':unit'    => $unit,
@@ -190,7 +184,7 @@ try {
     ]);
   }
 
-  // 3) Movimento de caixa (entrada)
+  // caixa_movimentos_peca
   $descMov = sprintf('Venda rápida #%d (%s)', $vendaId, strtoupper($forma));
   $insMov = $pdo->prepare("
     INSERT INTO caixa_movimentos_peca
@@ -208,11 +202,10 @@ try {
 
   $pdo->commit();
 
-  back("Venda #$vendaId registrada com sucesso!", 1);
+  // Sucesso -> devolve venda_id para a página exibir toast e ir ao DANFE
+  back("Venda #$vendaId registrada com sucesso!", 1, ['venda_id' => $vendaId]);
 } catch (Throwable $e) {
   if ($pdo->inTransaction()) $pdo->rollBack();
-  // Para depuração, você pode trocar a linha abaixo por:
-  // back('Falha ao salvar: '.$e->getMessage());
   back('Falha ao salvar a venda.');
 }
 ?>
