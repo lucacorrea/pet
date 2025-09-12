@@ -315,10 +315,10 @@ try {
               <?php endif; ?>
             </div>
             <div class="col-md-4 text-md-end">
-              <a href="../pages/orcamentos.php" class="btn btn-outline-secondary">
+              <a href="./orcamentos.php" class="btn btn-outline-secondary">
                 <i class="bi bi-receipt"></i> Orçamentos
               </a>
-              <a href="../../caixa/pages/caixaAbrir.php" class="btn btn-outline-primary">
+              <a href="./caixaAbrir.php" class="btn btn-outline-primary">
                 <i class="bi bi-cash-stack"></i> Caixa
               </a>
             </div>
