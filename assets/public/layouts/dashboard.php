@@ -14,10 +14,10 @@ if (!isset($menuAtivo)) {
     <a href="./dashboard.php" class="navbar-brand">
       <div class="logo-main">
         <div class="logo-normal">
-          <img src="./assets/images/auth/ode.png" alt="logo" class="logo-dashboard">
+          <img src="./assets/images/auth/logo.png" alt="logo" class="logo-dashboard">
         </div>
       </div>
-      <h4 class="logo-title title-dashboard">AutoERP</h4>
+      <h4 class="logo-title title-dashboard">Mundo Pets</h4>
     </a>
     <div class="sidebar-toggle" data-toggle="sidebar" data-active="true">
       <i class="icon">

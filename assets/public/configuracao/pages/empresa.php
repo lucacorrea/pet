@@ -33,9 +33,9 @@ $vm = empresa_config_viewmodel($pdo); // agora recebe $pdo e busca pelo CNPJ da 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AutoERP — Dados da Empresa</title>
+    <title>Mundo Pets — Dados da Empresa</title>
 
-    <link rel="icon" type="image/png" href="../../assets/images/dashboard/icon.png">
+    <link rel="icon" type="image/png" href="../../assets/images/dashboard/logo.png">
     <link rel="shortcut icon" href="../../assets/images/favicon.ico">
 
     <link rel="stylesheet" href="../../assets/css/core/libs.min.css">

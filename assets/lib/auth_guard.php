@@ -11,18 +11,18 @@ function _check_session_lifetime(): void {
     $last    = (int)($_SESSION['last_seen']  ?? 0);
     if ($created && ($now - $created) > 4*3600) {
         session_unset(); session_destroy();
-        header('Location: /auto/index.php?erro=1&msg=' . urlencode('Sessão expirada.')); exit;
+        header('Location: /assets/index.php?erro=1&msg=' . urlencode('Sessão expirada.')); exit;
     }
     if ($last && ($now - $last) > 3*3600) {
         session_unset(); session_destroy();
-        header('Location: /auto/index.php?erro=1&msg=' . urlencode('Sessão inativa.')); exit;
+        header('Location: /assets/index.php?erro=1&msg=' . urlencode('Sessão inativa.')); exit;
     }
     $_SESSION['last_seen'] = $now;
 }
 
 function require_post(): void {
     if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-        header('Location: /auto/index.php?erro=1'); exit;
+        header('Location: /assets/index.php?erro=1'); exit;
     }
 }
 
@@ -31,14 +31,14 @@ function ensure_logged_in(array $allowedProfiles = []): void {
     $uid    = (int)($_SESSION['user_id'] ?? 0);
     $perfil = (string)($_SESSION['user_perfil'] ?? '');
     if ($uid <= 0 || $perfil === '') {
-        header('Location: /auto/index.php?erro=1&msg=' . urlencode('Faça login.')); exit;
+        header('Location: /assets/index.php?erro=1&msg=' . urlencode('Faça login.')); exit;
     }
     if ($allowedProfiles && !in_array($perfil, $allowedProfiles, true)) {
         // redireciona para o “home” de cada papel
         if ($perfil === 'super_admin') {
-            header('Location: /auto/admin/dashboard.php'); exit;
+            header('Location: /assets/admin/dashboard.php'); exit;
         } else {
-            header('Location: /auto/public/dashboard.php'); exit;
+            header('Location: /assets/public/dashboard.php'); exit;
         }
     }
 }
@@ -54,19 +54,19 @@ function guard_empresa_user(array $allowedTypes = ['dono','administrativo','func
 
     // bloqueia lavador
     if ($perfil === 'funcionario' && $tipo === 'lavajato') {
-        header('Location: /auto/index.php?erro=1&msg=' . urlencode('Acesso não permitido para lavador.')); exit;
+        header('Location: /assets/index.php?erro=1&msg=' . urlencode('Acesso não permitido para lavador.')); exit;
     }
     // checa tipo permitido
     if ($perfil === 'dono') {
         // ok
     } elseif ($perfil === 'funcionario' && !in_array($tipo, $allowedTypes, true)) {
-        header('Location: /auto/public/dashboard.php?erro=1&msg=' . urlencode('Permissão insuficiente.')); exit;
+        header('Location: /assets/public/dashboard.php?erro=1&msg=' . urlencode('Permissão insuficiente.')); exit;
     }
 
     // empresa exigida
     $cnpj = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj'] ?? ''));
     if (strlen($cnpj) !== 14) {
-        header('Location: /auto/index.php?erro=1&msg=' . urlencode('Empresa não vinculada.')); exit;
+        header('Location: /assets/index.php?erro=1&msg=' . urlencode('Empresa não vinculada.')); exit;
     }
 
     // expõe constantes de conveniência

@@ -61,9 +61,9 @@ try {
 
 <head>
   <meta charset="utf-8">
-  <title>AutoERP — Venda Rápida</title>
+  <title>Mundo Pets — Venda Rápida</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="../../assets/images/dashboard/icon.png">
+  <link rel="icon" type="image/png" href="../../assets/images/dashboard/logo.png">
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
   <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
   <link rel="stylesheet" href="../../assets/css/hope-ui.min.css?v=4.0.0">
@@ -186,14 +186,18 @@ try {
 </head>
 
 <body>
-  <?php include __DIR__ . '/../../layouts/sidebar.php'; ?>
+  <?php
+  if (session_status() === PHP_SESSION_NONE) session_start();
+  $menuAtivo = 'vendas-rapida'; // ID do menu atual
+  include '../../layouts/sidebar.php';
+  ?>
 
   <main class="main-content">
     <div class="position-relative iq-banner">
       <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
         <div class="container-fluid navbar-inner">
           <a href="../../dashboard.php" class="navbar-brand">
-            <h4 class="logo-title">AutoERP</h4>
+            <h4 class="logo-title">Mundo Pets</h4>
           </a>
           <div class="ms-auto d-none d-lg-flex align-items-center gap-3">
             <span class="text-muted small">Atalhos: <span class="kbd">Enter</span> Adicionar • <span class="kbd">F2</span> Quantidade • <span class="kbd">F4</span> Finalizar</span>

@@ -52,9 +52,9 @@ function badge_status(int $s): string
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AutoERP — Usuários da Empresa</title>
+    <title>Mundo Pets — Usuários da Empresa</title>
 
-    <link rel="icon" type="image/png" href="../../assets/images/dashboard/icon.png">
+    <link rel="icon" type="image/png" href="../../assets/images/dashboard/logo.png">
     <link rel="shortcut icon" href="../../assets/images/favicon.ico">
 
     <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
