@@ -202,7 +202,7 @@ $pagination = [
   <meta charset="utf-8">
   <title>Mundo Pets — Relatório de Vendas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="../../assets/images/dashboard/icon.png">
+  <link rel="icon" type="image/png" href="../../assets/images/dashboard/logo.png">
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
   <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
   <link rel="stylesheet" href="../../assets/css/hope-ui.min.css?v=4.0.0">
@@ -300,7 +300,7 @@ $pagination = [
       </div>
 
       <div class="row g-3">
-        <div class="col-12 col-xxl-8">
+        <div class="col-12 col-xxl-12">
           <div class="card" data-aos="fade-up" data-aos-delay="200">
             <div class="card-body">
               <div class="table-responsive">
