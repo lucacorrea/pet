@@ -206,7 +206,7 @@ try {
             </div>
             <div class="d-flex gap-2">
               
-              <button type="submit" class="btn btn-primary w-50"><i class="bi bi-save me-1"></i>Salvar</button>
+              <button type="submit" class="btn btn-primary w-100"><i class="bi bi-save me-1"></i>Salvar</button>
             </div>
           </div>
         </div>
