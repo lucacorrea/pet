@@ -81,7 +81,7 @@ try {
   <style>
     /* ——— Look & feel PDV supermercado ——— */
     .pdv-visor {
-      background: #0b1220;
+      background: #002f8cff;
       color: #f0f0f0;
       border-radius: 14px;
       padding: 16px 20px;
