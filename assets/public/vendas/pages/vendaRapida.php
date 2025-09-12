@@ -23,6 +23,11 @@ if (empty($_SESSION['csrf_venda_rapida'])) {
 }
 $csrf = $_SESSION['csrf_venda_rapida'];
 
+// ===== toast (ok/err/msg) via GET =====
+$ok  = isset($_GET['ok'])  ? (int)$_GET['ok']  : 0;
+$err = isset($_GET['err']) ? (int)$_GET['err'] : 0;
+$msg = isset($_GET['msg']) ? (string)$_GET['msg'] : '';
+
 // ===== Verifica se existe caixa ABERTO para a empresa =====
 $caixaAberto = null;
 try {
@@ -76,7 +81,7 @@ try {
   <style>
     /* ——— Look & feel PDV supermercado ——— */
     .pdv-visor {
-      background: #002c83ff;
+      background: #0b1220;
       color: #f0f0f0;
       border-radius: 14px;
       padding: 16px 20px;
@@ -204,7 +209,46 @@ try {
           </div>
         </div>
       </nav>
-      <!-- Modal: Caixa obrigatório -->
+
+      <!-- TOAST de sucesso/erro (topo direito) -->
+      <?php if ($ok || $err): ?>
+        <div
+          id="toastMsg"
+          class="toast show align-items-center border-0 position-fixed top-0 end-0 m-3 shadow-lg"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          style="z-index: 2000; min-width: 340px; border-radius: 12px; overflow: hidden;">
+          <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2 text-white fw-semibold <?= $ok ? 'bg-success' : 'bg-danger' ?>">
+              <i class="bi <?= $ok ? 'bi-check-circle-fill' : 'bi-x-circle-fill' ?> fs-4"></i>
+              <?= htmlspecialchars($msg ?: ($ok ? 'Venda registrada com sucesso!' : 'Falha ao registrar venda.'), ENT_QUOTES, 'UTF-8') ?>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+          </div>
+          <div class="progress" style="height: 3px;">
+            <div id="toastProgress" class="progress-bar <?= $ok ? 'bg-light' : 'bg-warning' ?>" style="width: 100%"></div>
+          </div>
+        </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function() {
+            const toastEl = document.getElementById("toastMsg");
+            const progress = document.getElementById("toastProgress");
+            if (toastEl) {
+              const toast = new bootstrap.Toast(toastEl, {
+                delay: 5000
+              });
+              toast.show();
+              let width = 100;
+              const interval = setInterval(() => {
+                width -= 2;
+                progress.style.width = width + "%";
+                if (width <= 0) clearInterval(interval);
+              }, 100);
+            }
+          });
+        </script>
+      <?php endif; ?>
 
       <div class="iq-navbar-header" style="height:140px; margin-bottom:50px;">
         <div class="container-fluid iq-container">
@@ -213,30 +257,25 @@ try {
               <h1 class="">Venda Rápida</h1>
               <p>Fluxo de PDV para balcão — leitor de código, busca por nome/SKU/EAN, e finalização rápida.</p>
               <?php if (!$caixaAberto): ?>
-
-                <div  style="font-weight: 900; color: #f73232ff;">
+                <div style="font-weight: 900; color: #f73232ff;">
                   <i class="bi bi-exclamation-triangle me-1"></i>
                   Nenhum caixa aberto no momento.
                   <a href="../../caixa/pages/caixaAbrir.php" class="alert-link text-white">Clique aqui</a> para abrir ou entrar em um caixa.
                 </div>
               <?php else: ?>
-
-
                 <i class="bi bi-cash-coin me-1"></i>
                 Caixa aberto:
                 <strong>#<?= (int)$caixaAberto['id'] ?></strong> —
                 <?= htmlspecialchars($caixaAberto['tipo'], ENT_QUOTES, 'UTF-8') ?> —
                 <?= htmlspecialchars($caixaAberto['terminal'], ENT_QUOTES, 'UTF-8') ?> —
                 desde <?= htmlspecialchars($caixaAberto['quando'], ENT_QUOTES, 'UTF-8') ?>
-
               <?php endif; ?>
-
             </div>
             <div class="col-md-4 text-md-end">
               <a href="../pages/orcamentos.php" class="btn btn-outline-secondary">
                 <i class="bi bi-receipt"></i> Orçamentos
               </a>
-              <a href="./caixaAbrir.php" class="btn btn-outline-primary">
+              <a href="../../caixa/pages/caixaAbrir.php" class="btn btn-outline-primary">
                 <i class="bi bi-cash-stack"></i> Caixa
               </a>
             </div>
@@ -249,6 +288,7 @@ try {
     </div>
 
     <div class="container-fluid content-inner mt-n3 py-0">
+      <!-- ACTION CORRIGIDA para vendaRapidaSalvar.php -->
       <form method="post" action="../actions/vendaRapidaSalvar.php" id="form-venda" data-caixa="<?= $caixaAberto ? '1' : '0' ?>">
         <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
         <input type="hidden" name="itens_json" id="itens_json">
@@ -283,11 +323,11 @@ try {
                   </div>
                   <div class="col-lg-2">
                     <label class="form-label">Qtd</label>
-                    <input type="number" class="form-control form-control-lg text-end" id="inp-qtd" step="0.001" min="0.001" <?= $caixaAberto ? '' : 'disabled' ?>>
+                    <input type="number" class="form-control form-control-lg text-end" id="inp-qtd" step="0.001" min="0.001" value="1.000" <?= $caixaAberto ? '' : 'disabled' ?>>
                   </div>
                   <div class="col-lg-3">
                     <label class="form-label">Vlr. Unit (R$)</label>
-                    <input type="number" class="form-control form-control-lg text-end" id="inp-preco" step="0.01" min="0" <?= $caixaAberto ? '' : 'disabled' ?>>
+                    <input type="number" class="form-control form-control-lg text-end" id="inp-preco" step="0.01" min="0" value="0.00" <?= $caixaAberto ? '' : 'disabled' ?>>
                   </div>
 
                   <div class="col-12 d-flex gap-2 mt-2">
@@ -388,7 +428,8 @@ try {
                   <label class="form-label">Valor Recebido (Dinheiro)</label>
                   <div class="input-group">
                     <span class="input-group-text">R$</span>
-                    <input type="number" step="0.01" min="0" class="form-control text-end" id="inp-recebido" placeholder="0,00">
+                    <!-- NAME ADICIONADO para o back-end receber -->
+                    <input type="number" step="0.01" min="0" class="form-control text-end" id="inp-recebido" name="valor_recebido" placeholder="0,00">
                   </div>
                   <div class="d-flex justify-content-between mt-2">
                     <span class="text-muted">Troco</span>
@@ -460,7 +501,8 @@ try {
       el('#desconto_hidden').value = (desconto || 0).toFixed(2);
       el('#itens_json').value = JSON.stringify(itens);
       renderTable();
-      recalcTroco(); // mantém troco atualizado quando total muda
+      recalcTroco();
+      validateFinalizeButton();
     }
 
     function renderTable() {
@@ -524,15 +566,13 @@ try {
       `).join('');
       box.style.display = 'block';
     }
+
     if (temCaixa) {
       inpBusca.addEventListener('input', () => {
-        const lista = filtra(inpBusca.value);
-        showSugestoes(lista);
+        showSugestoes(filtra(inpBusca.value));
       });
       document.addEventListener('click', (e) => {
-        if (!e.target.closest('.pdv-busca')) {
-          box.style.display = 'none';
-        }
+        if (!e.target.closest('.pdv-busca')) box.style.display = 'none';
       });
       box.addEventListener('click', (e) => {
         const it = e.target.closest('.item');
@@ -554,7 +594,6 @@ try {
       const unit = parseFloat(inpPreco.value || '0');
       const termo = (inpBusca.value || '').trim();
 
-      // se não escolheu pelo suggest, tenta achar por termo direto
       let finalNome = nomeVisor;
       if (!finalNome || finalNome === '—') {
         const lista = filtra(termo);
@@ -574,7 +613,6 @@ try {
         unit
       });
 
-      // limpar busca e preparar próxima leitura
       inpBusca.value = '';
       el('#visor-produto').textContent = '—';
       inpQtd.value = '1.000';
@@ -653,12 +691,10 @@ try {
         btn.disabled = true;
         return;
       }
-      // precisa ter itens para finalizar
       if (!itens.length) {
         btn.disabled = true;
         return;
       }
-      // se dinheiro, precisa recebido >= total
       if (selFP.value === 'dinheiro') {
         const total = totalGeral();
         const recebido = parseFloat(inpRec.value || '0');
@@ -669,7 +705,6 @@ try {
     }
 
     if (temCaixa) {
-      // botões de pagamento rápido
       document.querySelectorAll('[data-pay]').forEach(btn => {
         btn.addEventListener('click', () => {
           selFP.value = btn.getAttribute('data-pay');
@@ -680,7 +715,7 @@ try {
       inpRec.addEventListener('input', recalcTroco);
     }
 
-    // ===== atalhos teclado (Enter só adiciona item na busca; F4 finaliza)
+    // ===== atalhos teclado
     if (temCaixa) {
       form.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -696,41 +731,18 @@ try {
         if (e.key === 'F4') {
           e.preventDefault();
           if (!el('#btn-finalizar').disabled) {
-            form.requestSubmit ?
-              form.requestSubmit(el('#btn-finalizar')) :
-              el('#btn-finalizar').click();
+            form.requestSubmit ? form.requestSubmit(el('#btn-finalizar')) : el('#btn-finalizar').click();
           }
         }
       });
     }
 
-    // valida antes de enviar (caixa + itens + dinheiro suficiente)
-    form.addEventListener('submit', (e) => {
-      if (!temCaixa) {
-        e.preventDefault();
-        alert('Abra um caixa para finalizar a venda.');
-        return;
-      }
-      if (!itens.length) {
-        e.preventDefault();
-        alert('Adicione ao menos 1 item.');
-        return;
-      }
-      if (selFP.value === 'dinheiro') {
-        const total = totalGeral();
-        const recebido = parseFloat(inpRec.value || '0');
-        if (!(recebido >= total)) {
-          e.preventDefault();
-          alert('Valor recebido insuficiente para pagamento em dinheiro.');
-          return;
-        }
-      }
-    });
-
     // start
     recalc();
-    toggleDinheiroUI(); // configura UI inicial conforme select
+    toggleDinheiroUI();
   </script>
+
+  <!-- Modal opcional: se existir um #modalCaixaObrigatorio, mostramos -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const m = document.getElementById('modalCaixaObrigatorio');
@@ -740,7 +752,6 @@ try {
       }
     });
   </script>
-
 </body>
 
 </html>
