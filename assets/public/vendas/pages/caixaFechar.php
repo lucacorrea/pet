@@ -114,7 +114,7 @@ function fmt($v)
   <meta charset="utf-8">
   <title>Fechar Caixa</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="../../assets/images/dashboard/icon.png">
+  <link rel="icon" type="image/png" href="../../assets/images/dashboard/logo.png">
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
   <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
   <link rel="stylesheet" href="../../assets/css/hope-ui.min.css?v=4.0.0">
