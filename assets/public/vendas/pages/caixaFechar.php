@@ -17,6 +17,11 @@ require_once __DIR__ . '/../../../lib/util.php';
 $empresaCnpj = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj'] ?? ''));
 if (!preg_match('/^\d{14}$/', $empresaCnpj)) die('Empresa não vinculada ao usuário.');
 
+// Toast via GET
+$ok  = isset($_GET['ok'])  ? (int)$_GET['ok']  : 0;
+$err = isset($_GET['err']) ? (int)$_GET['err'] : 0;
+$msg = isset($_GET['msg']) ? (string)$_GET['msg'] : '';
+
 // CSRF
 if (empty($_SESSION['csrf_caixa_fechar'])) {
   $_SESSION['csrf_caixa_fechar'] = bin2hex(random_bytes(32));
@@ -43,20 +48,18 @@ try {
 
 /** Resumo financeiro baseado no seu schema */
 $resumo = [
-  // recebimentos por forma (vendas_peca)
-  'dinheiro' => 0.00,
-  'pix'      => 0.00,
-  'debito'   => 0.00,
-  'credito'  => 0.00,
-  // movimentos de caixa (caixa_movimentos_peca)
-  'entradas_mov' => 0.00,  // suprimentos
-  'saidas_mov'   => 0.00,  // sangrias
+  'dinheiro'     => 0.00,
+  'pix'          => 0.00,
+  'debito'       => 0.00,
+  'credito'      => 0.00,
+  'entradas_mov' => 0.00, // caixa_movimentos_peca: entrada
+  'saidas_mov'   => 0.00, // caixa_movimentos_peca: saida
 ];
 
 if ($caixa) {
   $caixaId = (int)$caixa['id'];
 
-  // 1) Movimentações de caixa (entrada/saida) — tabela: caixa_movimentos_peca
+  // 1) Movimentações (entrada/saida)
   try {
     $st = $pdo->prepare("
       SELECT
@@ -73,8 +76,7 @@ if ($caixa) {
   } catch (Throwable $e) {
   }
 
-  // 2) Recebimentos por forma de pagamento — tabela: vendas_peca
-  //    Considera vendas "fechadas" a partir da data/hora de abertura do caixa
+  // 2) Recebimentos por forma (vendas_peca) desde a abertura
   try {
     $st = $pdo->prepare("
       SELECT LOWER(forma_pagamento) AS fp, SUM(total_liquido) AS total
@@ -86,9 +88,7 @@ if ($caixa) {
     ");
     $st->execute([':c' => $empresaCnpj, ':ini' => $caixa['aberto_em']]);
     foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $r) {
-      $fp = (string)($r['fp'] ?? '');
-      // normaliza possíveis variações
-      $fp = str_replace(['débito', 'crédito'], ['debito', 'credito'], $fp);
+      $fp = str_replace(['débito', 'crédito'], ['debito', 'credito'], (string)($r['fp'] ?? ''));
       if (isset($resumo[$fp])) $resumo[$fp] += (float)$r['total'];
     }
   } catch (Throwable $e) {
@@ -98,11 +98,8 @@ if ($caixa) {
 // totais e saldo esperado
 $saldoInicial  = (float)($caixa['saldo_inicial'] ?? 0);
 $totalRecebido = $resumo['dinheiro'] + $resumo['pix'] + $resumo['debito'] + $resumo['credito'];
-
-// Entradas que vão para o caixa físico: dinheiro das vendas + entradas (suprimentos)
-$entradasCx = $resumo['dinheiro'] + $resumo['entradas_mov'];
-$saidasCx   = $resumo['saidas_mov'];
-
+$entradasCx    = $resumo['dinheiro'] + $resumo['entradas_mov']; // físico
+$saidasCx      = $resumo['saidas_mov'];
 $saldoEsperado = $saldoInicial + $entradasCx - $saidasCx;
 
 function fmt($v)
@@ -148,6 +145,30 @@ function fmt($v)
         top: 84px
       }
     }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(120%);
+        opacity: 0
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1
+      }
+
+      to {
+        transform: translateX(120%);
+        opacity: 0
+      }
+    }
   </style>
 </head>
 
@@ -163,13 +184,61 @@ function fmt($v)
       <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
         <div class="container-fluid navbar-inner">
           <a href="../../dashboard.php" class="navbar-brand">
-            <h4 class="logo-title">AutoERP</h4>
+            <h4 class="logo-title">Mundo Pets</h4>
           </a>
           <div class="ms-auto small text-muted"></div>
         </div>
       </nav>
 
-      <div class="iq-navbar-header" style="height:140px; margin-bottom:50px;">
+      <!-- TOAST de sucesso/erro - 1.3s -->
+      <?php if ($ok || $err): ?>
+        <div
+          id="toastMsg"
+          class="position-fixed top-0 end-0 m-3 shadow-lg"
+          style="z-index:2000;min-width:360px;border-radius:12px;overflow:hidden;animation:slideIn .4s ease-out;">
+          <div class="<?= $ok ? 'bg-success' : 'bg-danger' ?> text-white p-3 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <i class="bi <?= $ok ? 'bi-check-circle-fill' : 'bi-x-circle-fill' ?> fs-3"></i>
+              <div class="fw-semibold fs-6">
+                <?= htmlspecialchars($msg ?: ($ok ? 'Operação realizada com sucesso!' : 'Falha na operação.'), ENT_QUOTES, 'UTF-8') ?>
+              </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="toast" aria-label="Fechar" id="toastCloseBtn"></button>
+          </div>
+          <div class="progress" style="height:4px;">
+            <div id="toastProgress" class="progress-bar <?= $ok ? 'bg-light' : 'bg-warning' ?>" style="width:100%"></div>
+          </div>
+        </div>
+        <script>
+          (function() {
+            const DURATION = 1300; // 1.3s
+            const progress = document.getElementById('toastProgress');
+            const toast = document.getElementById('toastMsg');
+            const closeBtn = document.getElementById('toastCloseBtn');
+
+            // anima barra
+            let start = performance.now();
+
+            function tick(t) {
+              const p = Math.min(1, (t - start) / DURATION);
+              progress.style.width = (100 * (1 - p)) + '%';
+              if (p < 1) requestAnimationFrame(tick);
+              else slideOut();
+            }
+
+            function slideOut() {
+              toast.style.animation = 'slideOut .35s ease-in forwards';
+              setTimeout(() => toast.remove(), 380);
+            }
+            requestAnimationFrame(tick);
+
+            // fechar manual
+            closeBtn?.addEventListener('click', slideOut);
+          })();
+        </script>
+      <?php endif; ?>
+
+      <div class="iq-navbar-header" style="height:140px;margin-bottom:50px;">
         <div class="container-fluid iq-container">
           <div class="row">
             <div class="col-12">
@@ -213,7 +282,6 @@ function fmt($v)
                 </div>
 
                 <div class="row g-3">
-                  <!-- Recebido por forma -->
                   <div class="col-md-6">
                     <div class="card stat-card border-0 bg-soft-primary">
                       <div class="card-body">
@@ -233,7 +301,6 @@ function fmt($v)
                     </div>
                   </div>
 
-                  <!-- Movimentações -->
                   <div class="col-md-6">
                     <div class="card stat-card border-0 bg-soft-success">
                       <div class="card-body">
