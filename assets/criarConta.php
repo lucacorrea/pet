@@ -17,7 +17,7 @@ $msg = htmlspecialchars($_GET['msg'] ?? '', ENT_QUOTES, 'UTF-8');
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Criar Conta - AutoERP</title>
+  <title>Criar Conta -Mundo Pets</title>
 
   <link rel="shortcut icon" href="./public/assets/images/favicon.ico">
   <link rel="stylesheet" href="./public/assets/css/core/libs.min.css">
@@ -38,10 +38,10 @@ $msg = htmlspecialchars($_GET['msg'] ?? '', ENT_QUOTES, 'UTF-8');
               <a href="./index.php" class="navbar-brand d-flex align-items-center mb-2">
                 <div class="logo-main">
                   <div class="logo-normal">
-                    <img src="./public/assets/images/auth/ode.png" style="width: 100px; margin-top:-20px" alt="AutoERP">
+                    <img src="./public/assets/images/dashboard/logo.png" style="width: 80px; margin-top:-20px" alt="AutoERP">
                   </div>
                 </div>
-                <h4 class="logo-title ms-2" style="margin-top:-20px; margin-left:-30px !important;">AutoERP</h4>
+                <h4 class="logo-title ms-2" style="margin-top:-20px; margin-left:-15px !important;">Mundo Pets</h4>
               </a>
 
               <h2 class="mb-2">Solicitar Cadastro</h2>
