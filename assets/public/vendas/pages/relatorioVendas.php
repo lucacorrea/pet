@@ -324,7 +324,7 @@ function fmt3($v)
         <div class="card-body pt-3">
           <form id="filtros-form" class="row g-3 align-items-end" method="get" action="">
             <!-- Período -->
-            <div class="col-12 col-md-6 col-xl-3">
+            <div class="col-12 col-md-6 col-xl-6">
               <label class="form-label">De</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
@@ -333,7 +333,7 @@ function fmt3($v)
               </div>
             </div>
 
-            <div class="col-12 col-md-6 col-xl-3">
+            <div class="col-12 col-md-6 col-xl-6">
               <label class="form-label">Até</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-calendar2-event"></i></span>
@@ -343,7 +343,7 @@ function fmt3($v)
             </div>
 
             <!-- Forma -->
-            <div class="col-12 col-md-6 col-xl-3">
+            <div class="col-12 col-md-6 col-xl-6">
               <label class="form-label">Forma</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-wallet2"></i></span>
@@ -357,7 +357,7 @@ function fmt3($v)
             </div>
 
             <!-- Status -->
-            <div class="col-12 col-md-6 col-xl-3">
+            <div class="col-12 col-md-6 col-xl-6">
               <label class="form-label">Status</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-check2-square"></i></span>
