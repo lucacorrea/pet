@@ -85,7 +85,7 @@ $msg = (string)($_GET['msg'] ?? '');
         </div>
       </nav>
 
-      <div class="iq-navbar-header" style="height:150px; margin-bottom:50px;">
+      <div class="iq-navbar-header" style="height:150px; margin-bottom:80px;">
         <div class="container-fluid iq-container">
           <div class="row">
             <div class="col-md-12">
