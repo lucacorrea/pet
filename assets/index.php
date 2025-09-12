@@ -134,18 +134,6 @@ if (isset($_GET['erro'])) {
 
                <!-- shapes de fundo (igual ao criar conta) -->
                <div class="sign-bg">
-                  <svg width="280" height="230" viewBox="0 0 431 398" fill="none" xmlns="http://www.w3.org/2000/svg">
-                     <g opacity="0.05">
-                        <rect x="-157.085" y="193.773" width="543" height="77.5714" rx="38.7857"
-                           transform="rotate(-45 -157.085 193.773)" fill="#3B8AFF"></rect>
-                        <rect x="7.46875" y="358.327" width="543" height="77.5714" rx="38.7857"
-                           transform="rotate(-45 7.46875 358.327)" fill="#3B8AFF"></rect>
-                        <rect x="61.9355" y="138.545" width="310.286" height="77.5714" rx="38.7857"
-                           transform="rotate(45 61.9355 138.545)" fill="#3B8AFF"></rect>
-                        <rect x="62.3154" y="-190.173" width="543" height="77.5714" rx="38.7857"
-                           transform="rotate(45 62.3154 -190.173)" fill="#3B8AFF"></rect>
-                     </g>
-                  </svg>
                </div>
             </div>
 
