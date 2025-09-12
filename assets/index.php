@@ -70,7 +70,7 @@ if (isset($_GET['erro'])) {
                         </div>
                         <!-- /Logo -->
                         <!-- /Logo -->
-                        <h4 class="logo-title ms-2" style="margin-top: -20px; margin-left: -25px !important;">Mundo Pets</h4>
+                        <h4 class="logo-title ms-2" style="margin-top: -20px; margin-left: -15px !important;">Mundo Pets</h4>
                      </a>
 
 
