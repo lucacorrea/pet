@@ -194,46 +194,49 @@ function fmt($v)
                   Saldo inicial: <strong class="money">R$ <?= fmt($saldoInicial) ?></strong>
                 </div>
               </div>
-              <div class="card-body">
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <div class="card border-0 bg-soft-primary">
-                      <div class="card-body">
-                        <div class="text-muted small">Recebido (por forma)</div>
-                        <div class="mt-2 small">
-                          <div>Dinheiro: <strong class="money">R$ <?= fmt($resumo['dinheiro']) ?></strong></div>
-                          <div>PIX: <strong class="money">R$ <?= fmt($resumo['pix']) ?></strong></div>
-                          <div>Débito: <strong class="money">R$ <?= fmt($resumo['debito']) ?></strong></div>
-                          <div>Crédito: <strong class="money">R$ <?= fmt($resumo['credito']) ?></strong></div>
-                        </div>
-                        <hr class="my-2">
-                        <div class="d-flex justify-content-between align-items-center">
-                          <span class="fw-semibold">Total recebido</span>
-                          <span class="fs-5 fw-bold money">R$ <?= fmt($totalRecebido) ?></span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+             <div class="card-body">
+  <div class="row stat-pair row-cols-1 row-cols-md-2 g-3">
+    <!-- CARD: Recebido por forma -->
+    <div class="col">
+      <div class="card stat-card border-0 bg-soft-primary">
+        <div class="card-body">
+          <div class="text-muted small">Recebido (por forma)</div>
+          <div class="mt-2 small">
+            <div>Dinheiro: <strong class="money">R$ <?= fmt($resumo['dinheiro']) ?></strong></div>
+            <div>PIX: <strong class="money">R$ <?= fmt($resumo['pix']) ?></strong></div>
+            <div>Débito: <strong class="money">R$ <?= fmt($resumo['debito']) ?></strong></div>
+            <div>Crédito: <strong class="money">R$ <?= fmt($resumo['credito']) ?></strong></div>
+          </div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between align-items-center mt-auto">
+            <span class="fw-semibold">Total recebido</span>
+            <span class="fs-5 fw-bold money">R$ <?= fmt($totalRecebido) ?></span>
+          </div>
+        </div>
+      </div>
+    </div>
 
-                  <div class="col-md-6">
-                    <div class="card border-0 bg-soft-success">
-                      <div class="card-body">
-                        <div class="text-muted small">Movimentações de Caixa</div>
-                        <div class="mt-2 small">
-                          <div>Suprimentos: <strong class="money">R$ <?= fmt($resumo['suprimentos']) ?></strong></div>
-                          <div>Sangrias: <strong class="money">R$ <?= fmt($resumo['sangrias']) ?></strong></div>
-                        </div>
-                        <hr class="my-2">
-                        <div class="d-flex justify-content-between">
-                          <span class="fw-semibold">Saldo esperado no caixa</span>
-                          <span class="fw-bold money">R$ <?= fmt($saldoEsperado) ?></span>
-                        </div>
-                        <div class="text-muted small">Saldo inicial + (Dinheiro + Suprimentos) − Sangrias</div>
-                      </div>
-                    </div>
-                  </div>
-                </div><!--/row-->
-              </div>
+    <!-- CARD: Movimentações / Saldo esperado -->
+    <div class="col">
+      <div class="card stat-card border-0 bg-soft-success">
+        <div class="card-body">
+          <div class="text-muted small">Movimentações de Caixa</div>
+          <div class="mt-2 small">
+            <div>Suprimentos: <strong class="money">R$ <?= fmt($resumo['suprimentos']) ?></strong></div>
+            <div>Sangrias: <strong class="money">R$ <?= fmt($resumo['sangrias']) ?></strong></div>
+          </div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between">
+            <span class="fw-semibold">Saldo esperado no caixa</span>
+            <span class="fw-bold money">R$ <?= fmt($saldoEsperado) ?></span>
+          </div>
+          <div class="text-muted small">Saldo inicial + (Dinheiro + Suprimentos) − Sangrias</div>
+        </div>
+      </div>
+    </div>
+  </div><!--/row-->
+</div>
+
             </div>
           </div>
 
