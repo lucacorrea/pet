@@ -193,13 +193,7 @@ function fmt($v)
         </div>
       </div>
     </div>
-    <div class="iq-navbar-header">
-      <div class="container-fluid iq-container">
-        <?php if (!$caixa): ?>
-          <div class="alert alert-warning">
-            Não há caixa aberto para esta empresa.
-            <a class="alert-link" href="../../caixa/pages/caixaAbrir.php">Clique aqui</a> para abrir.
-          </div>
+    <
         <?php else: ?>
           <div class="row g-3">
             <!-- ESQUERDA: dados e resumo -->
