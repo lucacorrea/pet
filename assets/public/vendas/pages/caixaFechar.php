@@ -1,11 +1,11 @@
 <?php
-// autoErp/public/caixa/pages/caixaFechar.php
+// autoErp/public/vendas/pages/vendaRapida.php
 declare(strict_types=1);
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/../../../lib/auth_guard.php';
-guard_empresa_user(['dono','administrativo','caixa']);
+guard_empresa_user(['dono', 'administrativo', 'caixa']);
 
 $pdo = null;
 $pathCon = realpath(__DIR__ . '/../../../conexao/conexao.php');
@@ -13,208 +13,437 @@ if ($pathCon && file_exists($pathCon)) require_once $pathCon;
 if (!isset($pdo) || !($pdo instanceof PDO)) die('Conexão indisponível.');
 
 require_once __DIR__ . '/../../../lib/util.php';
+$empresaNome = empresa_nome_logada($pdo);
 
 $empresaCnpj = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj'] ?? ''));
 if (!preg_match('/^\d{14}$/', $empresaCnpj)) die('Empresa não vinculada ao usuário.');
 
-$usuarioCpf = preg_replace('/\D+/', '', (string)($_SESSION['user_cpf'] ?? ''));
-
-// CSRF
-if (empty($_SESSION['csrf_fechar_caixa'])) {
-  $_SESSION['csrf_fechar_caixa'] = bin2hex(random_bytes(32));
+if (empty($_SESSION['csrf_venda_rapida'])) {
+  $_SESSION['csrf_venda_rapida'] = bin2hex(random_bytes(32));
 }
-$csrf = $_SESSION['csrf_fechar_caixa'];
+$csrf = $_SESSION['csrf_venda_rapida'];
 
-// feedback
-$ok  = (int)($_GET['ok'] ?? 0);
-$err = (int)($_GET['err'] ?? 0);
-$msg = (string)($_GET['msg'] ?? '');
-
-// caixa aberto atual
-$cx = null;
+// ===== Verifica se existe caixa ABERTO para a empresa =====
+$caixaAberto = null;
 try {
-  $st = $pdo->prepare("
-    SELECT id, tipo, COALESCE(terminal,'PDV') AS terminal, aberto_por_cpf,
-           DATE_FORMAT(aberto_em,'%d/%m/%Y %H:%i') AS aberto_quando,
-           aberto_em, saldo_inicial
+  $stCx = $pdo->prepare("
+    SELECT id, tipo, COALESCE(terminal,'PDV') AS terminal,
+           DATE_FORMAT(aberto_em,'%d/%m/%Y %H:%i') AS quando
     FROM caixas_peca
     WHERE empresa_cnpj = :c AND status = 'aberto'
     ORDER BY aberto_em DESC
     LIMIT 1
   ");
-  $st->execute([':c' => $empresaCnpj]);
-  $cx = $st->fetch(PDO::FETCH_ASSOC) ?: null;
+  $stCx->execute([':c' => $empresaCnpj]);
+  $caixaAberto = $stCx->fetch(PDO::FETCH_ASSOC) ?: null;
 } catch (Throwable $e) {
-  $cx = null;
+  $caixaAberto = null;
 }
 
-// tentativa de apuração (se existir tabela de vendas)
-$apur = [
-  'total_geral' => 0.00,
-  'dinheiro'    => 0.00,
-  'pix'         => 0.00,
-  'debito'      => 0.00,
-  'credito'     => 0.00,
-  'qtd_vendas'  => 0,
-];
-if ($cx) {
-  try {
-    // Ajuste o nome/colunas abaixo se sua tabela diferir.
-    // Exemplo: vendas_peca(total, forma_pagamento, empresa_cnpj, criado_em)
-    $sql = "
-      SELECT
-        COUNT(*)                            AS qtd_vendas,
-        COALESCE(SUM(total),0)              AS total_geral,
-        COALESCE(SUM(CASE WHEN forma_pagamento='dinheiro' THEN total END),0) AS dinheiro,
-        COALESCE(SUM(CASE WHEN forma_pagamento='pix'      THEN total END),0) AS pix,
-        COALESCE(SUM(CASE WHEN forma_pagamento='debito'   THEN total END),0) AS debito,
-        COALESCE(SUM(CASE WHEN forma_pagamento='credito'  THEN total END),0) AS credito
-      FROM vendas_peca
-      WHERE empresa_cnpj = :c
-        AND criado_em >= :aberto_em
-    ";
-    $stV = $pdo->prepare($sql);
-    $stV->execute([
-      ':c' => $empresaCnpj,
-      ':aberto_em' => $cx['aberto_em'], // datetime puro
-    ]);
-    $row = $stV->fetch(PDO::FETCH_ASSOC) ?: [];
-    foreach ($apur as $k => $v) {
-      if (isset($row[$k])) $apur[$k] = (float)$row[$k];
-    }
-  } catch (Throwable $e) {
-    // se a tabela/colunas não existirem, apenas segue sem apuração
-  }
+// Produtos (para busca rápida)
+$produtos = [];
+try {
+  $st = $pdo->prepare("
+    SELECT id, nome, sku, ean, marca, unidade, preco_venda
+    FROM produtos_peca
+    WHERE empresa_cnpj = :c AND ativo = 1
+    ORDER BY nome
+    LIMIT 2000
+  ");
+  $st->execute([':c' => $empresaCnpj]);
+  $produtos = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+} catch (Throwable $e) {
+  $produtos = [];
 }
 ?>
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" dir="ltr">
 <head>
   <meta charset="utf-8">
-  <title>Fechar Caixa</title>
+  <title>Mundo Pets — Venda Rápida</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="../../assets/images/dashboard/icon.png">
+  <link rel="icon" type="image/png" href="../../assets/images/dashboard/logo.png">
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
+  <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
   <link rel="stylesheet" href="../../assets/css/hope-ui.min.css?v=4.0.0">
   <link rel="stylesheet" href="../../assets/css/custom.min.css?v=4.0.0">
+  <link rel="stylesheet" href="../../assets/css/dark.min.css">
+  <link rel="stylesheet" href="../../assets/css/customizer.min.css">
+  <link rel="stylesheet" href="../../assets/css/customizer.css">
+  <link rel="stylesheet" href="../../assets/css/rtl.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
-    .money { font-variant-numeric: tabular-nums; }
-    .card-tot { border:1px dashed #d9d9e3; border-radius:14px; background:#fafbff; }
+    /* ——— Voltar ao layout padrão do tema ——— */
+    .iq-navbar-header{height:auto !important;margin-bottom:1rem !important}
+    .iq-header-img{display:none} /* remove imagem gigante de topo */
+
+    /* ——— Visor PDV (minimalista, não conflita com tema) ——— */
+    .pdv-visor{
+      background:#0b1220;color:#e5f8e9;border-radius:12px;padding:14px 16px;
+      display:flex;align-items:center;justify-content:space-between;
+      box-shadow:inset 0 0 0 1px #111827, 0 6px 18px rgba(0,0,0,.12);
+      font-family:ui-monospace,Menlo,Consolas,monospace
+    }
+    .pdv-visor .linha1{font-size:.9rem;opacity:.85}
+    .pdv-visor .linha2{font-size:2rem;font-weight:700;letter-spacing:.3px}
+    .pdv-visor .right{text-align:right}
+
+    /* ——— Busca + sugestões ——— */
+    .pdv-busca{position:relative}
+    .pdv-suggest{
+      position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid #e5e7eb;border-top:0;
+      max-height:320px;overflow:auto;z-index:2000;display:none;border-radius:0 0 10px 10px;
+      box-shadow:0 10px 24px rgba(0,0,0,.08)
+    }
+    .pdv-suggest .item{padding:.55rem .75rem;cursor:pointer}
+    .pdv-suggest .item:hover{background:#f7f7f9}
+    .pdv-suggest .muted{color:#6b7280;font-size:.85em}
+
+    /* ——— Tabela ——— */
+    .itens-table th{white-space:nowrap}
+
+    /* ——— Totais na direita ——— */
+    .totais-card{border:1px dashed #c7c9d1;border-radius:14px;background:#f9fafb}
+
+    /* ——— Stick right column on desktop ——— */
+    @media (min-width:1200px){.aside-sticky{position:sticky;top:84px}}
+    @media (max-width:1199px){.pdv-visor .linha2{font-size:1.6rem}}
+    .money{font-variant-numeric:tabular-nums}
+    .troco-ok{color:#16a34a}.troco-neg{color:#dc2626}
+    .kbd{background:#0b1220;color:#cbd5e1;padding:.15rem .45rem;border-radius:.35rem;font-size:.85rem;border:1px solid #1f2937}
   </style>
 </head>
 <body>
 <?php
   if (session_status() === PHP_SESSION_NONE) session_start();
-  $menuAtivo = 'vendas-rapida'; // como você pediu: menu chamado assim
-  include __DIR__ . '/../../layouts/sidebar.php';
+  $menuAtivo = 'vendas-rapida'; // ID do menu atual
+  include '../../layouts/sidebar.php';
 ?>
 
 <main class="main-content">
-  <div class="container-fluid content-inner py-3">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <div>
-        <h3 class="mb-0">Fechar Caixa</h3>
-        <div class="text-muted">Finalize o caixa aberto e registre observações.</div>
+  <div class="position-relative iq-banner">
+    <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
+      <div class="container-fluid navbar-inner">
+        <a href="../../dashboard.php" class="navbar-brand"><h4 class="logo-title">Mundo Pets</h4></a>
+        <div class="ms-auto d-none d-lg-flex align-items-center gap-3">
+          <span class="text-muted small">Atalhos: <span class="kbd">Enter</span> Adicionar • <span class="kbd">F2</span> Quantidade • <span class="kbd">F4</span> Finalizar</span>
+        </div>
       </div>
-      <div>
-        <a class="btn btn-outline-secondary" href="../../vendas/pages/vendaRapida.php">
-          <i class="bi bi-arrow-left"></i> Voltar
-        </a>
-      </div>
-    </div>
+    </nav>
 
-    <?php if ($ok || $err || $msg): ?>
-      <div class="alert <?= $err ? 'alert-danger' : 'alert-success' ?>"><?= htmlspecialchars($msg ?: ($err?'Falha na operação.':'Operação realizada.'), ENT_QUOTES,'UTF-8') ?></div>
-    <?php endif; ?>
+    <div class="iq-navbar-header">
+      <div class="container-fluid iq-container">
+        <div class="row g-2 align-items-center">
+          <div class="col-md-8">
+            <h1 class="mb-1">Venda Rápida</h1>
+            <p class="mb-2 text-muted">PDV para balcão com leitor de código, busca por nome/SKU/EAN e finalização ágil.</p>
 
-    <?php if (!$cx): ?>
-      <div class="alert alert-warning">
-        <i class="bi bi-exclamation-triangle me-1"></i>
-        Não há caixa aberto para esta empresa.
-        <a href="./caixaAbrir.php" class="alert-link">Clique aqui</a> para abrir.
+            <?php if (!$caixaAberto): ?>
+              <div class="alert alert-warning d-inline-flex align-items-center py-2 px-3">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <span>Não há caixa aberto para esta empresa. <a class="alert-link ms-1" href="../../caixa/pages/caixaAbrir.php">Clique aqui</a> para abrir.</span>
+              </div>
+            <?php else: ?>
+              <div class="alert alert-info d-inline-flex align-items-center py-2 px-3">
+                <i class="bi bi-cash-coin me-2"></i>
+                <span>
+                  Caixa #<?= (int)$caixaAberto['id'] ?> — <?= htmlspecialchars($caixaAberto['tipo'], ENT_QUOTES, 'UTF-8') ?> —
+                  <?= htmlspecialchars($caixaAberto['terminal'], ENT_QUOTES, 'UTF-8') ?> — desde <?= htmlspecialchars($caixaAberto['quando'], ENT_QUOTES, 'UTF-8') ?>
+                </span>
+              </div>
+            <?php endif; ?>
+          </div>
+
+          <div class="col-md-4 text-md-end">
+            <div class="d-flex d-md-inline-flex gap-2">
+              <a href="../pages/orcamentos.php" class="btn btn-outline-secondary"><i class="bi bi-receipt"></i> Orçamentos</a>
+              <a href="../../caixa/pages/caixaAbrir.php" class="btn btn-outline-primary"><i class="bi bi-cash-stack"></i> Caixa</a>
+            </div>
+          </div>
+        </div>
       </div>
-    <?php else: ?>
+    </div><!-- /header -->
+  </div><!-- /banner -->
+
+  <div class="container-fluid content-inner pt-0">
+    <form method="post" action="../actions/vendaRapidaSalvar.php" id="form-venda" data-caixa="<?= $caixaAberto ? '1' : '0' ?>">
+      <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
+      <input type="hidden" name="itens_json" id="itens_json">
+      <input type="hidden" name="desconto" id="desconto_hidden" value="0.00">
+
       <div class="row g-3">
-        <div class="col-lg-7">
+        <!-- ESQUERDA -->
+        <div class="col-12 col-xxl-8">
+          <div class="pdv-visor mb-3">
+            <div>
+              <div class="linha1">Produto</div>
+              <div class="linha2" id="visor-produto">—</div>
+            </div>
+            <div class="right">
+              <div class="linha1">Total</div>
+              <div class="linha2 money" id="visor-subtotal">R$ 0,00</div>
+            </div>
+          </div>
+
           <div class="card">
-            <div class="card-header"><h5 class="mb-0">Dados do Caixa</h5></div>
             <div class="card-body">
-              <dl class="row mb-0">
-                <dt class="col-sm-4">#ID</dt><dd class="col-sm-8"><?= (int)$cx['id'] ?></dd>
-                <dt class="col-sm-4">Tipo</dt><dd class="col-sm-8"><?= htmlspecialchars($cx['tipo'], ENT_QUOTES, 'UTF-8') ?></dd>
-                <dt class="col-sm-4">Terminal</dt><dd class="col-sm-8"><?= htmlspecialchars($cx['terminal'], ENT_QUOTES, 'UTF-8') ?></dd>
-                <dt class="col-sm-4">Aberto em</dt><dd class="col-sm-8"><?= htmlspecialchars($cx['aberto_quando'], ENT_QUOTES, 'UTF-8') ?></dd>
-                <dt class="col-sm-4">Operador (CPF)</dt><dd class="col-sm-8"><?= htmlspecialchars($cx['aberto_por_cpf'] ?? '-', ENT_QUOTES, 'UTF-8') ?></dd>
-                <dt class="col-sm-4">Saldo inicial</dt><dd class="col-sm-8 money">R$ <?= number_format((float)$cx['saldo_inicial'], 2, ',', '.') ?></dd>
-              </dl>
+              <div class="row g-2 align-items-end">
+                <div class="col-lg-7">
+                  <label class="form-label">Código / Nome / SKU / EAN</label>
+                  <div class="pdv-busca">
+                    <input type="text" class="form-control" id="inp-busca" placeholder="Digite nome, SKU ou EAN" autocomplete="off" <?= $caixaAberto ? '' : 'disabled' ?>>
+                    <div class="pdv-suggest" id="box-suggest"></div>
+                  </div>
+                  <div class="form-text">Use o leitor de código de barras ou digite e pressione <span class="kbd">Enter</span>.</div>
+                </div>
+                <div class="col-6 col-lg-2">
+                  <label class="form-label">Qtd</label>
+                  <input type="number" class="form-control text-end" id="inp-qtd" step="0.001" min="0.001" value="1.000" <?= $caixaAberto ? '' : 'disabled' ?>>
+                </div>
+                <div class="col-6 col-lg-3">
+                  <label class="form-label">Vlr. Unit (R$)</label>
+                  <input type="number" class="form-control text-end" id="inp-preco" step="0.01" min="0" value="0.00" <?= $caixaAberto ? '' : 'disabled' ?>>
+                </div>
+
+                <div class="col-12 d-flex flex-wrap gap-2 mt-2">
+                  <button type="button" class="btn btn-primary" id="btn-add" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-plus-lg"></i> Adicionar <span class="small ms-1 kbd">Enter</span></button>
+                  <button type="button" class="btn btn-outline-secondary" id="btn-qtd" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-123"></i> Qtd <span class="small ms-1 kbd">F2</span></button>
+                  <button type="button" class="btn btn-outline-secondary" id="btn-desc" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-percent"></i> Desconto</button>
+                  <button type="button" class="btn btn-outline-danger" id="btn-clear" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-trash3"></i> Limpar</button>
+                </div>
+              </div>
             </div>
           </div>
 
           <div class="card mt-3">
-            <div class="card-header">
-              <h5 class="mb-0">Observações do Fechamento</h5>
-            </div>
             <div class="card-body">
-              <form method="post" action="../actions/caixaFecharPost.php" id="form-fechar">
-                <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
-                <input type="hidden" name="cx_id" value="<?= (int)$cx['id'] ?>">
-                <div class="mb-3">
-                  <label class="form-label">Observações</label>
-                  <textarea name="observacoes" class="form-control" rows="4" placeholder="Ex.: contagem conferida, sangria realizada, etc."></textarea>
-                </div>
-                <div class="d-flex gap-2">
-                  <button type="submit" class="btn btn-danger">
-                    <i class="bi bi-lock-fill me-1"></i> Fechar Caixa
-                  </button>
-                  <a href="../../vendas/pages/vendaRapida.php" class="btn btn-outline-secondary">Cancelar</a>
-                </div>
-              </form>
+              <div class="table-responsive">
+                <table class="table table-striped itens-table align-middle mb-0" id="tbl-itens">
+                  <thead>
+                    <tr>
+                      <th>Descrição</th>
+                      <th class="text-end" style="width:9rem;">Qtd</th>
+                      <th class="text-end" style="width:10rem;">Vlr. Unit</th>
+                      <th class="text-end" style="width:10rem;">Total</th>
+                      <th style="width:4rem;"></th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                  <tfoot>
+                    <tr><td colspan="5" class="text-muted small">Dica: clique no valor para editar; use <i class="bi bi-x"></i> para remover.</td></tr>
+                  </tfoot>
+                </table>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="col-lg-5">
-          <div class="card card-tot">
-            <div class="card-header"><h5 class="mb-0">Resumo (desde a abertura)</h5></div>
-            <div class="card-body">
-              <div class="d-flex justify-content-between">
-                <span class="text-muted">Qtd de vendas</span>
-                <strong><?= (int)$apur['qtd_vendas'] ?></strong>
-              </div>
-              <div class="d-flex justify-content-between mt-2">
-                <span class="text-muted">Total geral</span>
-                <strong class="money">R$ <?= number_format($apur['total_geral'], 2, ',', '.') ?></strong>
-              </div>
-              <hr>
-              <div class="d-flex justify-content-between">
-                <span class="text-muted">Dinheiro</span>
-                <strong class="money">R$ <?= number_format($apur['dinheiro'], 2, ',', '.') ?></strong>
-              </div>
-              <div class="d-flex justify-content-between mt-1">
-                <span class="text-muted">PIX</span>
-                <strong class="money">R$ <?= number_format($apur['pix'], 2, ',', '.') ?></strong>
-              </div>
-              <div class="d-flex justify-content-between mt-1">
-                <span class="text-muted">Débito</span>
-                <strong class="money">R$ <?= number_format($apur['debito'], 2, ',', '.') ?></strong>
-              </div>
-              <div class="d-flex justify-content-between mt-1">
-                <span class="text-muted">Crédito</span>
-                <strong class="money">R$ <?= number_format($apur['credito'], 2, ',', '.') ?></strong>
-              </div>
-              <hr>
-              <div class="small text-muted">
-                * Se o resumo estiver zerado, é provável que a tabela/colunas de vendas sejam diferentes. O fechamento funciona do mesmo jeito.
+        <!-- DIREITA -->
+        <div class="col-12 col-xxl-4">
+          <div class="aside-sticky">
+            <div class="card totais-card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between"><span class="text-muted">Itens</span><strong id="tot-itens">0</strong></div>
+                <div class="d-flex justify-content-between mt-2"><span class="text-muted">Subtotal</span><strong class="money" id="tot-subtotal">R$ 0,00</strong></div>
+                <div class="d-flex justify-content-between mt-2 align-items-center">
+                  <span class="text-muted">Desconto</span>
+                  <input type="number" step="0.01" min="0" class="form-control form-control-sm text-end" id="inp-desconto" value="0.00" style="width:110px" <?= $caixaAberto ? '' : 'disabled' ?>>
+                </div>
+                <hr class="my-3">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fs-6">TOTAL</span>
+                  <span class="fs-4 fw-bold money" id="tot-geral">R$ 0,00</span>
+                </div>
               </div>
             </div>
-          </div>
+
+            <div class="card mt-3">
+              <div class="card-header"><h5 class="mb-0">Pagamento</h5></div>
+              <div class="card-body">
+                <div class="row g-2">
+                  <div class="col-6"><button type="button" class="btn btn-success w-100" data-pay="dinheiro" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-cash-coin me-1"></i> Dinheiro</button></div>
+                  <div class="col-6"><button type="button" class="btn btn-primary w-100" data-pay="pix" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-upc-scan me-1"></i> PIX</button></div>
+                  <div class="col-6"><button type="button" class="btn btn-outline-dark w-100" data-pay="debito" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-credit-card-2-back me-1"></i> Débito</button></div>
+                  <div class="col-6"><button type="button" class="btn btn-outline-dark w-100" data-pay="credito" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-credit-card me-1"></i> Crédito</button></div>
+                </div>
+
+                <div class="mt-3">
+                  <label class="form-label">Forma de Pagamento</label>
+                  <select name="forma_pagamento" id="forma_pagamento" class="form-select" <?= $caixaAberto ? '' : 'disabled' ?>>
+                    <option value="dinheiro">Dinheiro</option>
+                    <option value="pix">PIX</option>
+                    <option value="debito">Débito</option>
+                    <option value="credito">Crédito</option>
+                  </select>
+                </div>
+
+                <div id="grp-dinheiro" class="mt-3" style="display:none;">
+                  <label class="form-label">Valor Recebido (Dinheiro)</label>
+                  <div class="input-group">
+                    <span class="input-group-text">R$</span>
+                    <input type="number" step="0.01" min="0" class="form-control text-end" id="inp-recebido" placeholder="0,00">
+                  </div>
+                  <div class="d-flex justify-content-between mt-2">
+                    <span class="text-muted">Troco</span>
+                    <strong id="lbl-troco" class="money">R$ 0,00</strong>
+                  </div>
+                </div>
+
+                <div class="d-grid mt-3">
+                  <button type="submit" class="btn btn-success" id="btn-finalizar" <?= $caixaAberto ? '' : 'disabled' ?>>
+                    <i class="bi bi-check2-circle me-1"></i> Finalizar Venda <span class="small kbd">F4</span>
+                  </button>
+                </div>
+                <div class="d-grid mt-2">
+                  <a href="../../dashboard.php" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
+                </div>
+              </div>
+            </div>
+          </div><!-- /aside-sticky -->
         </div>
       </div>
-    <?php endif; ?>
+    </form>
   </div>
 </main>
 
 <script src="../../assets/js/core/libs.min.js"></script>
-<script src="../../assets/js/hope-ui.js"></script>
+<script src="../../assets/js/core/external.min.js"></script>
+<script src="../../assets/vendor/aos/dist/aos.js"></script>
+<script src="../../assets/js/hope-ui.js" defer></script>
+
+<script>
+  const PRODUTOS = <?= json_encode($produtos, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+
+  // ===== helpers
+  const fmt = v => (Number(v||0)).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const el = s => document.querySelector(s);
+  const tbody = document.querySelector('#tbl-itens tbody');
+  let itens = []; // {nome,qtd,unit}
+  const form = document.getElementById('form-venda');
+  const temCaixa = form.getAttribute('data-caixa') === '1';
+
+  function totalGeral(){
+    let subtotal=0; itens.forEach(i=>subtotal+=i.qtd*i.unit);
+    const desconto=parseFloat(el('#inp-desconto').value||'0');
+    return Math.max(subtotal-desconto,0);
+  }
+  function recalc(){
+    let subtotal=0,itensCount=0;
+    itens.forEach(i=>{subtotal+=i.qtd*i.unit; itensCount+=1;});
+    const desconto=parseFloat(el('#inp-desconto').value||'0');
+    const total=Math.max(subtotal-desconto,0);
+    el('#tot-subtotal').textContent='R$ '+fmt(subtotal);
+    el('#tot-geral').textContent='R$ '+fmt(total);
+    el('#tot-itens').textContent=itensCount;
+    el('#visor-subtotal').textContent='R$ '+fmt(total);
+    el('#desconto_hidden').value=(desconto||0).toFixed(2);
+    el('#itens_json').value=JSON.stringify(itens);
+    renderTable(); recalcTroco();
+  }
+  function renderTable(){
+    tbody.innerHTML = itens.map((i,idx)=>`
+      <tr>
+        <td>${escapeHtml(i.nome)}</td>
+        <td class="text-end"><input type="number" min="0.001" step="0.001" class="form-control form-control-sm text-end inp-qtd" data-idx="${idx}" value="${i.qtd.toFixed(3)}" ${temCaixa?'':'disabled'}></td>
+        <td class="text-end"><input type="number" min="0" step="0.01" class="form-control form-control-sm text-end inp-unit" data-idx="${idx}" value="${i.unit.toFixed(2)}" ${temCaixa?'':'disabled'}></td>
+        <td class="text-end money">R$ ${fmt(i.qtd*i.unit)}</td>
+        <td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger btn-del" data-idx="${idx}" ${temCaixa?'':'disabled'}><i class="bi bi-x"></i></button></td>
+      </tr>`).join('');
+  }
+  function escapeHtml(s){return String(s||'').replace(/[&<>"'`=\/]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c]));}
+
+  // busca / autocomplete
+  const box=el('#box-suggest'), inpBusca=el('#inp-busca'), inpQtd=el('#inp-qtd'), inpPreco=el('#inp-preco');
+  function filtra(q){
+    q=(q||'').trim().toLowerCase(); if(!q) return [];
+    return PRODUTOS.filter(p=>(p.nome||'').toLowerCase().includes(q)||(p.sku||'').toLowerCase().includes(q)||(p.ean||'').toLowerCase().includes(q)||(p.marca||'').toLowerCase().includes(q)).slice(0,50);
+  }
+  function showSugestoes(lista){
+    if(!lista.length){box.style.display='none';box.innerHTML='';return;}
+    box.innerHTML=lista.map(p=>`
+      <div class="item" data-id="${p.id}" data-preco="${Number(p.preco_venda||0)}" data-nome="${escapeHtml(p.nome||'')}">
+        <div><strong>${escapeHtml(p.nome||'-')}</strong></div>
+        <div class="muted">${escapeHtml([p.marca,p.sku,p.ean].filter(Boolean).join(' • '))}</div>
+        <div class="muted">R$ ${fmt(p.preco_venda||0)} ${p.unidade?(' / '+escapeHtml(p.unidade)) : ''}</div>
+      </div>`).join('');
+    box.style.display='block';
+  }
+  if(temCaixa){
+    inpBusca.addEventListener('input',()=>showSugestoes(filtra(inpBusca.value)));
+    document.addEventListener('click',e=>{ if(!e.target.closest('.pdv-busca')) box.style.display='none'; });
+    box.addEventListener('click',e=>{
+      const it=e.target.closest('.item'); if(!it) return;
+      const nome=it.getAttribute('data-nome'); const preco=parseFloat(it.getAttribute('data-preco')||'0');
+      el('#visor-produto').textContent=nome||'—'; inpPreco.value=preco.toFixed(2); box.style.display='none'; setTimeout(()=>inpQtd.focus(),10);
+    });
+  }
+
+  // adicionar item
+  function addItemFromInputs(){
+    if(!temCaixa) return;
+    const nomeVisor=(el('#visor-produto').textContent||'').trim();
+    const qtd=parseFloat(inpQtd.value||'0'); const unit=parseFloat(inpPreco.value||'0'); const termo=(inpBusca.value||'').trim();
+    let finalNome=nomeVisor;
+    if(!finalNome || finalNome==='—'){
+      const lista=filtra(termo);
+      if(lista[0]){ finalNome=lista[0].nome||''; if(!inpPreco.value || parseFloat(inpPreco.value||'0')<=0) inpPreco.value=Number(lista[0].preco_venda||0).toFixed(2); }
+      else { finalNome=termo||'Item'; }
+    }
+    if(qtd<=0 || unit<0) return;
+    itens.push({nome:finalNome,qtd,unit});
+    inpBusca.value=''; el('#visor-produto').textContent='—'; inpQtd.value='1.000'; recalc(); inpBusca.focus();
+  }
+
+  if(temCaixa){
+    el('#btn-add').addEventListener('click',addItemFromInputs);
+    el('#btn-clear').addEventListener('click',()=>{ itens=[]; recalc(); inpBusca.value=''; inpQtd.value='1.000'; inpPreco.value='0.00'; el('#visor-produto').textContent='—'; inpBusca.focus(); });
+    el('#btn-qtd').addEventListener('click',()=>inpQtd.select());
+    el('#btn-desc').addEventListener('click',()=>el('#inp-desconto').select());
+    tbody.addEventListener('input',e=>{
+      if(e.target.matches('.inp-qtd')){ const idx=+e.target.dataset.idx; const v=parseFloat(e.target.value||'0'); if(itens[idx]) itens[idx].qtd=Math.max(v,0); recalc(); }
+      else if(e.target.matches('.inp-unit')){ const idx=+e.target.dataset.idx; const v=parseFloat(e.target.value||'0'); if(itens[idx]) itens[idx].unit=Math.max(v,0); recalc(); }
+    });
+    tbody.addEventListener('click',e=>{ if(e.target.closest('.btn-del')){ const idx=+e.target.closest('.btn-del').dataset.idx; itens.splice(idx,1); recalc(); }});
+    el('#inp-desconto').addEventListener('input',recalc);
+  }
+
+  // Pagamento — Dinheiro
+  const selFP=el('#forma_pagamento'), grpDin=el('#grp-dinheiro'), inpRec=el('#inp-recebido'), lblTroco=el('#lbl-troco');
+  function toggleDinheiroUI(){ const isDin=selFP.value==='dinheiro'; grpDin.style.display=isDin?'block':'none'; if(isDin) setTimeout(()=>inpRec.focus(),50); validateFinalizeButton(); }
+  function recalcTroco(){
+    if(selFP.value!=='dinheiro'){ lblTroco.textContent='R$ 0,00'; lblTroco.className='money'; return; }
+    const total=totalGeral(); const recebido=parseFloat(inpRec.value||'0'); const troco=recebido-total;
+    lblTroco.textContent='R$ '+fmt(troco); lblTroco.className='money '+(troco>=0?'troco-ok':'troco-neg'); validateFinalizeButton();
+  }
+  function validateFinalizeButton(){
+    const btn=el('#btn-finalizar'); if(!temCaixa){btn.disabled=true;return;}
+    if(!itens.length){btn.disabled=true;return;}
+    if(selFP.value==='dinheiro'){ const total=totalGeral(); const recebido=parseFloat(inpRec.value||'0'); btn.disabled=!(recebido>=total); }
+    else { btn.disabled=false; }
+  }
+  if(temCaixa){
+    document.querySelectorAll('[data-pay]').forEach(b=>b.addEventListener('click',()=>{ selFP.value=b.getAttribute('data-pay'); toggleDinheiroUI(); }));
+    selFP.addEventListener('change',toggleDinheiroUI);
+    inpRec.addEventListener('input',recalcTroco);
+  }
+
+  // atalhos
+  if(temCaixa){
+    form.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); if(document.activeElement===el('#inp-busca')) addItemFromInputs(); }});
+    document.addEventListener('keydown',e=>{
+      if(e.key==='F2'){ e.preventDefault(); el('#inp-qtd').select(); }
+      if(e.key==='F4'){ e.preventDefault(); if(!el('#btn-finalizar').disabled){ form.requestSubmit?form.requestSubmit(el('#btn-finalizar')):el('#btn-finalizar').click(); } }
+    });
+  }
+
+  // valida no submit
+  form.addEventListener('submit',e=>{
+    if(!temCaixa){ e.preventDefault(); alert('Abra um caixa para finalizar a venda.'); return; }
+    if(!itens.length){ e.preventDefault(); alert('Adicione ao menos 1 item.'); return; }
+    if(selFP.value==='dinheiro'){ const total=totalGeral(); const recebido=parseFloat(inpRec.value||'0'); if(!(recebido>=total)){ e.preventDefault(); alert('Valor recebido insuficiente para pagamento em dinheiro.'); return; } }
+  });
+
+  recalc(); toggleDinheiroUI();
+</script>
 </body>
 </html>
