@@ -79,6 +79,10 @@ try {
   <link rel="stylesheet" href="../../assets/css/rtl.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
+    :root {
+      --input-lg-h: 48px;
+    }
+
     /* ——— Look & feel PDV supermercado ——— */
     .pdv-visor {
       background: #002f8cff;
@@ -166,7 +170,7 @@ try {
     }
 
     .pay-btn {
-      height: 56px;
+      height: var(--input-lg-h);
       font-size: 1.05rem;
     }
 
@@ -182,6 +186,34 @@ try {
       color: #dc2626;
     }
 
+    /* ——— Normalização de alturas e alinhamentos ——— */
+    .form-label {
+      margin-bottom: .35rem;
+    }
+
+    .form-control-lg {
+      height: var(--input-lg-h);
+      line-height: calc(var(--input-lg-h) - 2px);
+    }
+
+    .input-group-text {
+      height: var(--input-lg-h);
+      display: flex;
+      align-items: center;
+    }
+
+    .btn.kbtn {
+      height: var(--input-lg-h);
+      display: flex;
+      align-items: center;
+    }
+
+    .pdv-help {
+      min-height: 22px;
+    }
+
+    /* mesma “barriga” sob as 3 colunas para alinhar tudo */
+
     @media (max-width: 1199px) {
       .pdv-visor .linha2 {
         font-size: 1.8rem;
@@ -193,7 +225,7 @@ try {
 <body>
   <?php
   if (session_status() === PHP_SESSION_NONE) session_start();
-  $menuAtivo = 'vendas-rapida'; // ID do menu atual
+  $menuAtivo = 'vendas-rapida';
   include '../../layouts/sidebar.php';
   ?>
 
@@ -210,15 +242,11 @@ try {
         </div>
       </nav>
 
-      <!-- TOAST de sucesso/erro (topo direito) -->
+      <!-- TOAST topo direito (delay 1.4s) -->
       <?php if ($ok || $err): ?>
-        <div
-          id="toastMsg"
-          class="toast show align-items-center border-0 position-fixed top-0 end-0 m-3 shadow-lg"
-          role="alert"
-          aria-live="assertive"
-          aria-atomic="true"
-          style="z-index: 2000; min-width: 340px; border-radius: 12px; overflow: hidden;">
+        <div id="toastMsg" class="toast show align-items-center border-0 position-fixed top-0 end-0 m-3 shadow-lg"
+          role="alert" aria-live="assertive" aria-atomic="true"
+          style="z-index:2000;min-width:340px;border-radius:12px;overflow:hidden;">
           <div class="d-flex">
             <div class="toast-body d-flex align-items-center gap-2 text-white fw-semibold <?= $ok ? 'bg-success' : 'bg-danger' ?>">
               <i class="bi <?= $ok ? 'bi-check-circle-fill' : 'bi-x-circle-fill' ?> fs-4"></i>
@@ -226,8 +254,8 @@ try {
             </div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
           </div>
-          <div class="progress" style="height: 3px;">
-            <div id="toastProgress" class="progress-bar <?= $ok ? 'bg-light' : 'bg-warning' ?>" style="width: 100%"></div>
+          <div class="progress" style="height:3px;">
+            <div id="toastProgress" class="progress-bar <?= $ok ? 'bg-light' : 'bg-warning' ?>" style="width:100%"></div>
           </div>
         </div>
         <script>
@@ -235,16 +263,19 @@ try {
             const toastEl = document.getElementById("toastMsg");
             const progress = document.getElementById("toastProgress");
             if (toastEl) {
+              const DURATION = 1400; // 1.4s
               const toast = new bootstrap.Toast(toastEl, {
-                delay: 5000
+                delay: DURATION
               });
               toast.show();
               let width = 100;
-              const interval = setInterval(() => {
-                width -= 2;
+              const stepMs = 20;
+              const step = 100 * stepMs / DURATION;
+              const itv = setInterval(() => {
+                width = Math.max(0, width - step);
                 progress.style.width = width + "%";
-                if (width <= 0) clearInterval(interval);
-              }, 100);
+                if (width <= 0) clearInterval(itv);
+              }, stepMs);
             }
           });
         </script>
@@ -257,7 +288,7 @@ try {
               <h1 class="">Venda Rápida</h1>
               <p>Fluxo de PDV para balcão — leitor de código, busca por nome/SKU/EAN, e finalização rápida.</p>
               <?php if (!$caixaAberto): ?>
-                <div style="font-weight: 900; color: #f73232ff;">
+                <div style="font-weight:900;color:#f73232ff;">
                   <i class="bi bi-exclamation-triangle me-1"></i>
                   Nenhum caixa aberto no momento.
                   <a href="../../caixa/pages/caixaAbrir.php" class="alert-link text-white">Clique aqui</a> para abrir ou entrar em um caixa.
@@ -288,14 +319,13 @@ try {
     </div>
 
     <div class="container-fluid content-inner mt-n3 py-0">
-      <!-- ACTION CORRIGIDA para vendaRapidaSalvar.php -->
       <form method="post" action="../actions/vendaRapidaSalvar.php" id="form-venda" data-caixa="<?= $caixaAberto ? '1' : '0' ?>">
         <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
         <input type="hidden" name="itens_json" id="itens_json">
         <input type="hidden" name="desconto" id="desconto_hidden" value="0.00">
 
         <div class="row g-3">
-          <!-- ESQUERDA: visor, busca, itens -->
+          <!-- ESQUERDA -->
           <div class="col-xxl-8">
             <!-- Visor PDV -->
             <div class="pdv-visor mb-3">
@@ -312,29 +342,33 @@ try {
             <!-- Busca rápida -->
             <div class="card">
               <div class="card-body">
-                <div class="row g-2 align-items-end">
+                <div class="row g-3">
                   <div class="col-lg-7">
                     <label class="form-label">Código / Nome / SKU / EAN</label>
                     <div class="pdv-busca">
                       <input type="text" class="form-control form-control-lg" id="inp-busca" placeholder="Digite o Nome do Produto" autocomplete="off" <?= $caixaAberto ? '' : 'disabled' ?>>
                       <div class="pdv-suggest" id="box-suggest"></div>
                     </div>
-                    <div class="form-text">Use leitor de código de barras ou digite e pressione <span class="kbd">Enter</span>.</div>
+                    <div class="form-text pdv-help">Use leitor de código de barras ou digite e pressione <span class="kbd">Enter</span>.</div>
                   </div>
+
                   <div class="col-lg-2">
                     <label class="form-label">Qtd</label>
                     <input type="number" class="form-control form-control-lg text-end" id="inp-qtd" step="0.001" min="0.001" value="1.000" <?= $caixaAberto ? '' : 'disabled' ?>>
+                    <div class="pdv-help"></div>
                   </div>
+
                   <div class="col-lg-3">
                     <label class="form-label">Vlr. Unit (R$)</label>
                     <input type="number" class="form-control form-control-lg text-end" id="inp-preco" step="0.01" min="0" value="0.00" <?= $caixaAberto ? '' : 'disabled' ?>>
+                    <div class="pdv-help"></div>
                   </div>
 
-                  <div class="col-12 d-flex gap-2 mt-2">
-                    <button type="button" class="btn btn-primary kbtn" id="btn-add" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-plus-lg"></i> Adicionar <span class="small ms-1 kbd">Enter</span></button>
-                    <button type="button" class="btn btn-outline-secondary kbtn" id="btn-qtd" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-123"></i> Qtd <span class="small ms-1 kbd">F2</span></button>
-                    <button type="button" class="btn btn-outline-secondary kbtn" id="btn-desc" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-percent"></i> Desconto</button>
-                    <button type="button" class="btn btn-outline-danger kbtn" id="btn-clear" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-trash3"></i> Limpar</button>
+                  <div class="col-12 d-flex gap-2">
+                    <button type="button" class="btn btn-primary kbtn" id="btn-add" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-plus-lg"></i>&nbsp;Adicionar <span class="small ms-1 kbd">Enter</span></button>
+                    <button type="button" class="btn btn-outline-secondary kbtn" id="btn-qtd" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-123"></i>&nbsp;Qtd <span class="small ms-1 kbd">F2</span></button>
+                    <button type="button" class="btn btn-outline-secondary kbtn" id="btn-desc" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-percent"></i>&nbsp;Desconto</button>
+                    <button type="button" class="btn btn-outline-danger kbtn" id="btn-clear" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-trash3"></i>&nbsp;Limpar</button>
                   </div>
                 </div>
               </div>
@@ -366,18 +400,12 @@ try {
             </div>
           </div>
 
-          <!-- DIREITA: totais e pagamentos -->
+          <!-- DIREITA -->
           <div class="col-xxl-4">
             <div class="card totais-card">
               <div class="card-body">
-                <div class="d-flex justify-content-between">
-                  <span class="text-muted">Itens</span>
-                  <strong id="tot-itens">0</strong>
-                </div>
-                <div class="d-flex justify-content-between mt-2">
-                  <span class="text-muted">Subtotal</span>
-                  <strong class="money" id="tot-subtotal">R$ 0,00</strong>
-                </div>
+                <div class="d-flex justify-content-between"><span class="text-muted">Itens</span><strong id="tot-itens">0</strong></div>
+                <div class="d-flex justify-content-between mt-2"><span class="text-muted">Subtotal</span><strong class="money" id="tot-subtotal">R$ 0,00</strong></div>
                 <div class="d-flex justify-content-between mt-2">
                   <span class="text-muted">Desconto</span>
                   <div class="d-flex align-items-center gap-2">
@@ -397,7 +425,6 @@ try {
                 <h5 class="mb-0">Pagamento</h5>
               </div>
               <div class="card-body">
-                <!-- Botões rápidos -->
                 <div class="row g-2">
                   <div class="col-6">
                     <button type="button" class="btn btn-success w-100 pay-btn" data-pay="dinheiro" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-cash-coin me-1"></i> Dinheiro</button>
@@ -413,7 +440,6 @@ try {
                   </div>
                 </div>
 
-                <!-- Select + Dinheiro (Recebido/Troco) -->
                 <div class="mt-3">
                   <label class="form-label">Forma de Pagamento</label>
                   <select name="forma_pagamento" id="forma_pagamento" class="form-select" <?= $caixaAberto ? '' : 'disabled' ?>>
@@ -428,7 +454,6 @@ try {
                   <label class="form-label">Valor Recebido (Dinheiro)</label>
                   <div class="input-group">
                     <span class="input-group-text">R$</span>
-                    <!-- NAME ADICIONADO para o back-end receber -->
                     <input type="number" step="0.01" min="0" class="form-control text-end" id="inp-recebido" name="valor_recebido" placeholder="0,00">
                   </div>
                   <div class="d-flex justify-content-between mt-2">
@@ -466,21 +491,15 @@ try {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
-    const fmt3 = v => (Number(v || 0)).toLocaleString('pt-BR', {
-      minimumFractionDigits: 3,
-      maximumFractionDigits: 3
-    });
     const el = sel => document.querySelector(sel);
     const tbody = document.querySelector('#tbl-itens tbody');
-    let itens = []; // {id?, nome, qtd, unit}
+    let itens = []; // {nome,qtd,unit}
     const form = document.getElementById('form-venda');
     const temCaixa = form.getAttribute('data-caixa') === '1';
 
     function totalGeral() {
       let subtotal = 0;
-      itens.forEach(i => {
-        subtotal += i.qtd * i.unit;
-      });
+      itens.forEach(i => subtotal += i.qtd * i.unit);
       const desconto = parseFloat(el('#inp-desconto').value || '0');
       return Math.max(subtotal - desconto, 0);
     }
@@ -634,16 +653,15 @@ try {
       el('#btn-qtd').addEventListener('click', () => inpQtd.select());
       el('#btn-desc').addEventListener('click', () => el('#inp-desconto').select());
 
-      // edições inline
       tbody.addEventListener('input', (e) => {
         if (e.target.matches('.inp-qtd')) {
-          const idx = +e.target.dataset.idx;
-          const v = parseFloat(e.target.value || '0');
+          const idx = +e.target.dataset.idx,
+            v = parseFloat(e.target.value || '0');
           if (itens[idx]) itens[idx].qtd = Math.max(v, 0);
           recalc();
         } else if (e.target.matches('.inp-unit')) {
-          const idx = +e.target.dataset.idx;
-          const v = parseFloat(e.target.value || '0');
+          const idx = +e.target.dataset.idx,
+            v = parseFloat(e.target.value || '0');
           if (itens[idx]) itens[idx].unit = Math.max(v, 0);
           recalc();
         }
@@ -742,7 +760,6 @@ try {
     toggleDinheiroUI();
   </script>
 
-  <!-- Modal opcional: se existir um #modalCaixaObrigatorio, mostramos -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const m = document.getElementById('modalCaixaObrigatorio');
