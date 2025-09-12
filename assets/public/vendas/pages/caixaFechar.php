@@ -120,10 +120,7 @@ function fmt($v)
   <link rel="stylesheet" href="../../assets/css/rtl.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
-    .iq-navbar-header {
-      height: auto !important;
-      margin-bottom: 1rem !important
-    }
+  
 
 
 
@@ -165,7 +162,7 @@ function fmt($v)
           </div>
         </div>
       </nav>
-      <div class="iq-navbar-header">
+      <div class="iq-navbar-header" style="height: 150px; margin-bottom: 50px;">
         <div class="container-fluid iq-container">
           <div class="row">
             <div class="col-12">
@@ -173,120 +170,124 @@ function fmt($v)
               <p>Cadastre um orçamento com itens de produto/serviço.</p>
             </div>
           </div>
-
-
-          <?php if (!$caixa): ?>
-            <div class="alert alert-warning">
-              Não há caixa aberto para esta empresa.
-              <a class="alert-link" href="../../caixa/pages/caixaAbrir.php">Clique aqui</a> para abrir.
-            </div>
         </div>
-      <?php else: ?>
-        <div class="row g-3">
-          <!-- ESQUERDA: resumo -->
-          <div class="col-12 col-xxl-8">
-            <div class="card">
-              <div class="card-header">
-                <h5 class="mb-0">
-                  <i class="bi bi-cash-stack me-1"></i>
-                  Caixa #<?= (int)$caixa['id'] ?> — <?= htmlspecialchars($caixa['tipo'], ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars($caixa['terminal'], ENT_QUOTES, 'UTF-8') ?>
-                </h5>
-                <div class="text-muted small">
-                  Aberto em <?= htmlspecialchars($caixa['aberto_fmt'], ENT_QUOTES, 'UTF-8') ?> •
-                  Saldo inicial: <strong class="money">R$ <?= fmt($saldoInicial) ?></strong>
-                </div>
-              </div>
-              <div class="card-body">
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <div class="card border-0 bg-soft-primary">
-                      <div class="card-body">
-                        <div class="text-muted small">Recebido (por forma)</div>
-                        <div class="mt-2 small">
-                          <div>Dinheiro: <strong class="money">R$ <?= fmt($resumo['dinheiro']) ?></strong></div>
-                          <div>PIX: <strong class="money">R$ <?= fmt($resumo['pix']) ?></strong></div>
-                          <div>Débito: <strong class="money">R$ <?= fmt($resumo['debito']) ?></strong></div>
-                          <div>Crédito: <strong class="money">R$ <?= fmt($resumo['credito']) ?></strong></div>
-                        </div>
-                        <hr class="my-2">
-                        <div class="d-flex justify-content-between align-items-center">
-                          <span class="fw-semibold">Total recebido</span>
-                          <span class="fs-5 fw-bold money">R$ <?= fmt($totalRecebido) ?></span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-md-6">
-                    <div class="card border-0 bg-soft-success">
-                      <div class="card-body">
-                        <div class="text-muted small">Movimentações de Caixa</div>
-                        <div class="mt-2 small">
-                          <div>Suprimentos: <strong class="money">R$ <?= fmt($resumo['suprimentos']) ?></strong></div>
-                          <div>Sangrias: <strong class="money">R$ <?= fmt($resumo['sangrias']) ?></strong></div>
-                        </div>
-                        <hr class="my-2">
-                        <div class="d-flex justify-content-between">
-                          <span class="fw-semibold">Saldo esperado no caixa</span>
-                          <span class="fw-bold money">R$ <?= fmt($saldoEsperado) ?></span>
-                        </div>
-                        <div class="text-muted small">Saldo inicial + (Dinheiro + Suprimentos) − Sangrias</div>
-                      </div>
-                    </div>
-                  </div>
-                </div><!--/row-->
-              </div>
-            </div>
-          </div>
-
-          <!-- DIREITA: formulário de fechamento -->
-          <div class="col-12 col-xxl-4">
-            <div class="aside-sticky">
-              <form method="post" action="../actions/caixaFecharSalvar.php" class="card">
-                <div class="card-header">
-                  <h6 class="mb-0"><i class="bi bi-lock-fill me-1"></i> Finalizar</h6>
-                </div>
-                <div class="card-body">
-                  <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
-                  <input type="hidden" name="caixa_id" value="<?= (int)$caixa['id'] ?>">
-
-                  <div class="mb-3">
-                    <label class="form-label">Dinheiro contado no caixa (R$)</label>
-                    <div class="input-group">
-                      <span class="input-group-text">R$</span>
-                      <input type="number" step="0.01" min="0" class="form-control text-end" name="dinheiro_contado" placeholder="0,00" required>
-                    </div>
-                    <div class="form-text">Saldo esperado: <strong class="money">R$ <?= fmt($saldoEsperado) ?></strong></div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label">Observações</label>
-                    <textarea class="form-control" name="observacoes" rows="4" placeholder="Anote diferenças, justificativas, etc."></textarea>
-                  </div>
-
-                  <div class="alert alert-info small">
-                    Ao confirmar, o caixa será marcado como <strong>fechado</strong> e não aceitará novas vendas.
-                  </div>
-
-                  <div class="d-grid">
-                    <button type="submit" class="btn btn-danger">
-                      <i class="bi bi-check2-circle me-1"></i> Fechar Caixa
-                    </button>
-                  </div>
-                </div>
-              </form>
-
-              <a href="../../dashboard.php" class="btn btn-outline-secondary w-100 mt-2">
-                <i class="bi bi-arrow-left"></i> Voltar
-              </a>
-            </div>
-          </div>
-        </div><!--/row-->
-      <?php endif; ?>
-
+        <div class="iq-header-img">
+          <img src="../../assets/images/dashboard/top-header.png" class="img-fluid w-100 h-100 animated-scaleX" alt="">
+        </div>
       </div>
+
+      <?php if (!$caixa): ?>
+        <div class="alert alert-warning">
+          Não há caixa aberto para esta empresa.
+          <a class="alert-link" href="../../caixa/pages/caixaAbrir.php">Clique aqui</a> para abrir.
+        </div>
     </div>
-    </div>
+  <?php else: ?>
+    <div class="row g-3">
+      <!-- ESQUERDA: resumo -->
+      <div class="col-12 col-xxl-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-cash-stack me-1"></i>
+              Caixa #<?= (int)$caixa['id'] ?> — <?= htmlspecialchars($caixa['tipo'], ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars($caixa['terminal'], ENT_QUOTES, 'UTF-8') ?>
+            </h5>
+            <div class="text-muted small">
+              Aberto em <?= htmlspecialchars($caixa['aberto_fmt'], ENT_QUOTES, 'UTF-8') ?> •
+              Saldo inicial: <strong class="money">R$ <?= fmt($saldoInicial) ?></strong>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="card border-0 bg-soft-primary">
+                  <div class="card-body">
+                    <div class="text-muted small">Recebido (por forma)</div>
+                    <div class="mt-2 small">
+                      <div>Dinheiro: <strong class="money">R$ <?= fmt($resumo['dinheiro']) ?></strong></div>
+                      <div>PIX: <strong class="money">R$ <?= fmt($resumo['pix']) ?></strong></div>
+                      <div>Débito: <strong class="money">R$ <?= fmt($resumo['debito']) ?></strong></div>
+                      <div>Crédito: <strong class="money">R$ <?= fmt($resumo['credito']) ?></strong></div>
+                    </div>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="fw-semibold">Total recebido</span>
+                      <span class="fs-5 fw-bold money">R$ <?= fmt($totalRecebido) ?></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="card border-0 bg-soft-success">
+                  <div class="card-body">
+                    <div class="text-muted small">Movimentações de Caixa</div>
+                    <div class="mt-2 small">
+                      <div>Suprimentos: <strong class="money">R$ <?= fmt($resumo['suprimentos']) ?></strong></div>
+                      <div>Sangrias: <strong class="money">R$ <?= fmt($resumo['sangrias']) ?></strong></div>
+                    </div>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between">
+                      <span class="fw-semibold">Saldo esperado no caixa</span>
+                      <span class="fw-bold money">R$ <?= fmt($saldoEsperado) ?></span>
+                    </div>
+                    <div class="text-muted small">Saldo inicial + (Dinheiro + Suprimentos) − Sangrias</div>
+                  </div>
+                </div>
+              </div>
+            </div><!--/row-->
+          </div>
+        </div>
+      </div>
+
+      <!-- DIREITA: formulário de fechamento -->
+      <div class="col-12 col-xxl-4">
+        <div class="aside-sticky">
+          <form method="post" action="../actions/caixaFecharSalvar.php" class="card">
+            <div class="card-header">
+              <h6 class="mb-0"><i class="bi bi-lock-fill me-1"></i> Finalizar</h6>
+            </div>
+            <div class="card-body">
+              <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
+              <input type="hidden" name="caixa_id" value="<?= (int)$caixa['id'] ?>">
+
+              <div class="mb-3">
+                <label class="form-label">Dinheiro contado no caixa (R$)</label>
+                <div class="input-group">
+                  <span class="input-group-text">R$</span>
+                  <input type="number" step="0.01" min="0" class="form-control text-end" name="dinheiro_contado" placeholder="0,00" required>
+                </div>
+                <div class="form-text">Saldo esperado: <strong class="money">R$ <?= fmt($saldoEsperado) ?></strong></div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Observações</label>
+                <textarea class="form-control" name="observacoes" rows="4" placeholder="Anote diferenças, justificativas, etc."></textarea>
+              </div>
+
+              <div class="alert alert-info small">
+                Ao confirmar, o caixa será marcado como <strong>fechado</strong> e não aceitará novas vendas.
+              </div>
+
+              <div class="d-grid">
+                <button type="submit" class="btn btn-danger">
+                  <i class="bi bi-check2-circle me-1"></i> Fechar Caixa
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <a href="../../dashboard.php" class="btn btn-outline-secondary w-100 mt-2">
+            <i class="bi bi-arrow-left"></i> Voltar
+          </a>
+        </div>
+      </div>
+    </div><!--/row-->
+  <?php endif; ?>
+
+  </div>
+  </div>
+  </div>
   </main>
 
   <script src="../../assets/js/core/libs.min.js"></script>
