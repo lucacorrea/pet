@@ -47,7 +47,7 @@ $msg = htmlspecialchars($_GET['msg'] ?? '', ENT_QUOTES, 'UTF-8');
               <h2 class="mb-2">Solicitar Cadastro</h2>
               <p>Preencha seus dados e o CNPJ da sua autopeças. Vamos analisar e aprovar o acesso.</p>
               <?php if (!empty($ok) || !empty($err)):
-                $type    = !empty($ok) ? 'success' : 'danger';
+                $type    = !empty($ok) ? 'primary' : 'danger';
                 $title   = !empty($ok) ? 'Sucesso' : 'Erro';
                 $message = $msg ?: (!empty($ok)
                   ? 'Solicitação enviada com sucesso! Você será avisado por e-mail quando for aprovada.'
@@ -66,7 +66,7 @@ $msg = htmlspecialchars($_GET['msg'] ?? '', ENT_QUOTES, 'UTF-8');
                       </div>
                       <div class="modal-footer d-flex justify-content-between">
                         <button type="button" class="btn btn-outline-<?= $type ?>" data-bs-dismiss="modal">Ok</button>
-                        <a href="index.php" class="btn btn-success">Voltar ao Login</a>
+                        <a href="index.php" class="btn btn-primary">Voltar ao Login</a>
                       </div>
 
 
@@ -150,14 +150,14 @@ $msg = htmlspecialchars($_GET['msg'] ?? '', ENT_QUOTES, 'UTF-8');
                   <input class="form-check-input" type="checkbox" id="aceite" name="aceite" value="1" required>
                   <label class="form-check-label" for="aceite">
                     Li e aceito os
-                    <a href="#" target="_blank" class="text-success text-decoration-underline">Termos de Uso</a>
+                    <a href="#" target="_blank" class="text-primary text-decoration-underline">Termos de Uso</a>
                     e a
-                    <a href="#" target="_blank" class="text-success text-decoration-underline">Política de Privacidade</a>.
+                    <a href="#" target="_blank" class="text-primary text-decoration-underline">Política de Privacidade</a>.
                   </label>
                 </div>
 
-                <button id="btn-submit" type="submit" class="btn btn-success" disabled>Enviar solicitação</button>
-                <a class="btn btn-link text-success" href="./index.php">Voltar ao Login</a>
+                <button id="btn-submit" type="submit" class="btn btn-primary" disabled>Enviar solicitação</button>
+                <a class="btn btn-link text-primary" href="./index.php">Voltar ao Login</a>
               </form>
             </div>
           </div>
