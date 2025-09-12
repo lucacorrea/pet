@@ -28,7 +28,7 @@ if (empty($_SESSION['csrf_caixa_fechar'])) {
 }
 $csrf = $_SESSION['csrf_caixa_fechar'];
 
-/** Busca caixa ABERTO mais recente (tabela: caixas_peca) */
+/** Busca caixa ABERTO mais recente */
 $caixa = null;
 try {
   $st = $pdo->prepare("
@@ -46,61 +46,60 @@ try {
   $caixa = null;
 }
 
-/** Resumo financeiro baseado no seu schema */
+/** === RESUMO 100% A PARTIR DE caixa_movimentos_peca === */
 $resumo = [
-  'dinheiro'     => 0.00,
+  'dinheiro'     => 0.00, // entradas por forma
   'pix'          => 0.00,
   'debito'       => 0.00,
   'credito'      => 0.00,
-  'entradas_mov' => 0.00, // caixa_movimentos_peca: entrada
-  'saidas_mov'   => 0.00, // caixa_movimentos_peca: saida
+  'suprimentos'  => 0.00, // entradas SEM forma_pagamento (nula/vazia)
+  'sangrias'     => 0.00, // somatório de SAÍDAS
 ];
 
 if ($caixa) {
   $caixaId = (int)$caixa['id'];
 
-  // 1) Movimentações (entrada/saida)
+  // Uma consulta só: entradas/saídas por forma (forma vazia = suprimento)
   try {
     $st = $pdo->prepare("
       SELECT
-        SUM(CASE WHEN tipo='entrada' THEN valor ELSE 0 END) AS entradas_mov,
-        SUM(CASE WHEN tipo='saida'   THEN valor ELSE 0 END) AS saidas_mov
+        LOWER(COALESCE(forma_pagamento,'')) AS fp,
+        SUM(CASE WHEN tipo='entrada' THEN valor ELSE 0 END) AS entradas,
+        SUM(CASE WHEN tipo='saida'   THEN valor ELSE 0 END) AS saidas
       FROM caixa_movimentos_peca
       WHERE empresa_cnpj = :c AND caixa_id = :id
+      GROUP BY LOWER(COALESCE(forma_pagamento,''))
     ");
     $st->execute([':c' => $empresaCnpj, ':id' => $caixaId]);
-    if ($m = $st->fetch(PDO::FETCH_ASSOC)) {
-      $resumo['entradas_mov'] = (float)($m['entradas_mov'] ?? 0);
-      $resumo['saidas_mov']   = (float)($m['saidas_mov'] ?? 0);
-    }
-  } catch (Throwable $e) {
-  }
+    $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-  // 2) Recebimentos por forma (vendas_peca) desde a abertura
-  try {
-    $st = $pdo->prepare("
-      SELECT LOWER(forma_pagamento) AS fp, SUM(total_liquido) AS total
-      FROM vendas_peca
-      WHERE empresa_cnpj = :c
-        AND status = 'fechada'
-        AND criado_em >= :ini
-      GROUP BY LOWER(forma_pagamento)
-    ");
-    $st->execute([':c' => $empresaCnpj, ':ini' => $caixa['aberto_em']]);
-    foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $r) {
-      $fp = str_replace(['débito', 'crédito'], ['debito', 'credito'], (string)($r['fp'] ?? ''));
-      if (isset($resumo[$fp])) $resumo[$fp] += (float)$r['total'];
+    foreach ($rows as $r) {
+      $fp       = (string)$r['fp']; // 'dinheiro','pix','debito','credito' ou ''
+      $entradas = (float)($r['entradas'] ?? 0);
+      $saidas   = (float)($r['saidas']   ?? 0);
+
+      if ($fp === '') {
+        // Entradas sem forma = Suprimentos (não são vendas)
+        $resumo['suprimentos'] += $entradas;
+      } else {
+        if (isset($resumo[$fp])) $resumo[$fp] += $entradas;
+      }
+
+      // Todas as saídas contam como sangria
+      $resumo['sangrias'] += $saidas;
     }
-  } catch (Throwable $e) {
+  } catch (Throwable $e) { /* silencioso */
   }
 }
 
-// totais e saldo esperado
-$saldoInicial  = (float)($caixa['saldo_inicial'] ?? 0);
-$totalRecebido = $resumo['dinheiro'] + $resumo['pix'] + $resumo['debito'] + $resumo['credito'];
-$entradasCx    = $resumo['dinheiro'] + $resumo['entradas_mov']; // físico
-$saidasCx      = $resumo['saidas_mov'];
-$saldoEsperado = $saldoInicial + $entradasCx - $saidasCx;
+// totais e saldo esperado (dinheiro físico)
+$saldoInicial     = (float)($caixa['saldo_inicial'] ?? 0);
+$totalRecebido    = $resumo['dinheiro'] + $resumo['pix'] + $resumo['debito'] + $resumo['credito'];
+$entradasDinheiro = $resumo['dinheiro'];     // só as vendas em dinheiro
+$suprimentos      = $resumo['suprimentos'];  // entradas sem forma
+$sangrias         = $resumo['sangrias'];     // todas as saídas
+
+$saldoEsperado = $saldoInicial + $entradasDinheiro + $suprimentos - $sangrias;
 
 function fmt($v)
 {
@@ -114,7 +113,7 @@ function fmt($v)
   <meta charset="utf-8">
   <title>Fechar Caixa</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="../../assets/images/dashboard/logo.png">
+  <link rel="icon" type="image/png" href="../../assets/images/dashboard/icon.png">
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
   <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
   <link rel="stylesheet" href="../../assets/css/hope-ui.min.css?v=4.0.0">
@@ -175,7 +174,7 @@ function fmt($v)
 <body>
   <?php
   if (session_status() === PHP_SESSION_NONE) session_start();
-  $menuAtivo = 'caixa-fechar';
+  $menuAtivo = 'fechaCaixa';
   include '../../layouts/sidebar.php';
   ?>
 
@@ -184,13 +183,13 @@ function fmt($v)
       <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
         <div class="container-fluid navbar-inner">
           <a href="../../dashboard.php" class="navbar-brand">
-            <h4 class="logo-title">Mundo Pets</h4>
+            <h4 class="logo-title">AutoERP</h4>
           </a>
           <div class="ms-auto small text-muted"></div>
         </div>
       </nav>
 
-      <!-- TOAST de sucesso/erro - 1.3s -->
+      <!-- TOAST 1.3s -->
       <?php if ($ok || $err): ?>
         <div
           id="toastMsg"
@@ -203,7 +202,7 @@ function fmt($v)
                 <?= htmlspecialchars($msg ?: ($ok ? 'Operação realizada com sucesso!' : 'Falha na operação.'), ENT_QUOTES, 'UTF-8') ?>
               </div>
             </div>
-            <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="toast" aria-label="Fechar" id="toastCloseBtn"></button>
+            <button type="button" class="btn-close btn-close-white ms-3" aria-label="Fechar" id="toastCloseBtn"></button>
           </div>
           <div class="progress" style="height:4px;">
             <div id="toastProgress" class="progress-bar <?= $ok ? 'bg-light' : 'bg-warning' ?>" style="width:100%"></div>
@@ -211,12 +210,11 @@ function fmt($v)
         </div>
         <script>
           (function() {
-            const DURATION = 1300; // 1.3s
+            const DURATION = 1300;
             const progress = document.getElementById('toastProgress');
             const toast = document.getElementById('toastMsg');
             const closeBtn = document.getElementById('toastCloseBtn');
 
-            // anima barra
             let start = performance.now();
 
             function tick(t) {
@@ -231,8 +229,6 @@ function fmt($v)
               setTimeout(() => toast.remove(), 380);
             }
             requestAnimationFrame(tick);
-
-            // fechar manual
             closeBtn?.addEventListener('click', slideOut);
           })();
         </script>
@@ -259,7 +255,7 @@ function fmt($v)
           <div class="card-body">
             <div class="alert alert-warning mb-0">
               Não há caixa aberto para esta empresa.
-              <a class="alert-link" href="./caixaAbrir.php">Clique aqui</a> para abrir.
+              <a class="alert-link" href="../../caixa/pages/caixaAbrir.php">Clique aqui</a> para abrir.
             </div>
           </div>
         </div>
@@ -268,7 +264,7 @@ function fmt($v)
         <div class="card" data-aos="fade-up" data-aos-delay="150">
           <div class="card-body">
             <div class="row g-3">
-              <!-- COL ESQUERDA -->
+              <!-- ESQUERDA -->
               <div class="col-12 col-lg-8">
                 <div class="mb-3">
                   <h5 class="mb-0">
@@ -282,10 +278,11 @@ function fmt($v)
                 </div>
 
                 <div class="row g-3">
+                  <!-- Recebido (por forma) - vindo de caixa_movimentos_peca -->
                   <div class="col-md-6">
                     <div class="card stat-card border-0 bg-soft-primary">
                       <div class="card-body">
-                        <div class="text-muted small">Recebido (por forma) — <span class="fw-semibold">vendas_peca</span></div>
+                        <div class="text-muted small">Recebido (por forma) — <span class="fw-semibold">caixa_movimentos_peca</span></div>
                         <div class="mt-2 small">
                           <div>Dinheiro: <strong class="money">R$ <?= fmt($resumo['dinheiro']) ?></strong></div>
                           <div>PIX: <strong class="money">R$ <?= fmt($resumo['pix']) ?></strong></div>
@@ -301,13 +298,14 @@ function fmt($v)
                     </div>
                   </div>
 
+                  <!-- Movimentações / Saldo esperado -->
                   <div class="col-md-6">
                     <div class="card stat-card border-0 bg-soft-success">
                       <div class="card-body">
                         <div class="text-muted small">Movimentações do Caixa — <span class="fw-semibold">caixa_movimentos_peca</span></div>
                         <div class="mt-2 small">
-                          <div>Entradas (suprimento): <strong class="money">R$ <?= fmt($resumo['entradas_mov']) ?></strong></div>
-                          <div>Saídas (sangria): <strong class="money">R$ <?= fmt($resumo['saidas_mov']) ?></strong></div>
+                          <div>Entradas (suprimento): <strong class="money">R$ <?= fmt($suprimentos) ?></strong></div>
+                          <div>Saídas (sangria): <strong class="money">R$ <?= fmt($sangrias) ?></strong></div>
                         </div>
                         <hr class="my-2">
                         <div class="d-flex justify-content-between">
@@ -315,7 +313,7 @@ function fmt($v)
                           <span class="fw-bold money">R$ <?= fmt($saldoEsperado) ?></span>
                         </div>
                         <div class="text-muted small">
-                          Saldo inicial + (Dinheiro das vendas + Entradas) − Saídas
+                          Saldo inicial + (Dinheiro das vendas + Suprimentos) − Sangrias
                         </div>
                       </div>
                     </div>
@@ -323,9 +321,9 @@ function fmt($v)
                 </div>
               </div>
 
-              <!-- COL DIREITA: Fechamento -->
+              <!-- DIREITA: Fechamento -->
               <div class="col-12 col-lg-4">
-                <form method="post" action="../actions/caixaFecharSalvar.php" class="card h-100">
+                <form method="post" action="../actions/caixaFecharPost.php" class="card h-100">
                   <div class="card-header">
                     <h6 class="mb-0"><i class="bi bi-lock-fill me-1"></i> Finalizar</h6>
                   </div>
