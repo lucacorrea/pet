@@ -124,8 +124,8 @@ $msg = (string)($_GET['msg'] ?? '');
                   <div class="col-md-6">
                     <label class="form-label">Setor</label>
                     <select name="setor" class="form-select" required>
-                      <option value="autopeca">Auto Peças</option>
-                      <option value="lavajato">Lava Jato</option>
+                      <option value="petshop">Pet Shop</option>
+                      
                     </select>
                   </div>
 
