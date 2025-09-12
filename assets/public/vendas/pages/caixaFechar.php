@@ -182,7 +182,7 @@ function fmt($v)
       <?php else: ?>
         <div class="row g-3">
           <!-- ESQUERDA: resumo -->
-          <div class="col-12 col-lg-8">
+          <div class="col-12 col-lg-7">
             <div class="card">
               <div class="card-header">
                 <h5 class="mb-0">
