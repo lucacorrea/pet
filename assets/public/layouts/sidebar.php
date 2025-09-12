@@ -9,7 +9,6 @@ if (!isset($menuAtivo)) {
 
 <aside class="sidebar sidebar-default sidebar-white sidebar-base navs-rounded-all <?= (!empty($sidebarMini) ? 'sidebar-mini' : '') ?>">
 
-
   <div class="sidebar-header d-flex align-items-center justify-content-start">
     <a href="../../dashboard.php" class="navbar-brand">
       <div class="logo-main">
@@ -43,7 +42,6 @@ if (!isset($menuAtivo)) {
         </li>
 
         <!-- VENDAS -->
-
         <li class="nav-item">
           <a class="nav-link <?= ($menuAtivo === 'vendas-rapida' ? 'active' : '') ?>" href="../../vendas/pages/vendaRapida.php">
             <i class="bi bi-cash-coin icon"></i><span class="item-name">Venda Rápida</span>
@@ -54,14 +52,32 @@ if (!isset($menuAtivo)) {
             <i class="bi bi-file-earmark-text icon"></i><span class="item-name">Orçamentos</span>
           </a>
         </li>
+
+        <!-- CAIXA -->
+          <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="collapse" href="#sidebar-estoque" role="button"
+            aria-expanded="<?= str_starts_with($menuAtivo, 'estoque-') ? 'true' : 'false' ?>"
+            aria-controls="sidebar-estoque">
+            <i class="bi bi-truck icon"></i><span class="item-name">Caixa</span><i class="bi bi-chevron-right right-icon"></i>
+          </a>
         <li class="nav-item">
-          <a class="nav-link <?= ($menuAtivo === 'vendas-abriCaixa' ? 'active' : '') ?>" href="../../vendas/pages/caixaAbrir.php">
-            <i class="bi bi-cash-coin icon"></i><span class="item-name">Abri Caixa</span>
+          <a class="nav-link <?= ($menuAtivo === 'caixa-abrir' ? 'active' : '') ?>" href="../../caixa/pages/caixaAbrir.php">
+            <i class="bi bi-cash-stack icon"></i><span class="item-name">Abrir Caixa</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link <?= ($menuAtivo === 'fechaCaixa' ? 'active' : '') ?>" href="../../vendas/pages/caixaFechar.php">
-            <i class="bi bi-cash-coin icon"></i><span class="item-name">Fechar Caixa</span>
+          <a class="nav-link <?= ($menuAtivo === 'caixa-fechar' ? 'active' : '') ?>" href="../../caixa/pages/caixaFechar.php">
+            <i class="bi bi-lock icon"></i><span class="item-name">Fechar Caixa</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <?= ($menuAtivo === 'caixa-suprimento' ? 'active' : '') ?>" href="../../caixa/pages/caixaSuprimento.php">
+            <i class="bi bi-arrow-up-circle icon"></i><span class="item-name">Suprimento</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <?= ($menuAtivo === 'caixa-sangria' ? 'active' : '') ?>" href="../../caixa/pages/caixaSangria.php">
+            <i class="bi bi-arrow-down-circle icon"></i><span class="item-name">Sangria</span>
           </a>
         </li>
 
