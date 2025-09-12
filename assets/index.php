@@ -121,7 +121,7 @@ if (isset($_GET['erro'])) {
                            <a href="./confirmaEmail.php" class="text-success">Esqueceu a senha?</a>
                         </div>
 
-                        <button id="btnLogin" type="submit" class="btn btn-success w-100">Entrar</button>
+                        <button id="btnLogin" type="submit" class="btn btn-primary w-100">Entrar</button>
 
                         <div class="text-center mt-3">
                            <span>Não tem conta?
