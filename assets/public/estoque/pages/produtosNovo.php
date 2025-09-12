@@ -73,7 +73,7 @@ $msg = (string)($_GET['msg'] ?? '');
       <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
         <div class="container-fluid navbar-inner">
           <a href="#" class="navbar-brand">
-            <h4 class="logo-title">AutoERP</h4>
+            <h4 class="logo-title">Mundo Pets</h4>
           </a>
           <div class="input-group search-input">
             <span class="input-group-text" id="search-input">
@@ -85,50 +85,72 @@ $msg = (string)($_GET['msg'] ?? '');
           </div>
         </div>
       </nav>
+      <!-- card de exibição de status de erros ou sucesso -->
       <?php if ($ok || $err): ?>
         <div
           id="toastMsg"
-          class="toast show align-items-center border-0 position-fixed top-0 end-0 m-3 shadow-lg"
-          role="alert"
-          aria-live="assertive"
-          aria-atomic="true"
-          style="z-index: 2000; min-width: 340px; border-radius: 12px; overflow: hidden;">
-          <div class="d-flex">
-            <div class="toast-body d-flex align-items-center gap-2 text-white fw-semibold 
-                  <?= $ok ? 'bg-success' : 'bg-danger' ?>">
-              <i class="bi <?= $ok ? 'bi-check-circle-fill' : 'bi-x-circle-fill' ?> fs-4"></i>
-              <?= htmlspecialchars($msg ?: ($ok ? 'Produto cadastrado com sucesso!' : 'Falha ao cadastrar produto.'), ENT_QUOTES, 'UTF-8') ?>
+          class="position-fixed top-0 end-0 m-3 shadow-lg"
+          style="z-index: 2000; min-width: 360px; border-radius: 12px; overflow: hidden; animation: slideIn .4s ease-out;">
+          <div class="bg-success text-white p-3 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <i class="bi bi-check-circle-fill fs-3"></i>
+              <div class="fw-semibold fs-6">
+                <?= htmlspecialchars($msg ?: 'Operação realizada com sucesso!', ENT_QUOTES, 'UTF-8') ?>
+              </div>
             </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+            <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="toast" aria-label="Fechar"></button>
           </div>
-          <div class="progress" style="height: 3px;">
-            <div id="toastProgress" class="progress-bar <?= $ok ? 'bg-light' : 'bg-warning' ?>" style="width: 100%"></div>
+          <div class="progress" style="height: 4px;">
+            <div id="toastProgress" class="progress-bar bg-light" style="width: 100%; transition: width 5s linear;"></div>
           </div>
         </div>
+
+        <style>
+          @keyframes slideIn {
+            from {
+              transform: translateX(120%);
+              opacity: 0;
+            }
+
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
+
+          @keyframes slideOut {
+            from {
+              transform: translateX(0);
+              opacity: 1;
+            }
+
+            to {
+              transform: translateX(120%);
+              opacity: 0;
+            }
+          }
+        </style>
 
         <script>
           document.addEventListener("DOMContentLoaded", function() {
             const toastEl = document.getElementById("toastMsg");
             const progress = document.getElementById("toastProgress");
-            if (toastEl) {
-              const toast = new bootstrap.Toast(toastEl, {
-                delay: 5000
-              });
-              toast.show();
 
-              // anima a barrinha de tempo
-              let width = 100;
-              const interval = setInterval(() => {
-                width -= 2;
-                progress.style.width = width + "%";
-                if (width <= 0) clearInterval(interval);
-              }, 100);
+            if (toastEl) {
+              // anima barra
+              setTimeout(() => progress.style.width = "0%", 50);
+
+              // remove após 5s
+              setTimeout(() => {
+                toastEl.style.animation = "slideOut .4s ease-in forwards";
+                setTimeout(() => toastEl.remove(), 400);
+              }, 5000);
             }
           });
         </script>
       <?php endif; ?>
 
-      <div class="iq-navbar-header" style="height: 150px; margin-bottom: 50px ;">
+      <div class="iq-navbar-header" style="height: 150px; margin-bottom: 80px ;">
         <div class="container-fluid iq-container">
           <div class="row">
             <div class="col-md-12">
