@@ -125,9 +125,7 @@ function fmt($v)
       margin-bottom: 1rem !important
     }
 
-    .iq-header-img {
-      display: none
-    }
+  
 
     .money {
       font-variant-numeric: tabular-nums
