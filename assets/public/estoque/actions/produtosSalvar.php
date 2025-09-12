@@ -50,7 +50,7 @@ $ativo           = (int)($_POST['ativo'] ?? 1);
 // Valida
 $errs = [];
 if ($nome === '' || mb_strlen($nome) > 180) $errs[] = 'Informe um nome válido (até 180).';
-if (!in_array($setor, ['autopeca','lavajato'], true)) $errs[] = 'Setor inválido.';
+if (!in_array($setor, ['petshop'], true)) $errs[] = 'Setor inválido.';
 if ($preco_venda < 0) $errs[] = 'Preço de venda inválido.';
 if ($preco_custo < 0) $errs[] = 'Preço de custo inválido.';
 if ($estoque_minimo < 0) $errs[] = 'Estoque mínimo inválido.';
