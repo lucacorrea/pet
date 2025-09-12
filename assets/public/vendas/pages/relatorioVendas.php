@@ -216,7 +216,7 @@ function fmt3($v){ return number_format((float)$v, 3, ',', '.'); }
   <meta charset="utf-8">
   <title>Mundo Pets — Relatório de Vendas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="../../assets/images/dashboard/logo.png">
+  <link rel="icon" type="image/png" href="../../assets/images/dashboard/icon.png">
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
   <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
   <link rel="stylesheet" href="../../assets/css/hope-ui.min.css?v=4.0.0">
@@ -263,104 +263,99 @@ function fmt3($v){ return number_format((float)$v, 3, ',', '.'); }
     </div>
   </div>
 
-    <div class="container-fluid content-inner mt-n3 py-0">
-      <div class="card" data-aos="fade-up" data-aos-delay="150">
-        <div class="card-header">
-          <h4 class="card-title mb-0">Filtros</h4>
-        </div>
-        <div class="card-body">
-          <form class="row g-3" method="get" action="">
-            <div class="col-sm-3">
-              <label class="form-label">De</label>
-              <input type="date" class="form-control" name="de" value="<?= htmlspecialchars($de, ENT_QUOTES, 'UTF-8') ?>">
-            </div>
-            <div class="col-sm-3">
-              <label class="form-label">Até</label>
-              <input type="date" class="form-control" name="ate" value="<?= htmlspecialchars($ate, ENT_QUOTES, 'UTF-8') ?>">
-            </div>
-            <div class="col-sm-3">
-              <label class="form-label">Forma</label>
-              <select class="form-select" name="fp">
-                <option value="">Todas</option>
-                <?php
-                  foreach (['dinheiro'=>'Dinheiro','pix'=>'PIX','debito'=>'Débito','credito'=>'Crédito'] as $k=>$v){
-                    $sel = $fp===$k ? 'selected' : '';
-                    echo "<option value=\"$k\" $sel>$v</option>";
-                  }
-                ?>
-              </select>
-            </div>
-            <div class="col-sm-3">
-              <label class="form-label">Status</label>
-              <select class="form-select" name="status">
-                <?php
-                  $opts = [''=>'Todos','concluida'=>'Concluída','finalizada'=>'Finalizada','paga'=>'Paga','pendente'=>'Pendente','cancelada'=>'Cancelada'];
-                  foreach ($opts as $k=>$v){ $sel = ($status===$k?'selected':''); echo "<option value=\"$k\" $sel>$v</option>"; }
-                ?>
-              </select>
-            </div>
-            <div class="col-lg-9">
-              <label class="form-label">Buscar</label>
-              <input type="text" class="form-control" name="q" value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>" placeholder="Cliente, documento, observação...">
-            </div>
-            <div class="col-lg-3 d-flex align-items-end gap-2">
-              <button class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1"></i> Filtrar</button>
-              <a class="btn btn-outline-secondary" href="?de=<?= urlencode($de) ?>&ate=<?= urlencode($ate) ?>&fp=<?= urlencode($fp) ?>&status=<?= urlencode($status) ?>&q=<?= urlencode($q) ?>&csv=1">
-                <i class="bi bi-filetype-csv me-1"></i> CSV
-              </a>
-            </div>
-          </form>
-        </div>
-      </div>
+  <div class="container-fluid content-inner mt-n3 py-0">
 
-      <div class="row g-3">
-        <div class="col-12 col-xxl-8">
-          <div class="card" data-aos="fade-up" data-aos-delay="200">
-            <div class="card-body">
-              <div class="table-responsive">
-                <table class="table table-striped align-middle">
-                  <thead>
+    <!-- Filtros -->
+    <div class="card" data-aos="fade-up" data-aos-delay="150">
+      <div class="card-header"><h4 class="card-title mb-0">Filtros</h4></div>
+      <div class="card-body">
+        <form class="row g-3" method="get" action="">
+          <div class="col-sm-3">
+            <label class="form-label">De</label>
+            <input type="date" class="form-control" name="de" value="<?= htmlspecialchars($de, ENT_QUOTES, 'UTF-8') ?>">
+          </div>
+          <div class="col-sm-3">
+            <label class="form-label">Até</label>
+            <input type="date" class="form-control" name="ate" value="<?= htmlspecialchars($ate, ENT_QUOTES, 'UTF-8') ?>">
+          </div>
+          <div class="col-sm-3">
+            <label class="form-label">Forma</label>
+            <select class="form-select" name="fp">
+              <option value="">Todas</option>
+              <?php foreach (['dinheiro'=>'Dinheiro','pix'=>'PIX','debito'=>'Débito','credito'=>'Crédito'] as $k=>$v): ?>
+                <option value="<?= $k ?>" <?= $fp===$k?'selected':'' ?>><?= $v ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="col-sm-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status">
+              <?php foreach ([''=>'Todos','aberta'=>'Aberta','fechada'=>'Fechada','cancelada'=>'Cancelada'] as $k=>$v): ?>
+                <option value="<?= $k ?>" <?= $status===$k?'selected':'' ?>><?= $v ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="col-lg-9">
+            <label class="form-label">Buscar</label>
+            <input type="text" class="form-control" name="q" value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>" placeholder="ID, CPF do vendedor ou origem (balcao/lavajato/orcamento)">
+          </div>
+          <div class="col-lg-3 d-flex align-items-end gap-2">
+            <button class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1"></i> Filtrar</button>
+            <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters,['csv'=>1])) ?>">
+              <i class="bi bi-filetype-csv me-1"></i> CSV Vendas
+            </a>
+            <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters,['csv_it'=>1])) ?>">
+              <i class="bi bi-filetype-csv me-1"></i> CSV Itens
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <!-- Lista de vendas -->
+      <div class="col-12 col-xxl-8">
+        <div class="card" data-aos="fade-up" data-aos-delay="200">
+          <div class="card-header"><h5 class="mb-0">Vendas</h5></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped align-middle">
+                <thead>
+                  <tr>
+                    <th style="width:120px;"># / Data</th>
+                    <th>Origem</th>
+                    <th>Vendedor (CPF)</th>
+                    <th class="text-end">Bruto</th>
+                    <th class="text-end">Desc.</th>
+                    <th class="text-end">Líquido</th>
+                    <th>Forma</th>
+                    <th class="text-end">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php if (!$rows): ?>
+                    <tr><td colspan="8" class="text-center text-muted">Nenhuma venda encontrada.</td></tr>
+                  <?php else: foreach ($rows as $r): ?>
                     <tr>
-                      <th style="width:110px;"># / Data</th>
-                      <th>Cliente</th>
-                      <th>Documento</th>
-                      <th class="text-end">Bruto</th>
-                      <th class="text-end">Desc.</th>
-                      <th class="text-end">Líquido</th>
-                      <th class="text-end">Pago</th>
-                      <th>Formas</th>
-                      <th class="text-end">Status</th>
+                      <td>
+                        <div class="fw-semibold">#<?= (int)$r['id'] ?></div>
+                        <div class="small text-muted"><?= (new DateTime($r['criado_em']))->format('d/m/Y H:i') ?></div>
+                      </td>
+                      <td><?= htmlspecialchars((string)$r['origem'], ENT_QUOTES, 'UTF-8') ?></td>
+                      <td><?= htmlspecialchars((string)($r['vendedor_cpf'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
+                      <td class="text-end money">R$ <?= fmt($r['total_bruto']) ?></td>
+                      <td class="text-end money">R$ <?= fmt($r['desconto']) ?></td>
+                      <td class="text-end money">R$ <?= fmt($r['total_liquido']) ?></td>
+                      <td><?= htmlspecialchars((string)($r['forma_pagamento'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
+                      <td class="text-end">
+                        <?php $st = strtolower((string)$r['status']); $map = ['fechada'=>'success','aberta'=>'warning','cancelada'=>'secondary']; ?>
+                        <span class="badge bg-<?= $map[$st] ?? 'secondary' ?> badge-status"><?= htmlspecialchars($st, ENT_QUOTES, 'UTF-8') ?></span>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    <?php if (!$rows): ?>
-                      <tr><td colspan="9" class="text-center text-muted">Nenhuma venda encontrada para o filtro.</td></tr>
-                    <?php else: foreach ($rows as $r): ?>
-                      <tr>
-                        <td>
-                          <div class="fw-semibold">#<?= (int)$r['id'] ?></div>
-                          <div class="small text-muted"><?= (new DateTime($r['created_at']))->format('d/m/Y H:i') ?></div>
-                        </td>
-                        <td><?= htmlspecialchars((string)($r['cliente_nome'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars((string)($r['documento'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
-                        <td class="text-end money">R$ <?= fmt($r['total_bruto']) ?></td>
-                        <td class="text-end money">R$ <?= fmt($r['desconto']) ?></td>
-                        <td class="text-end money">R$ <?= fmt($r['total_liquido']) ?></td>
-                        <td class="text-end money">R$ <?= fmt($r['total_pago']) ?></td>
-                        <td><?= htmlspecialchars((string)($r['formas'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></td>
-                        <td class="text-end">
-                          <?php
-                            $st = strtolower((string)$r['status']);
-                            $map = ['paga'=>'success','finalizada'=>'primary','concluida'=>'primary','pendente'=>'warning','cancelada'=>'secondary'];
-                            $cls = $map[$st] ?? 'secondary';
-                          ?>
-                          <span class="badge bg-<?= $cls ?> badge-status"><?= htmlspecialchars($st, ENT_QUOTES, 'UTF-8') ?></span>
-                        </td>
-                      </tr>
-                    <?php endforeach; endif; ?>
-                  </tbody>
-                </table>
-              </div>
+                  <?php endforeach; endif; ?>
+                </tbody>
+              </table>
+            </div>
 
             <?php if ($totalPages > 1): ?>
               <?php $mk = fn($p)=>'?'.http_build_query(array_merge($filters,['page'=>$p])); ?>
