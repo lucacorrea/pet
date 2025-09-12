@@ -85,14 +85,14 @@ $msg = (string)($_GET['msg'] ?? '');
         </div>
       </nav>
 
-      <div class="iq-navbar-header" style="height:150px; margin-bottom:50px;">
+      <div class="iq-navbar-header" style="height:150px; margin-bottom:80px;">
         <div class="container-fluid iq-container">
           <div class="row">
             <div class="col-md-12">
               <h1 class="mb-0">Sangria de Caixa</h1>
               <p>Retirada de dinheiro do caixa (depósito, segurança, conferência etc.).</p>
               <?php if (!$caixa): ?>
-                <div class="alert alert-warning mt-2 mb-5">
+                <div class="alert alert-warning mt-2 mb-0">
                   Não há caixa aberto para esta empresa.
                   <a class="alert-link" href="./caixaAbrir.php">Clique aqui</a> para abrir.
                 </div>
