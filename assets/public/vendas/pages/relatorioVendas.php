@@ -368,7 +368,23 @@ function fmt3($v)
                 </select>
               </div>
             </div>
-
+   <!-- Ações -->
+            <div class="col-12 col-lg-3">
+              <div class="d-grid gap-2">
+                <button class="btn btn-primary" type="submit">
+                  <i class="bi bi-search me-1"></i> Aplicar filtros
+                </button>
+                <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters, ['csv' => 1])) ?>">
+                  <i class="bi bi-filetype-csv me-1"></i> CSV Vendas
+                </a>
+                <a class="btn btn-outline-secondary" href="?<?= http_build_query(array_merge($filters, ['csv_it' => 1])) ?>">
+                  <i class="bi bi-filetype-csv me-1"></i> CSV Itens
+                </a>
+                <a class="btn btn-soft-danger" href="?de=&ate=&fp=&status=&q=" title="Limpar todos os filtros">
+                  <i class="bi bi-eraser"></i> Limpar Filtros
+                </a>
+              </div>
+            </div>
             <!-- Busca -->
             <div class="col-12 col-lg-9">
               <label class="form-label">Buscar</label>
