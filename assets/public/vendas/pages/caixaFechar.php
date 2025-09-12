@@ -54,7 +54,7 @@ $resumo = [
 if ($caixa) {
   $caixaId  = (int)$caixa['id'];
 
-  // Movimentações (suprimento/sangria) — ajuste nomes se sua tabela for outra
+  // Movimentações (suprimento/sangria)
   try {
     $st = $pdo->prepare("
       SELECT 
@@ -67,10 +67,9 @@ if ($caixa) {
     $m = $st->fetch(PDO::FETCH_ASSOC) ?: [];
     $resumo['suprimentos'] = (float)($m['suprimentos'] ?? 0);
     $resumo['sangrias']    = (float)($m['sangrias'] ?? 0);
-  } catch (Throwable $e) {
-  }
+  } catch (Throwable $e) {}
 
-  // Recebimentos por forma — ajuste nomes/tabelas se necessário
+  // Recebimentos por forma
   try {
     $st = $pdo->prepare("
       SELECT LOWER(vp.forma_pagamento) AS fp, SUM(vp.valor) AS total
@@ -87,24 +86,21 @@ if ($caixa) {
       if ($fp === 'crédito') $fp = 'credito';
       if (isset($resumo[$fp])) $resumo[$fp] += (float)$r['total'];
     }
-  } catch (Throwable $e) {
-  }
+  } catch (Throwable $e) {}
 }
 
 $saldoInicial  = (float)($caixa['saldo_inicial'] ?? 0);
 $totalRecebido = $resumo['dinheiro'] + $resumo['pix'] + $resumo['debito'] + $resumo['credito'];
-$entradasCx    = $resumo['suprimentos'] + $resumo['dinheiro']; // entra em dinheiro
-$saidasCx      = $resumo['sangrias'];                          // sai do caixa
+$entradasCx    = $resumo['suprimentos'] + $resumo['dinheiro'];
+$saidasCx      = $resumo['sangrias'];
 $saldoEsperado = $saldoInicial + $entradasCx - $saidasCx;
 
-function fmt($v)
-{
+function fmt($v) {
   return number_format((float)$v, 2, ',', '.');
 }
 ?>
 <!doctype html>
 <html lang="pt-BR" dir="ltr">
-
 <head>
   <meta charset="utf-8">
   <title>Fechar Caixa</title>
@@ -120,24 +116,20 @@ function fmt($v)
   <link rel="stylesheet" href="../../assets/css/rtl.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
-    .money {
-      font-variant-numeric: tabular-nums
-    }
-
+    .money { font-variant-numeric: tabular-nums }
+    .stat-pair { row-gap: 12px; }
+    .stat-card { height: 100%; }
+    .stat-card .card-body { display: flex; flex-direction: column; gap: .5rem; }
     @media (min-width:1200px) {
-      .aside-sticky {
-        position: sticky;
-        top: 84px
-      }
+      .aside-sticky { position: sticky; top: 84px }
     }
   </style>
 </head>
-
 <body>
   <?php
   if (session_status() === PHP_SESSION_NONE) session_start();
-  $menuAtivo = 'caixa-fechar';           // << seu sidebar usa essa variável
-  include '../../layouts/sidebar.php';   // << no formato que você pediu
+  $menuAtivo = 'caixa-fechar';
+  include '../../layouts/sidebar.php';
   ?>
 
   <main class="main-content">
@@ -147,24 +139,15 @@ function fmt($v)
           <a href="../../dashboard.php" class="navbar-brand">
             <h4 class="logo-title">Mundo Pets</h4>
           </a>
-
-          <div class="input-group search-input">
-            <span class="input-group-text" id="search-input">
-              <svg class="icon-18" width="18" viewBox="0 0 24 24" fill="none">
-
-              </svg>
-            </span>
-
-          </div>
         </div>
       </nav>
+
       <div class="iq-navbar-header" style="height: 150px; margin-bottom: 20px;">
         <div class="container-fluid iq-container">
           <div class="row">
             <div class="col-12">
               <h1 class="mb-0">Fechar Caixa</h1>
-              <p> Confira o resumo financeiro do caixa aberto abaixo. Ao fechar o caixa, informe o valor contado em dinheiro e, se necessário, adicione observações sobre diferenças ou ocorrências. Após o fechamento, não será possível registrar novas vendas neste caixa.
-              </p>
+              <p>Confira o resumo financeiro do caixa aberto. Informe o valor contado em dinheiro e observações, se houver diferenças. Após o fechamento, não será possível registrar novas vendas neste caixa.</p>
             </div>
           </div>
         </div>
@@ -178,11 +161,10 @@ function fmt($v)
           Não há caixa aberto para esta empresa.
           <a class="alert-link" href="../../caixa/pages/caixaAbrir.php">Clique aqui</a> para abrir.
         </div>
-
       <?php else: ?>
-        <div class="row ">
-          <!-- ESQUERDA: resumo -->
-          <div class="col-12 col-lg-7">
+        <div class="row g-3">
+          <!-- ESQUERDA -->
+          <div class="col-12 col-lg-8">
             <div class="card">
               <div class="card-header">
                 <h5 class="mb-0">
@@ -196,7 +178,7 @@ function fmt($v)
               </div>
               <div class="card-body">
                 <div class="row stat-pair row-cols-1 row-cols-md-2 g-3">
-                  <!-- CARD: Recebido por forma -->
+                  <!-- Recebido -->
                   <div class="col">
                     <div class="card stat-card border-0 bg-soft-primary">
                       <div class="card-body">
@@ -215,8 +197,7 @@ function fmt($v)
                       </div>
                     </div>
                   </div>
-
-                  <!-- CARD: Movimentações / Saldo esperado -->
+                  <!-- Movimentações -->
                   <div class="col">
                     <div class="card stat-card border-0 bg-soft-success">
                       <div class="card-body">
@@ -227,7 +208,7 @@ function fmt($v)
                         </div>
                         <hr class="my-2">
                         <div class="d-flex justify-content-between">
-                          <span class="fw-semibold">Saldo esperado no caixa</span>
+                          <span class="fw-semibold">Saldo esperado</span>
                           <span class="fw-bold money">R$ <?= fmt($saldoEsperado) ?></span>
                         </div>
                         <div class="text-muted small">Saldo inicial + (Dinheiro + Suprimentos) − Sangrias</div>
@@ -236,14 +217,13 @@ function fmt($v)
                   </div>
                 </div><!--/row-->
               </div>
-
             </div>
           </div>
 
-          <!-- DIREITA: formulário de fechamento -->
+          <!-- DIREITA -->
           <div class="col-12 col-lg-4">
             <div class="aside-sticky">
-              <form method="post" action="../actions/caixaFecharSalvar.php" class="card">
+              <form method="post" action="../actions/caixaFecharSalvar.php" class="card h-100">
                 <div class="card-header">
                   <h6 class="mb-0"><i class="bi bi-lock-fill me-1"></i> Finalizar</h6>
                 </div>
@@ -276,14 +256,13 @@ function fmt($v)
                   </div>
                 </div>
               </form>
-
-
+              <a href="../../dashboard.php" class="btn btn-outline-secondary w-100 mt-2">
+                <i class="bi bi-arrow-left"></i> Voltar
+              </a>
             </div>
-          </div><!--/row-->
-        <?php endif; ?>
-
-        </div>
-    </div>
+          </div>
+        </div><!--/row-->
+      <?php endif; ?>
     </div>
   </main>
 
@@ -292,5 +271,4 @@ function fmt($v)
   <script src="../../assets/vendor/aos/dist/aos.js"></script>
   <script src="../../assets/js/hope-ui.js" defer></script>
 </body>
-
 </html>
