@@ -77,10 +77,10 @@ $emailSafe = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
                                     <div class="logo-normal">
                                         <img src="./public/assets/images/dashboard/logo.png" class="logo-icon"
                                              alt="logo"
-                                             style="width: 8rem; height: 8rem; margin-left: -9rem;">
+                                             style="width: 8rem; height: 6rem; margin-left: -9rem;">
                                     </div>
                                 </div>
-                                <h4 class="logo-title" style="margin-left: -3rem; margin-top: -15rem;">Mundo Pets</h4>
+                                <h4 class="logo-title" style="margin-left: -3rem; margin-top: -1rem;">Mundo Pets</h4>
                             </a>
 
                             <h2 class="mb-2">Confirmar Código</h2>
