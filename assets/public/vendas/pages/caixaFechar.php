@@ -73,7 +73,7 @@ try {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
 <body>
-<?php include __DIR__ . '/../../layouts/sidebar.php'; ?>
+
 
 <main class="main-content">
   <div class="position-relative iq-banner">
