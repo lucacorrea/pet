@@ -249,7 +249,7 @@ try {
     </div>
 
     <div class="container-fluid content-inner mt-n3 py-0">
-      <form method="post" action="../actions/vendasSalvar.php" id="form-venda" data-caixa="<?= $caixaAberto ? '1' : '0' ?>">
+      <form method="post" action="../actions/vendasRapidaSalvar.php" id="form-venda" data-caixa="<?= $caixaAberto ? '1' : '0' ?>">
         <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
         <input type="hidden" name="itens_json" id="itens_json">
         <input type="hidden" name="desconto" id="desconto_hidden" value="0.00">
