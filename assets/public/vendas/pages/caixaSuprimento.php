@@ -1,5 +1,5 @@
 <?php
-// autoErp/public/vendas/pages/caixaSangria.php
+// autoErp/public/vendas/pages/caixaSuprimento.php
 declare(strict_types=1);
 
 if (session_status() === PHP_SESSION_NONE) session_start();
@@ -21,10 +21,10 @@ $empresaCnpj = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj']
 $usuarioCpf  = preg_replace('/\D+/', '', (string)($_SESSION['user_cpf'] ?? ''));
 
 // CSRF
-if (empty($_SESSION['csrf_caixa_sangria'])) {
-  $_SESSION['csrf_caixa_sangria'] = bin2hex(random_bytes(32));
+if (empty($_SESSION['csrf_caixa_suprimento'])) {
+  $_SESSION['csrf_caixa_suprimento'] = bin2hex(random_bytes(32));
 }
-$csrf = $_SESSION['csrf_caixa_sangria'];
+$csrf = $_SESSION['csrf_caixa_suprimento'];
 
 // Caixa aberto (mais recente)
 $caixa = null;
@@ -53,7 +53,7 @@ $msg = (string)($_GET['msg'] ?? '');
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mundo Pets — Sangria de Caixa</title>
+  <title>Mundo Pets — Suprimento de Caixa</title>
   <link rel="icon" type="image/png" href="../../assets/images/dashboard/icon.png">
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
   <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
@@ -68,7 +68,7 @@ $msg = (string)($_GET['msg'] ?? '');
 <body>
   <?php
     if (session_status() === PHP_SESSION_NONE) session_start();
-    $menuAtivo = 'caixa-sangria';
+    $menuAtivo = 'caixa-suprimento';
     include '../../layouts/sidebar.php';
   ?>
 
@@ -89,8 +89,8 @@ $msg = (string)($_GET['msg'] ?? '');
         <div class="container-fluid iq-container">
           <div class="row">
             <div class="col-md-12">
-              <h1 class="mb-0">Sangria de Caixa</h1>
-              <p>Retirada de dinheiro do caixa (depósito, segurança, conferência etc.).</p>
+              <h1 class="mb-0">Suprimento de Caixa</h1>
+              <p>Informe o valor de entrada em dinheiro no caixa (troco, reforço, etc.).</p>
               <?php if (!$caixa): ?>
                 <div class="alert alert-warning mt-2 mb-0">
                   Não há caixa aberto para esta empresa.
@@ -117,12 +117,12 @@ $msg = (string)($_GET['msg'] ?? '');
         <div class="col-12">
           <div class="card" data-aos="fade-up" data-aos-delay="150">
             <div class="card-header">
-              <h4 class="card-title mb-0">Dados da Sangria</h4>
+              <h4 class="card-title mb-0">Dados do Suprimento</h4>
             </div>
             <div class="card-body">
-              <form method="post" action="../actions/caixaMovSalvar.php" id="form-sangria" autocomplete="off">
+              <form method="post" action="../actions/caixaMovSalvar.php" id="form-suprimento" autocomplete="off">
                 <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
-                <input type="hidden" name="tipo" value="sangria">
+                <input type="hidden" name="tipo" value="suprimento">
                 <input type="hidden" name="empresa_cnpj" value="<?= htmlspecialchars($empresaCnpj, ENT_QUOTES, 'UTF-8') ?>">
                 <input type="hidden" name="criado_por_cpf" value="<?= htmlspecialchars($usuarioCpf, ENT_QUOTES, 'UTF-8') ?>">
                 <input type="hidden" name="caixa_id" value="<?= (int)($caixa['id'] ?? 0) ?>">
@@ -137,13 +137,13 @@ $msg = (string)($_GET['msg'] ?? '');
                   </div>
                   <div class="col-md-8">
                     <label class="form-label">Observação (opcional)</label>
-                    <input type="text" name="observacao" class="form-control" maxlength="240" placeholder="Ex.: Sangria para depósito" <?= $caixa ? '' : 'disabled' ?>>
+                    <input type="text" name="observacao" class="form-control" maxlength="240" placeholder="Ex.: Suprimento para troco" <?= $caixa ? '' : 'disabled' ?>>
                   </div>
                 </div>
 
                 <div class="mt-4 d-flex gap-2">
-                  <button type="submit" class="btn btn-danger" <?= $caixa ? '' : 'disabled' ?>>
-                    <i class="bi bi-arrow-down-circle me-1"></i> Confirmar Sangria
+                  <button type="submit" class="btn btn-success" <?= $caixa ? '' : 'disabled' ?>>
+                    <i class="bi bi-arrow-up-circle me-1"></i> Confirmar Suprimento
                   </button>
                   <a href="./caixaFechar.php" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i> Voltar
@@ -154,7 +154,7 @@ $msg = (string)($_GET['msg'] ?? '');
               <?php if ($ok || $err): ?>
                 <div class="mt-3">
                   <div class="alert alert-<?= $err ? 'danger' : 'success' ?> py-2 mb-0">
-                    <?= htmlspecialchars($msg ?: ($err ? 'Falha ao registrar sangria.' : 'Sangria registrada com sucesso.'), ENT_QUOTES, 'UTF-8') ?>
+                    <?= htmlspecialchars($msg ?: ($err ? 'Falha ao registrar suprimento.' : 'Suprimento registrado com sucesso.'), ENT_QUOTES, 'UTF-8') ?>
                   </div>
                 </div>
               <?php endif; ?>
