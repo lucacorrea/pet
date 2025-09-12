@@ -62,7 +62,7 @@ $msg = (string)($_GET['msg'] ?? '');
 </head>
 
 <body>
- <?php
+  <?php
   if (session_status() === PHP_SESSION_NONE) session_start();
   $menuAtivo = 'estoque-add-produto'; // ID do menu atual
   include '../../layouts/sidebar.php';
@@ -85,6 +85,36 @@ $msg = (string)($_GET['msg'] ?? '');
           </div>
         </div>
       </nav>
+      <?php if ($ok || $err): ?>
+        <div
+          id="toastMsg"
+          class="toast align-items-center text-white 
+           <?= $ok ? 'bg-success' : 'bg-danger' ?> 
+           border-0 position-fixed top-0 end-0 m-3"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          style="z-index: 2000; min-width: 280px;">
+          <div class="d-flex">
+            <div class="toast-body">
+              <?= htmlspecialchars($msg ?: ($ok ? 'Produto cadastrado com sucesso.' : 'Falha ao cadastrar produto.'), ENT_QUOTES, 'UTF-8') ?>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+          </div>
+        </div>
+
+        <script>
+          document.addEventListener("DOMContentLoaded", function() {
+            const toastEl = document.getElementById("toastMsg");
+            if (toastEl) {
+              const toast = new bootstrap.Toast(toastEl, {
+                delay: 5000
+              }); // 5 segundos
+              toast.show();
+            }
+          });
+        </script>
+      <?php endif; ?>
 
       <div class="iq-navbar-header" style="height: 150px; margin-bottom: 80px ;">
         <div class="container-fluid iq-container">
@@ -93,12 +123,7 @@ $msg = (string)($_GET['msg'] ?? '');
               <h1 class="mb-0">Cadastrar Produto</h1>
               <p>Informe os dados do produto e escolha o setor (Auto Peças ou Lava Jato).</p>
 
-              <?php if ($ok || $err): ?>
-                <div class="mt-3">
-                  <?php if ($ok):  ?><div class="alert alert-success py-2 mb-0"><?= htmlspecialchars($msg ?: 'Produto cadastrado com sucesso.', ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
-                  <?php if ($err): ?><div class="alert alert-danger  py-2 mb-0"><?= htmlspecialchars($msg ?: 'Falha ao cadastrar produto.', ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
-                </div>
-              <?php endif; ?>
+
             </div>
           </div>
         </div>
@@ -125,7 +150,7 @@ $msg = (string)($_GET['msg'] ?? '');
                     <label class="form-label">Setor</label>
                     <select name="setor" class="form-select" required>
                       <option value="petshop">Pet Shop</option>
-                      
+
                     </select>
                   </div>
 
@@ -161,7 +186,7 @@ $msg = (string)($_GET['msg'] ?? '');
 
                   <div class="col-md-3">
                     <label class="form-label">Unidade</label>
-                    <input type="text" name="unidade" class="form-control"maxlength="10">
+                    <input type="text" name="unidade" class="form-control" maxlength="10">
                   </div>
 
                   <div class="col-md-3">
