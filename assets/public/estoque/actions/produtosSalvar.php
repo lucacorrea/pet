@@ -34,7 +34,7 @@ if (!preg_match('/^\d{14}$/', $empresaCnpj)) {
 }
 
 // Entrada
-$setor           = strtolower((string)($_POST['setor'] ?? 'autopeca')); // autopeca|lavajato
+$setor           = strtolower((string)($_POST['setor'] ?? 'petshop')); // autopeca|lavajato
 $nome            = trim((string)($_POST['nome'] ?? ''));
 $fornecedorId    = isset($_POST['fornecedor_id']) && $_POST['fornecedor_id'] !== '' ? (int)$_POST['fornecedor_id'] : null;
 $sku             = trim((string)($_POST['sku'] ?? ''));
