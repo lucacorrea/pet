@@ -17,25 +17,23 @@ if (!preg_match('/^\d{14}$/', $empresaCnpj)) {
   header('Location: ../pages/caixaFechar.php?err=1&msg=' . urlencode('Empresa não vinculada ao usuário.'));
   exit;
 }
-
 $usuarioCpf = preg_replace('/\D+/', '', (string)($_SESSION['user_cpf'] ?? ''));
 
-// ===== valida CSRF (usa a mesma chave da página: csrf_caixa_fechar)
+// valida CSRF (alinhado com a página)
 $csrf = (string)($_POST['csrf'] ?? '');
-if (!$csrf || !hash_equals((string)($_SESSION['csrf_caixa_fechar'] ?? ''), $csrf)) {
+if (!$csrf || !hash_equals((string)($_SESSION['csrf_fechar_caixa'] ?? ''), $csrf)) {
   header('Location: ../pages/caixaFechar.php?err=1&msg=' . urlencode('Sessão expirada. Tente novamente.'));
   exit;
 }
 
-// ===== entradas do formulário (nomes alinhados com a página)
+// entradas
 $cxId         = (int)($_POST['caixa_id'] ?? 0);
+$dinheiroCont = (float)($_POST['dinheiro_contado'] ?? 0);
 $observacoes  = trim((string)($_POST['observacoes'] ?? ''));
-$dinheiroBr   = (string)($_POST['dinheiro_contado'] ?? '');
 
-// normaliza número BR/US (aceita "1.234,56" e "1234.56")
-$dinheiroContado = 0.0;
-if ($dinheiroBr !== '') {
-  $dinheiroContado = (float)str_replace(',', '.', preg_replace('/\./', '', $dinheiroBr));
+if ($cxId <= 0) {
+  header('Location: ../pages/caixaFechar.php?err=1&msg=' . urlencode('Caixa inválido.'));
+  exit;
 }
 
 try {
@@ -43,38 +41,32 @@ try {
 
   // Confere se o caixa ainda está aberto e pertence à empresa
   $stSel = $pdo->prepare("
-    SELECT id, observacoes
-    FROM caixas_peca
+    SELECT id FROM caixas_peca
     WHERE id = :id AND empresa_cnpj = :c AND status = 'aberto'
     FOR UPDATE
   ");
   $stSel->execute([':id' => $cxId, ':c' => $empresaCnpj]);
-  $caixaRow = $stSel->fetch(PDO::FETCH_ASSOC);
+  $existe = (bool)$stSel->fetchColumn();
 
-  if (!$caixaRow) {
+  if (!$existe) {
     $pdo->rollBack();
     header('Location: ../pages/caixaFechar.php?err=1&msg=' . urlencode('Caixa não encontrado ou já fechado.'));
     exit;
   }
 
-  // Anexa o dinheiro contado nas observações (schema não tem campos próprios pra isso)
-  $obsAtual = trim((string)($caixaRow['observacoes'] ?? ''));
-  $anexo    = $dinheiroBr !== '' ? 'Dinheiro contado: R$ ' . number_format($dinheiroContado, 2, ',', '.') : '';
-  $obsFinal = trim(implode(' | ', array_filter([$obsAtual, $observacoes, $anexo], fn($s) => $s !== '')));
-
   // Fecha o caixa
   $stUp = $pdo->prepare("
     UPDATE caixas_peca
-       SET status = 'fechado',
-           fechado_por_cpf = :cpf,
-           fechado_em = NOW(),
-           observacoes = :obs
-     WHERE id = :id AND empresa_cnpj = :c AND status = 'aberto'
-     LIMIT 1
+    SET status = 'fechado',
+        fechado_por_cpf = :cpf,
+        fechado_em = NOW(),
+        observacoes = :obs
+    WHERE id = :id AND empresa_cnpj = :c AND status = 'aberto'
+    LIMIT 1
   ");
   $stUp->execute([
     ':cpf' => $usuarioCpf ?: null,
-    ':obs' => $obsFinal ?: null,
+    ':obs' => $observacoes ?: null,
     ':id'  => $cxId,
     ':c'   => $empresaCnpj,
   ]);
@@ -87,8 +79,8 @@ try {
 
   $pdo->commit();
 
-  // Evita re-post
-  unset($_SESSION['csrf_caixa_fechar']);
+  // limpa token para evitar repost
+  unset($_SESSION['csrf_fechar_caixa']);
 
   header('Location: ../pages/caixaFechar.php?ok=1&msg=' . urlencode('Caixa fechado com sucesso.'));
   exit;
