@@ -52,9 +52,9 @@ $resumo = [
 ];
 
 if ($caixa) {
-  $caixaId  = (int)$caixa['id'];
+  $caixaId = (int)$caixa['id'];
 
-  // Movimentações (suprimento/sangria)
+  // Movimentações (suprimento / sangria)
   try {
     $st = $pdo->prepare("
       SELECT 
@@ -91,13 +91,11 @@ if ($caixa) {
 
 $saldoInicial  = (float)($caixa['saldo_inicial'] ?? 0);
 $totalRecebido = $resumo['dinheiro'] + $resumo['pix'] + $resumo['debito'] + $resumo['credito'];
-$entradasCx    = $resumo['suprimentos'] + $resumo['dinheiro'];
-$saidasCx      = $resumo['sangrias'];
+$entradasCx    = $resumo['suprimentos'] + $resumo['dinheiro']; // entra no caixa físico
+$saidasCx      = $resumo['sangrias'];                          // sai do caixa físico
 $saldoEsperado = $saldoInicial + $entradasCx - $saidasCx;
 
-function fmt($v) {
-  return number_format((float)$v, 2, ',', '.');
-}
+function fmt($v) { return number_format((float)$v, 2, ',', '.'); }
 ?>
 <!doctype html>
 <html lang="pt-BR" dir="ltr">
@@ -116,13 +114,10 @@ function fmt($v) {
   <link rel="stylesheet" href="../../assets/css/rtl.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
-    .money { font-variant-numeric: tabular-nums }
-    .stat-pair { row-gap: 12px; }
-    .stat-card { height: 100%; }
-    .stat-card .card-body { display: flex; flex-direction: column; gap: .5rem; }
-    @media (min-width:1200px) {
-      .aside-sticky { position: sticky; top: 84px }
-    }
+    .money{font-variant-numeric:tabular-nums}
+    .stat-card{height:100%}
+    .stat-card .card-body{display:flex;flex-direction:column;gap:.5rem}
+    @media (min-width:1200px){.aside-sticky{position:sticky;top:84px}}
   </style>
 </head>
 <body>
@@ -134,20 +129,31 @@ function fmt($v) {
 
   <main class="main-content">
     <div class="position-relative iq-banner">
+      <!-- NAV padrão -->
       <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
         <div class="container-fluid navbar-inner">
           <a href="../../dashboard.php" class="navbar-brand">
-            <h4 class="logo-title">Mundo Pets</h4>
+            <h4 class="logo-title">AutoERP</h4>
           </a>
+          <div class="input-group search-input">
+            <span class="input-group-text" id="search-input">
+              <svg class="icon-18" width="18" viewBox="0 0 24 24" fill="none">
+                <circle cx="11.7669" cy="11.7666" r="8.98856" stroke="currentColor" stroke-width="1.5"></circle>
+                <path d="M18.0186 18.4851L21.5426 22" stroke="currentColor" stroke-width="1.5"></path>
+              </svg>
+            </span>
+            <input type="search" class="form-control" placeholder="Pesquisar...">
+          </div>
         </div>
       </nav>
 
-      <div class="iq-navbar-header" style="height: 150px; margin-bottom: 20px;">
+      <!-- HEADER azul padrão -->
+      <div class="iq-navbar-header" style="height:140px; margin-bottom:50px;">
         <div class="container-fluid iq-container">
           <div class="row">
             <div class="col-12">
               <h1 class="mb-0">Fechar Caixa</h1>
-              <p>Confira o resumo financeiro do caixa aberto. Informe o valor contado em dinheiro e observações, se houver diferenças. Após o fechamento, não será possível registrar novas vendas neste caixa.</p>
+              <p>Gerencie o fechamento do caixa atual.</p>
             </div>
           </div>
         </div>
@@ -155,18 +161,27 @@ function fmt($v) {
           <img src="../../assets/images/dashboard/top-header.png" class="img-fluid w-100 h-100 animated-scaleX" alt="">
         </div>
       </div>
+    </div>
 
+    <div class="container-fluid content-inner mt-n3 py-0">
       <?php if (!$caixa): ?>
-        <div class="alert alert-warning">
-          Não há caixa aberto para esta empresa.
-          <a class="alert-link" href="../../caixa/pages/caixaAbrir.php">Clique aqui</a> para abrir.
+        <div class="card" data-aos="fade-up" data-aos-delay="150">
+          <div class="card-body">
+            <div class="alert alert-warning mb-0">
+              Não há caixa aberto para esta empresa.
+              <a class="alert-link" href="../../caixa/pages/caixaAbrir.php">Clique aqui</a> para abrir.
+            </div>
+          </div>
         </div>
       <?php else: ?>
-        <div class="row g-3">
-          <!-- ESQUERDA -->
-          <div class="col-12 col-lg-8">
-            <div class="card">
-              <div class="card-header">
+
+      <!-- *** CARD ÚNICO (mesma largura visual da tabela do exemplo) *** -->
+      <div class="card" data-aos="fade-up" data-aos-delay="150">
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- COL ESQUERDA: título e 2 cards de resumo lado a lado -->
+            <div class="col-12 col-lg-8">
+              <div class="mb-3">
                 <h5 class="mb-0">
                   <i class="bi bi-cash-stack me-1"></i>
                   Caixa #<?= (int)$caixa['id'] ?> — <?= htmlspecialchars($caixa['tipo'], ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars($caixa['terminal'], ENT_QUOTES, 'UTF-8') ?>
@@ -176,53 +191,51 @@ function fmt($v) {
                   Saldo inicial: <strong class="money">R$ <?= fmt($saldoInicial) ?></strong>
                 </div>
               </div>
-              <div class="card-body">
-                <div class="row stat-pair row-cols-1 row-cols-md-2 g-3">
-                  <!-- Recebido -->
-                  <div class="col">
-                    <div class="card stat-card border-0 bg-soft-primary">
-                      <div class="card-body">
-                        <div class="text-muted small">Recebido (por forma)</div>
-                        <div class="mt-2 small">
-                          <div>Dinheiro: <strong class="money">R$ <?= fmt($resumo['dinheiro']) ?></strong></div>
-                          <div>PIX: <strong class="money">R$ <?= fmt($resumo['pix']) ?></strong></div>
-                          <div>Débito: <strong class="money">R$ <?= fmt($resumo['debito']) ?></strong></div>
-                          <div>Crédito: <strong class="money">R$ <?= fmt($resumo['credito']) ?></strong></div>
-                        </div>
-                        <hr class="my-2">
-                        <div class="d-flex justify-content-between align-items-center mt-auto">
-                          <span class="fw-semibold">Total recebido</span>
-                          <span class="fs-5 fw-bold money">R$ <?= fmt($totalRecebido) ?></span>
-                        </div>
+
+              <div class="row g-3">
+                <!-- Recebido -->
+                <div class="col-md-6">
+                  <div class="card stat-card border-0 bg-soft-primary">
+                    <div class="card-body">
+                      <div class="text-muted small">Recebido (por forma)</div>
+                      <div class="mt-2 small">
+                        <div>Dinheiro: <strong class="money">R$ <?= fmt($resumo['dinheiro']) ?></strong></div>
+                        <div>PIX: <strong class="money">R$ <?= fmt($resumo['pix']) ?></strong></div>
+                        <div>Débito: <strong class="money">R$ <?= fmt($resumo['debito']) ?></strong></div>
+                        <div>Crédito: <strong class="money">R$ <?= fmt($resumo['credito']) ?></strong></div>
+                      </div>
+                      <hr class="my-2">
+                      <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <span class="fw-semibold">Total recebido</span>
+                        <span class="fs-5 fw-bold money">R$ <?= fmt($totalRecebido) ?></span>
                       </div>
                     </div>
                   </div>
-                  <!-- Movimentações -->
-                  <div class="col">
-                    <div class="card stat-card border-0 bg-soft-success">
-                      <div class="card-body">
-                        <div class="text-muted small">Movimentações de Caixa</div>
-                        <div class="mt-2 small">
-                          <div>Suprimentos: <strong class="money">R$ <?= fmt($resumo['suprimentos']) ?></strong></div>
-                          <div>Sangrias: <strong class="money">R$ <?= fmt($resumo['sangrias']) ?></strong></div>
-                        </div>
-                        <hr class="my-2">
-                        <div class="d-flex justify-content-between">
-                          <span class="fw-semibold">Saldo esperado</span>
-                          <span class="fw-bold money">R$ <?= fmt($saldoEsperado) ?></span>
-                        </div>
-                        <div class="text-muted small">Saldo inicial + (Dinheiro + Suprimentos) − Sangrias</div>
+                </div>
+
+                <!-- Movimentações -->
+                <div class="col-md-6">
+                  <div class="card stat-card border-0 bg-soft-success">
+                    <div class="card-body">
+                      <div class="text-muted small">Movimentações de Caixa</div>
+                      <div class="mt-2 small">
+                        <div>Suprimentos: <strong class="money">R$ <?= fmt($resumo['suprimentos']) ?></strong></div>
+                        <div>Sangrias: <strong class="money">R$ <?= fmt($resumo['sangrias']) ?></strong></div>
                       </div>
+                      <hr class="my-2">
+                      <div class="d-flex justify-content-between">
+                        <span class="fw-semibold">Saldo esperado</span>
+                        <span class="fw-bold money">R$ <?= fmt($saldoEsperado) ?></span>
+                      </div>
+                      <div class="text-muted small">Saldo inicial + (Dinheiro + Suprimentos) − Sangrias</div>
                     </div>
                   </div>
-                </div><!--/row-->
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- DIREITA -->
-          <div class="col-12 col-lg-4">
-            <div class="aside-sticky">
+            <!-- COL DIREITA: card de finalizar -->
+            <div class="col-12 col-lg-4">
               <form method="post" action="../actions/caixaFecharSalvar.php" class="card h-100">
                 <div class="card-header">
                   <h6 class="mb-0"><i class="bi bi-lock-fill me-1"></i> Finalizar</h6>
@@ -256,14 +269,20 @@ function fmt($v) {
                   </div>
                 </div>
               </form>
-              <a href="../../dashboard.php" class="btn btn-outline-secondary w-100 mt-2">
-                <i class="bi bi-arrow-left"></i> Voltar
-              </a>
             </div>
-          </div>
-        </div><!--/row-->
+          </div><!-- /row -->
+        </div><!-- /card-body -->
+      </div><!-- /card (container padrão) -->
+
       <?php endif; ?>
     </div>
+
+    <footer class="footer">
+      <div class="footer-body d-flex justify-content-between align-items-center">
+        <div class="left-panel">© <script>document.write(new Date().getFullYear())</script> AutoERP</div>
+        <div class="right-panel">Desenvolvido por Lucas de S. Correa.</div>
+      </div>
+    </footer>
   </main>
 
   <script src="../../assets/js/core/libs.min.js"></script>
