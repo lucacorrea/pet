@@ -205,8 +205,8 @@ try {
               <strong>Total:</strong> R$ <span id="total">0,00</span>
             </div>
             <div class="d-flex gap-2">
-              <a href="./orcamentos.php" class="btn btn-outline-secondary">Cancelar</a>
-              <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Salvar</button>
+              
+              <button type="submit" class="btn btn-primary w-40"><i class="bi bi-save me-1"></i>Salvar</button>
             </div>
           </div>
         </div>
