@@ -81,7 +81,7 @@ try {
         $path = rtrim(dirname($_SERVER['REQUEST_URI'] ?? '/'), '/');
         $link = $base . $path . '/../confirmarCodigo.php?token=' . urlencode($token) . '&email=' . urlencode($email);
 
-        $assunto = 'Código de confirmação - AutoERP';
+        $assunto = 'Código de confirmação - Mundo Pets';
         $html = '
             <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#222">
               <p>Olá,</p>
