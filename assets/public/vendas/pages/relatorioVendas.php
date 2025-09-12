@@ -1,5 +1,6 @@
 <?php
 // autoErp/public/vendas/pages/relatorioVendas.php
+
 declare(strict_types=1);
 
 if (session_status() === PHP_SESSION_NONE) session_start();
@@ -13,145 +14,187 @@ if ($pathCon && file_exists($pathCon)) require_once $pathCon;
 if (!isset($pdo) || !($pdo instanceof PDO)) die('Conexão indisponível.');
 
 require_once __DIR__ . '/../../../lib/util.php';
-$empresaNome = empresa_nome_logada($pdo);
 
 $empresaCnpj = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj'] ?? ''));
 if (!preg_match('/^\d{14}$/', $empresaCnpj)) die('Empresa não vinculada ao usuário.');
 
-// ====== filtros ======
 $hoje = (new DateTime('today'))->format('Y-m-d');
-$de   = (string)($_GET['de']   ?? $hoje);
-$ate  = (string)($_GET['ate']  ?? $hoje);
-$fp   = strtolower((string)($_GET['fp'] ?? '')); // dinheiro|pix|debito|credito|''(todas)
-$status = strtolower((string)($_GET['status'] ?? '')); // concluida|finalizada|paga|cancelada|pendente|''(todas)
-$q    = trim((string)($_GET['q'] ?? '')); // busca livre (cliente, doc, obs)
 
-$page = max(1, (int)($_GET['page'] ?? 1));
-$limit = 50;
-$offset = ($page - 1) * $limit;
+// ===== Filtros (GET) =====
+$de     = (string)($_GET['de'] ?? $hoje);
+$ate    = (string)($_GET['ate'] ?? $hoje);
+$fp     = strtolower((string)($_GET['fp'] ?? ''));            // '', dinheiro, pix, debito, credito, etc
+$status = strtolower((string)($_GET['status'] ?? ''));        // '', aberta, fechada, cancelada
+$q      = trim((string)($_GET['q'] ?? ''));                   // busca livre (id, vendedor_cpf, origem)
+$page   = max(1, (int)($_GET['page'] ?? 1));
+$limit  = max(1, min(200, (int)($_GET['limit'] ?? 50)));
+$csv    = (int)($_GET['csv'] ?? 0);
 
-$csv = (int)($_GET['csv'] ?? 0); // export
-
-// período (fechando em 23:59:59 do dia "até")
+// Datas normalizadas
 try {
-  $dtDe  = new DateTime($de.' 00:00:00');
-  $dtAte = new DateTime($ate.' 23:59:59');
+  $dtDe  = new DateTime($de . ' 00:00:00');
+  $dtAte = new DateTime($ate . ' 23:59:59');
 } catch (Throwable $e) {
-  $dtDe  = new DateTime($hoje.' 00:00:00');
-  $dtAte = new DateTime($hoje.' 23:59:59');
+  $dtDe  = new DateTime($hoje . ' 00:00:00');
+  $dtAte = new DateTime($hoje . ' 23:59:59');
 }
 $deIso  = $dtDe->format('Y-m-d H:i:s');
 $ateIso = $dtAte->format('Y-m-d H:i:s');
 
-// ====== montagem do WHERE ======
-$where = ["v.empresa_cnpj = :c", "v.created_at BETWEEN :de AND :ate"];
+$filters = [
+  'de' => $dtDe->format('Y-m-d'),
+  'ate' => $dtAte->format('Y-m-d'),
+  'fp' => $fp,
+  'status' => $status,
+  'q' => $q,
+  'page' => $page,
+  'limit' => $limit,
+  'csv' => $csv,
+];
+
+// ===== WHERE comum =====
+$where = ["v.empresa_cnpj = :c", "v.criado_em BETWEEN :de AND :ate"];
 $params = [':c' => $empresaCnpj, ':de' => $deIso, ':ate' => $ateIso];
 
 if ($status !== '') {
   $where[] = "LOWER(v.status) = :status";
   $params[':status'] = $status;
 }
-if ($q !== '') {
-  $where[] = "(v.cliente_nome LIKE :q OR v.documento LIKE :q OR v.obs LIKE :q)";
-  $params[':q'] = '%'.$q.'%';
-}
 if ($fp !== '') {
-  // filtra por venda que tenha a forma informada
-  $where[] = "EXISTS (SELECT 1 FROM vendas_pagamentos_peca vp WHERE vp.venda_id = v.id AND LOWER(vp.forma_pagamento) = :fp)";
+  $where[] = "LOWER(v.forma_pagamento) = :fp";
   $params[':fp'] = $fp === 'crédito' ? 'credito' : $fp;
 }
+if ($q !== '') {
+  // busca simples: id, vendedor_cpf, origem
+  $where[] = "(
+      CAST(v.id AS CHAR) LIKE :q
+      OR v.vendedor_cpf LIKE :q
+      OR LOWER(v.origem) LIKE :q
+    )";
+  $params[':q'] = '%' . strtolower($q) . '%';
+}
+
 $whereSql = implode(' AND ', $where);
 
-// ====== totais por forma e geral ======
+// ===== Totais por forma e geral (apenas vendas fechadas contam no total consolidado) =====
 $totais = ['dinheiro'=>0.0,'pix'=>0.0,'debito'=>0.0,'credito'=>0.0,'geral'=>0.0];
 try {
   $sqlTot = "
-    SELECT LOWER(vp.forma_pagamento) AS fp, SUM(vp.valor) AS total
+    SELECT LOWER(v.forma_pagamento) AS fp, SUM(v.total_liquido) AS total
     FROM vendas_peca v
-    JOIN vendas_pagamentos_peca vp ON vp.venda_id = v.id
     WHERE $whereSql
-      AND v.status IN ('concluida','finalizada','paga')
-    GROUP BY LOWER(vp.forma_pagamento)
+      AND LOWER(v.status) = 'fechada'
+    GROUP BY LOWER(v.forma_pagamento)
   ";
   $st = $pdo->prepare($sqlTot);
   $st->execute($params);
   foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $r) {
-    $key = $r['fp'] === 'crédito' ? 'credito' : (string)$r['fp'];
+    $key = ($r['fp'] === 'crédito') ? 'credito' : (string)$r['fp'];
     if (isset($totais[$key])) $totais[$key] += (float)$r['total'];
   }
   $totais['geral'] = $totais['dinheiro'] + $totais['pix'] + $totais['debito'] + $totais['credito'];
-} catch (Throwable $e) {}
+} catch (Throwable $e) { /* ignore */ }
 
-// ====== contagem para paginação ======
+// ===== Paginação =====
 $totalRows = 0;
 try {
   $sqlCount = "SELECT COUNT(*) FROM vendas_peca v WHERE $whereSql";
   $st = $pdo->prepare($sqlCount);
   $st->execute($params);
   $totalRows = (int)$st->fetchColumn();
-} catch (Throwable $e) {}
+} catch (Throwable $e) { /* ignore */ }
 
-// ====== listagem ======
+$totalPages = max(1, (int)ceil($totalRows / $limit));
+$page = max(1, min($page, $totalPages));
+$offset = ($page - 1) * $limit;
+
+$mkUrl = function(array $overrides = []) use ($filters) {
+  $q = array_merge($filters, $overrides);
+  return '?' . http_build_query($q);
+};
+
+// ===== Listagem =====
 $rows = [];
 try {
   $sql = "
     SELECT 
-      v.id, v.created_at, v.status, v.cliente_nome, v.documento, v.total_bruto, v.desconto, v.total_liquido, v.obs,
-      -- total pago (somatório dos pagamentos) e concat das formas
-      (SELECT COALESCE(SUM(vp.valor),0) FROM vendas_pagamentos_peca vp WHERE vp.venda_id = v.id) AS total_pago,
-      (SELECT GROUP_CONCAT(DISTINCT LOWER(vp.forma_pagamento) ORDER BY LOWER(vp.forma_pagamento) SEPARATOR ', ')
-         FROM vendas_pagamentos_peca vp WHERE vp.venda_id = v.id) AS formas
+      v.id,
+      v.criado_em,
+      v.status,
+      v.origem,
+      v.vendedor_cpf,
+      v.total_bruto,
+      v.desconto,
+      v.total_liquido,
+      v.forma_pagamento
     FROM vendas_peca v
     WHERE $whereSql
-    ORDER BY v.created_at DESC, v.id DESC
-    LIMIT $limit OFFSET $offset
+    ORDER BY v.criado_em DESC, v.id DESC
+    LIMIT :limit OFFSET :offset
   ";
   $st = $pdo->prepare($sql);
-  $st->execute($params);
+  foreach ($params as $k => $v) $st->bindValue($k, $v);
+  $st->bindValue(':limit', $limit, PDO::PARAM_INT);
+  $st->bindValue(':offset', $offset, PDO::PARAM_INT);
+  $st->execute();
   $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
-} catch (Throwable $e) {}
+} catch (Throwable $e) { /* ignore */ }
 
-// ====== CSV export ======
+// ===== CSV =====
 if ($csv) {
   header('Content-Type: text/csv; charset=utf-8');
   header('Content-Disposition: attachment; filename="relatorio_vendas.csv"');
   $out = fopen('php://output', 'w');
-  fputcsv($out, ['ID','Data/Hora','Status','Cliente','Documento','Total Bruto','Desconto','Total Líquido','Pago','Formas','Obs'], ';');
-  // exporta TUDO (ignora paginação)
+  fputcsv($out, [
+    'ID','Data/Hora','Status','Origem','Vendedor (CPF)',
+    'Total Bruto','Desconto','Total Líquido','Forma Pagamento'
+  ], ';');
+
   try {
     $sqlAll = "
       SELECT 
-        v.id, v.created_at, v.status, v.cliente_nome, v.documento, v.total_bruto, v.desconto, v.total_liquido, v.obs,
-        (SELECT COALESCE(SUM(vp.valor),0) FROM vendas_pagamentos_peca vp WHERE vp.venda_id = v.id) AS total_pago,
-        (SELECT GROUP_CONCAT(DISTINCT LOWER(vp.forma_pagamento) ORDER BY LOWER(vp.forma_pagamento) SEPARATOR ', ')
-           FROM vendas_pagamentos_peca vp WHERE vp.venda_id = v.id) AS formas
+        v.id, v.criado_em, v.status, v.origem, v.vendedor_cpf,
+        v.total_bruto, v.desconto, v.total_liquido, v.forma_pagamento
       FROM vendas_peca v
       WHERE $whereSql
-      ORDER BY v.created_at DESC, v.id DESC
+      ORDER BY v.criado_em DESC, v.id DESC
     ";
     $st = $pdo->prepare($sqlAll);
     $st->execute($params);
     while ($r = $st->fetch(PDO::FETCH_ASSOC)) {
       fputcsv($out, [
         (int)$r['id'],
-        (new DateTime($r['created_at']))->format('d/m/Y H:i'),
+        (new DateTime($r['criado_em']))->format('d/m/Y H:i'),
         (string)$r['status'],
-        (string)($r['cliente_nome'] ?? ''),
-        (string)($r['documento'] ?? ''),
+        (string)$r['origem'],
+        (string)($r['vendedor_cpf'] ?? ''),
         number_format((float)$r['total_bruto'], 2, ',', '.'),
         number_format((float)$r['desconto'], 2, ',', '.'),
         number_format((float)$r['total_liquido'], 2, ',', '.'),
-        number_format((float)$r['total_pago'], 2, ',', '.'),
-        (string)($r['formas'] ?? ''),
-        (string)($r['obs'] ?? ''),
+        (string)($r['forma_pagamento'] ?? ''),
       ], ';');
     }
-  } catch (Throwable $e) {}
+  } catch (Throwable $e) { /* ignore */ }
   fclose($out);
   exit;
 }
 
-function fmt($v){ return number_format((float)$v, 2, ',', '.'); }
+// ===== Helpers =====
+function fmt_money($v){ return number_format((float)$v, 2, ',', '.'); }
+
+// ===== Saídas para a View =====
+$pagination = [
+  'page' => $page,
+  'total_rows' => $totalRows,
+  'total_pages' => $totalPages,
+  'limit' => $limit,
+  'offset' => $offset,
+  'make_url' => $mkUrl,
+];
+
+// A view deve incluir este arquivo e usar:
+// $filters, $rows, $totais, $pagination, fmt_money()
+
 ?>
 <!doctype html>
 <html lang="pt-BR" dir="ltr">
