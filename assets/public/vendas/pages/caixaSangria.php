@@ -92,7 +92,7 @@ $msg = (string)($_GET['msg'] ?? '');
               <h1 class="mb-0">Sangria de Caixa</h1>
               <p>Retirada de dinheiro do caixa (depósito, segurança, conferência etc.).</p>
               <?php if (!$caixa): ?>
-                <div class="alert alert-warning mt-2 mb-0">
+                <div class="alert alert-warning mt-2 mb-5">
                   Não há caixa aberto para esta empresa.
                   <a class="alert-link" href="./caixaAbrir.php">Clique aqui</a> para abrir.
                 </div>
