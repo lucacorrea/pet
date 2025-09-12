@@ -152,7 +152,7 @@ try {
     }
 
     .kbd {
-      background: #0b1220;
+      background: #294e9aff;
       color: #cbd5e1;
       padding: .15rem .45rem;
       border-radius: .35rem;
