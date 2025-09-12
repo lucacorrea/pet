@@ -125,7 +125,7 @@ if (isset($_GET['erro'])) {
 
                         <div class="text-center mt-3">
                            <span>Não tem conta?
-                              <a href="./criarConta.php" class="text-success fw-bold">Cadastre-se</a>
+                              <a href="./criarConta.php" class="text-primary fw-bold">Cadastre-se</a>
                            </span>
                         </div>
                      </form>
