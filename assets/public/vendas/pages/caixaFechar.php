@@ -167,8 +167,7 @@ function fmt($v)
           <div class="row">
             <div class="col-12">
               <h1 class="mb-0">Fechar Caixa</h1>
-                <p class="lead text-muted">
-                Confira o resumo financeiro do caixa aberto abaixo. Ao fechar o caixa, informe o valor contado em dinheiro e, se necessário, adicione observações sobre diferenças ou ocorrências. Após o fechamento, não será possível registrar novas vendas neste caixa.
+              <p> Confira o resumo financeiro do caixa aberto abaixo. Ao fechar o caixa, informe o valor contado em dinheiro e, se necessário, adicione observações sobre diferenças ou ocorrências. Após o fechamento, não será possível registrar novas vendas neste caixa.
                 </p>
             </div>
           </div>
