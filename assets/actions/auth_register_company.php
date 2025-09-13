@@ -157,7 +157,7 @@ try {
       <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#1f2937;background:#ffffff;padding:16px">
         <div style="max-width:700px;margin:0 auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
           <div style="background:#0ea5e9;color:#fff;padding:14px 18px">
-            <h2 style="margin:0;font-size:18px;font-weight:700;">AutoERP — Nova solicitação de empresa</h2>
+            <h2 style="margin:0;font-size:18px;font-weight:700;">Mundo Pets — Nova solicitação de empresa</h2>
           </div>
           <div style="padding:18px">
             <p style="margin:0 0 10px">Uma nova solicitação de cadastro foi enviada.</p>
@@ -175,7 +175,7 @@ try {
                 Abrir solicitações pendentes
               </a>
             </p>
-            <p style="margin:0;color:#64748b;font-size:12px">Este e-mail foi enviado automaticamente pelo AutoERP.</p>
+            <p style="margin:0;color:#64748b;font-size:12px">Este e-mail foi enviado automaticamente pelo Mundo Pets.</p>
           </div>
         </div>
       </div>
