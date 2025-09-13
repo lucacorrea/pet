@@ -185,7 +185,7 @@ include '../../layouts/sidebar.php';
 (function(){
   "use strict";
 
-  const PAGE_SIZE = 8; // 8 por página (pode mudar)
+  const PAGE_SIZE = 6; // 8 por página (pode mudar)
   const ALL_ORIG = Array.isArray(window.__PRODUTOS_FULL__) ? window.__PRODUTOS_FULL__ : [];
   let ALL = ALL_ORIG.slice(); // pode ser filtrado por busca
   const CSRF = window.__CSRF__ || "";
