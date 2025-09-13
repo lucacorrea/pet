@@ -44,10 +44,10 @@ function produtos_list_viewmodel(PDO $pdo): array
     $sql .= " AND (p.nome LIKE :q OR p.sku LIKE :q OR p.ean LIKE :q OR p.marca LIKE :q)";
     $params[':q'] = "%{$q}%";
   }
-  if ($setor === 'autopeca') {
-    $sql .= " AND (c.nome = 'Auto Peças')";
-  } elseif ($setor === 'lavajato') {
-    $sql .= " AND (c.nome = 'Lava Jato')";
+  if ($setor === 'petshop') {
+    $sql .= " AND (c.nome = 'Pet Shop')";
+  } elseif ($setor === 'petshop') {
+    $sql .= " AND (c.nome = 'Pet Shop')";
   }
   if ($ativo === '1' || $ativo === '0') {
     $sql .= " AND p.ativo = :a";
