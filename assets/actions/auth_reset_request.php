@@ -85,13 +85,13 @@ try {
         $html = '
             <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#222">
               <p>Olá,</p>
-              <p>Use o código abaixo para redefinir sua senha no <strong>AutoERP</strong>:</p>
+              <p>Use o código abaixo para redefinir sua senha no <strong>Mundo Pets</strong>:</p>
               <p style="font-size:26px;font-weight:bold;letter-spacing:4px;margin:16px 0;">' . htmlspecialchars($otp, ENT_QUOTES, 'UTF-8') . '</p>
               <p>Ou clique no link: <a href="' . htmlspecialchars($link, ENT_QUOTES, 'UTF-8') . '">Confirmar redefinição</a></p>
               <p>Validade: <strong>15 minutos</strong>.</p>
               <p>Se você não solicitou, ignore este e-mail.</p>
               <hr>
-              <small>AutoERP</small>
+              <small>Mundo Pets</small>
             </div>
         ';
 
