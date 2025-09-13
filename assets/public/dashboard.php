@@ -363,64 +363,6 @@ if ($perfil === 'dono') {
                         </div>
                     </div>
 
-                    <!-- TABELA LAVA JATO -->
-                    <div class="col-md-12 col-lg-12">
-                        <div class="overflow-hidden card" data-aos="fade-up" data-aos-delay="600">
-                            <div class="flex-wrap card-header d-flex justify-content-between">
-                                <div class="header-title">
-                                    <h4 class="mb-2 card-title">Lavagens Recentes</h4>
-                                    <p class="mb-0">Últimas lavagens registradas</p>
-                                </div>
-                            </div>
-                            <div class="p-0 card-body">
-                                <div class="mt-4 table-responsive">
-                                    <table class="table mb-0 table-striped align-middle">
-                                        <thead>
-                                            <tr>
-                                                <th>Lavador</th>
-                                                <th>Serviço</th>
-                                                <th>Veículo</th>
-                                                <th>Valor</th>
-                                                <th>Data/Hora</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php if (!$lavagens): ?>
-                                                <tr>
-                                                    <td colspan="6" class="text-center text-muted">Sem registros.</td>
-                                                </tr>
-                                                <?php else: foreach ($lavagens as $L): ?>
-                                                    <tr>
-                                                        <td><?= htmlspecialchars($L['lavador'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
-                                                        <td><?= htmlspecialchars($L['servico'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
-                                                        <td><?= htmlspecialchars($L['veiculo'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
-                                                        <td>R$ <?= number_format((float)($L['valor'] ?? 0), 2, ',', '.') ?></td>
-                                                        <td><?= htmlspecialchars($L['quando'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
-                                                        <td>
-                                                            <?php
-                                                            $st = (string)($L['status'] ?? 'aberta');
-                                                            $badge = 'secondary';
-                                                            $rot = 'Aberta';
-                                                            if ($st === 'concluida') {
-                                                                $badge = 'success';
-                                                                $rot = 'Concluída';
-                                                            } elseif ($st === 'cancelada') {
-                                                                $badge = 'danger';
-                                                                $rot = 'Cancelada';
-                                                            }
-                                                            ?>
-                                                            <span class="badge bg-<?= $badge ?>"><?= $rot ?></span>
-                                                        </td>
-                                                    </tr>
-                                            <?php endforeach;
-                                            endif; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div><!-- /tabela -->
                 </div>
             </div>
         </div>
