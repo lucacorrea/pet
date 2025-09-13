@@ -130,8 +130,7 @@ $vm = produtos_list_viewmodel($pdo);
                         <div class="col-lg-3">
                             <select id="select-setor" class="form-select">
                                 <option value="">Setor: Todos</option>
-                                <option value="autopeca" <?= $vm['setor'] === 'autopeca' ? 'selected' : ''; ?>>Auto Peças</option>
-                                <option value="lavajato" <?= $vm['setor'] === 'lavajato' ? 'selected' : ''; ?>>Lava Jato</option>
+                                <option value="petshop" <?= $vm['setor'] === 'autopeca' ? 'selected' : ''; ?>>Pets Shop</option>
                             </select>
                         </div>
                         <div class="col-lg-3">
@@ -153,7 +152,7 @@ $vm = produtos_list_viewmodel($pdo);
                                     <th>Nome</th>
                                     <th>Setor</th>
                                     <th>SKU</th>
-                                    <th>EAN</th>
+                                    <th>Código de Barras</th>
                                     <th>Marca</th>
                                     <th class="text-end">Preço</th>
                                     <th class="text-end">Estoque</th>

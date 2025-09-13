@@ -209,7 +209,7 @@ $msg = (string)($_GET['msg'] ?? '');
                   </div>
 
                   <div class="col-md-3">
-                    <label class="form-label">EAN (opcional)</label>
+                    <label class="form-label">Código De Barras (opcional)</label>
                     <input type="text" name="ean" class="form-control" maxlength="20">
                   </div>
 
