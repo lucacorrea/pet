@@ -45,9 +45,9 @@ function produtos_list_viewmodel(PDO $pdo): array
     $params[':q'] = "%{$q}%";
   }
   if ($setor === 'petshop') {
-    $sql .= " AND (c.nome = 'Pet Shop')";
+    $sql .= " AND (c.nome = 'Pets Shop')";
   } elseif ($setor === 'petshop') {
-    $sql .= " AND (c.nome = 'Pet Shop')";
+    $sql .= " AND (c.nome = 'Pets Shop')";
   }
   if ($ativo === '1' || $ativo === '0') {
     $sql .= " AND p.ativo = :a";
