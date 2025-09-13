@@ -132,6 +132,10 @@ if ($perfil === 'dono') {
     <link rel="stylesheet" href="./assets/css/rtl.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
+<style>
+  #d-main{ min-height:360px; }
+</style>
+
 
 <body>
     <!-- SIDEBAR -->
@@ -395,45 +399,65 @@ if ($perfil === 'dono') {
 
     <!-- Variáveis vindas do PHP para o JS -->
     <script>
-        window.DASH_LABELS = <?= json_encode(array_values($chartLabels), JSON_UNESCAPED_UNICODE) ?>;
-        window.DASH_SERIES = <?= json_encode(array_values($chartSeries), JSON_UNESCAPED_UNICODE) ?>;
+        window.DASH_LABELS = <?= json_encode(array_values($chartLabels ?? []), JSON_UNESCAPED_UNICODE) ?>;
+        window.DASH_SERIES = <?= json_encode(array_values($chartSeries ?? []), JSON_UNESCAPED_UNICODE) ?>;
     </script>
 
-    <!-- JS específico do dashboard -->
-    <script src="./assets/js/public/dashboardView.js">
-        // autoErp/public/assets/js/public/dashboardView.js
-
+    <!-- JS específico do dashboard (inline, sem src) -->
+    <script>
         (function() {
             const el = document.getElementById('d-main');
             if (!el) return;
 
             const LABELS = Array.isArray(window.DASH_LABELS) ? window.DASH_LABELS : [];
-            const SERIES = Array.isArray(window.DASH_SERIES) ? window.DASH_SERIES : [];
+            const SERIES = (Array.isArray(window.DASH_SERIES) ? window.DASH_SERIES : []).map(Number);
 
             if (typeof ApexCharts === 'undefined') {
                 el.innerHTML = '<div class="text-muted">Biblioteca de gráfico indisponível.</div>';
                 return;
             }
 
+            // Fallback quando não há dados
+            if (!LABELS.length || !SERIES.length || SERIES.every(v => !v || v === 0)) {
+                el.innerHTML = `
+            <div class="text-center text-muted py-5">
+              <i class="bi bi-graph-down"></i>
+              <div class="mt-2">Ainda não há vendas para o período selecionado.</div>
+            </div>`;
+                return;
+            }
+
             const options = {
                 chart: {
-                    type: 'line',
+                    type: 'area',
                     height: 360,
                     toolbar: {
                         show: false
-                    }
+                    },
+                    fontFamily: 'inherit'
                 },
                 series: [{
                     name: 'Faturamento',
                     data: SERIES
                 }],
                 xaxis: {
-                    categories: LABELS
+                    categories: LABELS,
+                    tickPlacement: 'on',
+                    labels: {
+                        rotate: 0
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: (val) => 'R$ ' + (Number(val || 0)).toLocaleString('pt-BR', {
+                            maximumFractionDigits: 0
+                        })
+                    }
                 },
                 stroke: {
                     width: 3,
                     curve: 'smooth'
-                }, // curva suave liga os pontos
+                },
                 markers: {
                     size: 3
                 },
@@ -444,27 +468,32 @@ if ($perfil === 'dono') {
                     position: 'top'
                 },
                 grid: {
-                    borderColor: 'rgba(0,0,0,0.1)'
+                    borderColor: 'rgba(0,0,0,.08)'
                 },
                 fill: {
                     type: 'gradient',
                     gradient: {
-                        opacityFrom: 0.3,
-                        opacityTo: 0.0
+                        shadeIntensity: 1,
+                        opacityFrom: 0.25,
+                        opacityTo: 0,
+                        stops: [0, 90, 100]
                     }
                 },
                 tooltip: {
                     y: {
                         formatter: (val) => 'R$ ' + (Number(val || 0)).toLocaleString('pt-BR', {
-                            minimumFractionDigits: 2
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
                         })
                     }
-                }
+                },
+                colors: undefined // usa cores do tema
             };
 
             new ApexCharts(el, options).render();
         })();
     </script>
+
 </body>
 
 </html>
