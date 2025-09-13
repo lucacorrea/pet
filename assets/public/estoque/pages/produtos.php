@@ -175,7 +175,7 @@ $vm = produtos_list_viewmodel($pdo);
                                                     <div class="small text-muted">Fornecedor: <?= htmlspecialchars($r['fornecedor_nome'], ENT_QUOTES, 'UTF-8') ?></div>
                                                 <?php endif; ?>
                                             </td>
-                                            <td><?= $setorNome ?></td>
+                                            <td>Pets Shop</td>
                                             <td><?= htmlspecialchars($r['sku']   ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
                                             <td><?= htmlspecialchars($r['ean']   ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
                                             <td><?= htmlspecialchars($r['marca'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
