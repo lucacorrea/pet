@@ -88,7 +88,7 @@ $temFornecedorCol = false;
 try { $pdo->query("SELECT fornecedor_id FROM produtos_peca LIMIT 0"); $temFornecedorCol = true; } catch (Throwable $e) {}
 
 // Resolve categoria por setor
-$catNome = ($setor === 'lavajato') ? 'Lava Jato' : 'Auto Peças';
+$catNome = ($setor === 'petshop') ? 'petshop' : 'petshop';
 try {
   $st = $pdo->prepare("SELECT id FROM categorias_produto_peca WHERE empresa_cnpj = :c AND nome = :n LIMIT 1");
   $st->execute([':c'=>$empresaCnpj, ':n'=>$catNome]);
