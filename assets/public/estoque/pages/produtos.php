@@ -53,37 +53,7 @@ $vm['rows'] = is_array($vm['rows'] ?? null) ? $vm['rows'] : [];
     .suggest-item:hover{background:#f3f4f6}
     .search-wrapper{position:relative;width:100%}
 
-  /* Barra da paginação */
-  .pager-bar{
-    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
-    gap:.75rem; padding:.6rem .8rem;
-    background:var(--bs-body-bg,#fff);
-    border:1px solid var(--bs-border-color,#e5e7eb);
-    border-radius:12px;
-    box-shadow:0 2px 10px rgba(0,0,0,.05);
-  }
-  .pager-left{display:flex; align-items:center; gap:.5rem; flex-wrap:wrap}
-  .pager-right{display:flex; align-items:center; gap:.5rem; flex-wrap:wrap}
-
-  /* Numeração mais “clicável” */
-  .pagination .page-link{
-    min-width:2rem; text-align:center; border-radius:8px !important;
-  }
-  .pagination .page-item.active .page-link{
-    font-weight:600;
-    box-shadow:0 0 0 .15rem rgba(13,110,253,.15);
-  }
-
-  /* Seletor "por página" compacto e elegante */
-  .pager-pagesize{display:flex; align-items:center; gap:.4rem}
-  .pager-pagesize select{width:auto}
-
-  /* Responsivo */
-  @media (max-width:576px){
-    .pager-bar{padding:.5rem; gap:.5rem}
-    .pagination{margin-top:.25rem}
-    .pager-left .small{display:block}
-  }
+ 
 </style>
 
 </head>
@@ -318,7 +288,7 @@ include '../../layouts/sidebar.php';
       <div class="d-flex align-items-center gap-2">
         <div class="text-muted small">Por página</div>
         <select class="form-select form-select-sm" id="page-size" style="width:auto">
-          ${[8,16,32,64].map(n=>`<option value="${n}" ${state.pageSize===n?'selected':''}>${n}</option>`).join('')}
+          ${[6,12,18,24,30,36,42].map(n=>`<option value="${n}" ${state.pageSize===n?'selected':''}>${n}</option>`).join('')}
         </select>
         <nav aria-label="Paginação">
           <ul class="pagination pagination-sm mb-0">
