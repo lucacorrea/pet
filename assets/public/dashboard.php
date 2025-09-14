@@ -17,9 +17,6 @@ if ($pathConexao && file_exists($pathConexao)) {
   require_once $pathConexao; // define $pdo
 }
 
-// Controller
-require_once __DIR__ . '/controllers/dashboardController.php';
-
 // ===== Verificação de cadastro da empresa =====
 $empresaPendente = false;
 $msgCompletar    = '';
@@ -57,9 +54,9 @@ if (!$empresaRow) {
   }
 }
 
-// Dados básicos vindos da sessão / controller
-$nomeUser     = $_SESSION['user_nome']         ?? ($nomeUser     ?? 'Usuário');
-$empresaNome  = $empresaNome                   ?? ($_SESSION['empresa_nome'] ?? 'sua empresa');
+// Dados básicos
+$nomeUser     = $_SESSION['user_nome']         ?? 'Usuário';
+$empresaNome  = $_SESSION['empresa_nome']      ?? 'sua empresa';
 $perfil       = strtolower($_SESSION['user_perfil'] ?? 'funcionario'); // dono | funcionario
 $tipo         = strtolower($_SESSION['user_tipo']   ?? '');            // administrativo | caixa | estoque | lavajato
 
@@ -71,73 +68,115 @@ $rotTipo = [
 ];
 $tipoLabel = $rotTipo[$tipo] ?? 'Colaborador';
 
-$fraseHeader = '';
-if ($perfil === 'dono') {
-  $fraseHeader = 'Você é o dono. Gerencie sua empresa, cadastre sua equipe e mantenha tudo em dia.';
-} else {
-  switch ($tipo) {
-    case 'administrativo':
-      $fraseHeader = 'Acompanhe o financeiro, cadastre produtos e dê suporte à operação.';
-      break;
-    case 'caixa':
-      $fraseHeader = 'Abra vendas rápidas, finalize pagamentos e agilize o atendimento.';
-      break;
-    case 'estoque':
-      $fraseHeader = 'Gerencie entradas e saídas, controle níveis e mantenha o estoque organizado.';
-      break;
-    case 'lavajato':
-      $fraseHeader = 'Registre lavagens, acompanhe status e mantenha o fluxo do box.';
-      break;
-    default:
-      $fraseHeader = 'Bem-vindo ao sistema. Use o menu ao lado para começar.';
-      break;
+$fraseHeader = ($perfil === 'dono')
+  ? 'Você é o dono. Gerencie sua empresa, cadastre sua equipe e mantenha tudo em dia.'
+  : ("Você está logado como " . ($tipoLabel) . ". " . match ($tipo) {
+      'administrativo' => 'Acompanhe o financeiro, cadastre produtos e dê suporte à operação.',
+      'caixa'          => 'Abra vendas rápidas, finalize pagamentos e agilize o atendimento.',
+      'estoque'        => 'Gerencie entradas e saídas, controle níveis e mantenha o estoque organizado.',
+      'lavajato'       => 'Registre lavagens, acompanhe status e mantenha o fluxo do box.',
+      default          => 'Bem-vindo ao sistema. Use o menu ao lado para começar.',
+    });
+
+// ============== DADOS DO GRÁFICO: Semana / Mês / 6M / 12M ==============
+$mesesPtCurto = [1=>'Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+$diasPtCurto  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function chart_sum_by_day(PDO $pdo, string $cnpj, DateTime $de, DateTime $ate): array {
+  $sql = "
+    SELECT DATE(v.criado_em) d, SUM(v.total_liquido) total
+    FROM vendas_peca v
+    WHERE v.empresa_cnpj = :c
+      AND v.status = 'fechada'
+      AND v.criado_em BETWEEN :de AND :ate
+    GROUP BY DATE(v.criado_em)
+    ORDER BY d ASC
+  ";
+  $st = $pdo->prepare($sql);
+  $st->execute([':c'=>$cnpj, ':de'=>$de->format('Y-m-d 00:00:00'), ':ate'=>$ate->format('Y-m-d 23:59:59')]);
+  $map = [];
+  foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $r) {
+    $map[(string)$r['d']] = (float)$r['total'];
   }
-  $fraseHeader = "Você está logado como {$tipoLabel}. {$fraseHeader}";
+
+  // preencher cada dia
+  $labels = [];
+  $series = [];
+  $cur = clone $de;
+  while ($cur <= $ate) {
+    $key = $cur->format('Y-m-d');
+    $labels[] = $GLOBALS['diasPtCurto'][(int)$cur->format('w')] . ' ' . $cur->format('d/m');
+    $series[] = $map[$key] ?? 0.0;
+    $cur->modify('+1 day');
+  }
+  return [$labels, $series];
 }
 
-// ================== DADOS DO GRÁFICO (últimos 6 meses) ==================
-$chartLabels = [];
-$chartSeries = [];
+function chart_sum_by_month(PDO $pdo, string $cnpj, int $meses): array {
+  // últimos $meses meses (inclui o mês atual)
+  $ini = (new DateTime('first day of this month'))->modify('-'.($meses-1).' month')->setTime(0,0,0);
+  $sql = "
+    SELECT DATE_FORMAT(v.criado_em, '%Y-%m') ym, SUM(v.total_liquido) total
+    FROM vendas_peca v
+    WHERE v.empresa_cnpj = :c
+      AND v.status = 'fechada'
+      AND v.criado_em >= :ini
+    GROUP BY DATE_FORMAT(v.criado_em, '%Y-%m')
+    ORDER BY ym ASC
+  ";
+  $st = $pdo->prepare($sql);
+  $st->execute([':c'=>$cnpj, ':ini'=>$ini->format('Y-m-d H:i:s')]);
+
+  $map = [];
+  foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $r) {
+    $map[(string)$r['ym']] = (float)$r['total'];
+  }
+
+  $labels = [];
+  $series = [];
+  $cursor = clone $ini;
+  for ($i=0; $i<$meses; $i++) {
+    $ym = $cursor->format('Y-m');
+    $m  = (int)$cursor->format('n');
+    $y  = $cursor->format('Y');
+    $labels[] = $GLOBALS['mesesPtCurto'][$m] . '/' . $y;
+    $series[] = $map[$ym] ?? 0.0;
+    $cursor->modify('+1 month');
+  }
+  return [$labels, $series];
+}
+
+$chartSets = [
+  'week' => ['labels'=>[], 'series'=>[]],
+  'month'=> ['labels'=>[], 'series'=>[]],
+  'm6'   => ['labels'=>[], 'series'=>[]],
+  'm12'  => ['labels'=>[], 'series'=>[]],
+];
 
 try {
-  if (isset($pdo) && $pdo instanceof PDO && !empty($cnpjSess)) {
-    $ini = (new DateTime('first day of -5 month'))->setTime(0,0,0);
-    $iniIso = $ini->format('Y-m-d H:i:s');
+  if ($pdo instanceof PDO && $cnpjSess) {
+    // Semana atual: segunda -> domingo
+    $iniSemana = (new DateTime('monday this week'))->setTime(0,0,0);
+    $fimSemana = (new DateTime('sunday this week'))->setTime(23,59,59);
+    [$labelsW, $seriesW] = chart_sum_by_day($pdo, $cnpjSess, $iniSemana, $fimSemana);
+    $chartSets['week'] = ['labels'=>$labelsW, 'series'=>$seriesW];
 
-    $sql = "
-      SELECT DATE_FORMAT(v.criado_em, '%Y-%m') AS ym,
-             SUM(v.total_liquido)              AS total
-      FROM vendas_peca v
-      WHERE v.empresa_cnpj = :c
-        AND v.status = 'fechada'
-        AND v.criado_em >= :ini
-      GROUP BY DATE_FORMAT(v.criado_em, '%Y-%m')
-      ORDER BY ym ASC
-    ";
-    $st = $pdo->prepare($sql);
-    $st->execute([':c' => $cnpjSess, ':ini' => $iniIso]);
+    // Mês atual: dia 1 -> hoje
+    $iniMes = (new DateTime('first day of this month'))->setTime(0,0,0);
+    $fimMes = (new DateTime('last day of this month'))->setTime(23,59,59);
+    [$labelsM, $seriesM] = chart_sum_by_day($pdo, $cnpjSess, $iniMes, $fimMes);
+    $chartSets['month'] = ['labels'=>$labelsM, 'series'=>$seriesM];
 
-    $map = [];
-    foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $r) {
-      $map[(string)$r['ym']] = (float)$r['total'];
-    }
+    // 6 meses
+    [$labels6, $series6] = chart_sum_by_month($pdo, $cnpjSess, 6);
+    $chartSets['m6'] = ['labels'=>$labels6, 'series'=>$series6];
 
-    $mesAtual = new DateTime('first day of this month 00:00:00');
-    for ($i = 5; $i >= 0; $i--) {
-      $d = (clone $mesAtual)->modify("-{$i} month");
-      $key = $d->format('Y-m');
-      $mesN = (int)$d->format('n');
-      $ano  = $d->format('Y');
-      $mesesPt = [1=>'Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-      $label = $mesesPt[$mesN] . '/' . $ano;
-
-      $chartLabels[] = $label;
-      $chartSeries[] = isset($map[$key]) ? (float)$map[$key] : 0.0;
-    }
+    // 12 meses
+    [$labels12, $series12] = chart_sum_by_month($pdo, $cnpjSess, 12);
+    $chartSets['m12'] = ['labels'=>$labels12, 'series'=>$series12];
   }
 } catch (Throwable $e) {
-  $chartLabels = [];
-  $chartSeries = [];
+  // se der erro, deixa arrays vazios para o fallback do front
 }
 ?>
 <!doctype html>
@@ -233,15 +272,11 @@ try {
         <div class="container-fluid iq-container">
           <div class="row">
             <div class="col-md-12">
-              <div class="flex-wrap d-flex justify-content-between align-items-center">
-                <div>
-                  <h1>Bem-vindo, <?= htmlspecialchars($nomeUser, ENT_QUOTES, 'UTF-8') ?>!</h1>
-                  <p>
-                    <?= htmlspecialchars($fraseHeader, ENT_QUOTES, 'UTF-8') ?>
-                    Empresa: <strong><?= htmlspecialchars($empresaNome, ENT_QUOTES, 'UTF-8') ?></strong>
-                  </p>
-                </div>
-              </div>
+              <h1>Bem-vindo, <?= htmlspecialchars($nomeUser, ENT_QUOTES, 'UTF-8') ?>!</h1>
+              <p>
+                <?= htmlspecialchars($fraseHeader, ENT_QUOTES, 'UTF-8') ?>
+                Empresa: <strong><?= htmlspecialchars($empresaNome, ENT_QUOTES, 'UTF-8') ?></strong>
+              </p>
             </div>
           </div>
         </div>
@@ -252,38 +287,31 @@ try {
     </div>
 
     <div class="container-fluid content-inner mt-n5 py-0">
+      <!-- seus cards aqui (mantidos como estavam) -->
+
       <div class="row">
-        <div class="col-md-12 col-lg-12">
-          <!-- CARDS -->
-          <div class="row">
-            <div class="overflow-hidden d-slider1">
-              <ul class="p-0 m-0 mb-2 swiper-wrapper list-inline" style="gap:6px;">
-                <!-- Aqui você já tem os cards do seu controller ($vendasQtde, $estoque, etc.) -->
-              </ul>
+        <div class="col-md-12">
+          <div class="card" data-aos="fade-up" data-aos-delay="800">
+            <div class="flex-wrap card-header d-flex justify-content-between align-items-center">
+              <div class="header-title">
+                <h4 class="card-title">Gráfico de Vendas</h4>
+                <p class="mb-0">Semana / Mês / 6 meses / 12 meses</p>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <select id="chart-range" class="form-select form-select-sm">
+                  <option value="week">Semana</option>
+                  <option value="month">Mês</option>
+                  <option value="m6" selected>6 meses</option>
+                  <option value="m12">12 meses</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="d-main" class="d-main"></div>
             </div>
           </div>
         </div>
       </div>
-
-      <div class="col-md-12 col-lg-12">
-        <div class="row">
-          <!-- GRÁFICO -->
-          <div class="col-md-12">
-            <div class="card" data-aos="fade-up" data-aos-delay="800">
-              <div class="flex-wrap card-header d-flex justify-content-between align-items-center">
-                <div class="header-title">
-                  <h4 class="card-title">Gráfico de Vendas</h4>
-                  <p class="mb-0">Últimos 6 meses</p>
-                </div>
-              </div>
-              <div class="card-body">
-                <div id="d-main" class="d-main"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div><!-- /container -->
 
     <footer class="footer">
@@ -311,58 +339,70 @@ try {
   <!-- ApexCharts -->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
+  <!-- Dados do gráfico (todas as faixas) -->
   <script>
-    window.DASH_LABELS = <?= json_encode(array_values($chartLabels ?? []), JSON_UNESCAPED_UNICODE) ?>;
-    window.DASH_SERIES = <?= json_encode(array_values($chartSeries ?? []), JSON_UNESCAPED_UNICODE) ?>;
+    window.DASH_DATA = <?= json_encode($chartSets, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
   </script>
 
+  <!-- Render do gráfico -->
   <script>
     (function() {
       const el = document.getElementById('d-main');
-      if (!el) return;
+      const sel = document.getElementById('chart-range');
+      if (!el || !sel) return;
 
-      const LABELS = Array.isArray(window.DASH_LABELS) ? window.DASH_LABELS : [];
-      const SERIES = (Array.isArray(window.DASH_SERIES) ? window.DASH_SERIES : []).map(Number);
+      let chart = null;
 
-      if (typeof ApexCharts === 'undefined') {
-        el.innerHTML = '<div class="text-muted">Biblioteca de gráfico indisponível.</div>';
-        return;
+      function fmtMoney(val) {
+        return 'R$ ' + (Number(val||0)).toLocaleString('pt-BR', {
+          minimumFractionDigits: 2, maximumFractionDigits: 2
+        });
       }
 
-      if (!LABELS.length || !SERIES.length || SERIES.every(v => !v || v === 0)) {
-        el.innerHTML = `
-          <div class="text-center text-muted py-5">
-            <i class="bi bi-graph-down"></i>
-            <div class="mt-2">Ainda não há vendas para o período selecionado.</div>
-          </div>`;
-        return;
+      function buildOptions(labels, series) {
+        return {
+          chart: { type: 'area', height: 360, toolbar: { show: false }, fontFamily: 'inherit' },
+          series: [{ name: 'Faturamento', data: series }],
+          xaxis: { categories: labels, tickPlacement: 'on', labels: { rotate: 0 } },
+          yaxis: { labels: { formatter: v => 'R$ ' + (Number(v||0)).toLocaleString('pt-BR') } },
+          stroke: { width: 3, curve: 'smooth' },
+          markers: { size: 3 },
+          dataLabels: { enabled: false },
+          legend: { position: 'top' },
+          grid: { borderColor: 'rgba(0,0,0,.08)' },
+          fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.25, opacityTo: 0, stops: [0, 90, 100] } },
+          tooltip: { y: { formatter: fmtMoney } }
+        };
       }
 
-      const options = {
-        chart: { type: 'area', height: 360, toolbar: { show: false }, fontFamily: 'inherit' },
-        series: [{ name: 'Faturamento', data: SERIES }],
-        xaxis: { categories: LABELS, tickPlacement: 'on', labels: { rotate: 0 } },
-        yaxis: {
-          labels: {
-            formatter: (val) => 'R$ ' + (Number(val||0)).toLocaleString('pt-BR', { maximumFractionDigits: 0 })
-          }
-        },
-        stroke: { width: 3, curve: 'smooth' },
-        markers: { size: 3 },
-        dataLabels: { enabled: false },
-        legend: { position: 'top' },
-        grid: { borderColor: 'rgba(0,0,0,.08)' },
-        fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.25, opacityTo: 0, stops: [0, 90, 100] } },
-        tooltip: {
-          y: {
-            formatter: (val) => 'R$ ' + (Number(val||0)).toLocaleString('pt-BR', {
-              minimumFractionDigits: 2, maximumFractionDigits: 2
-            })
-          }
+      function render(rangeKey) {
+        const data = (window.DASH_DATA && window.DASH_DATA[rangeKey]) ? window.DASH_DATA[rangeKey] : null;
+        const labels = (data && Array.isArray(data.labels)) ? data.labels : [];
+        const series = (data && Array.isArray(data.series)) ? data.series.map(Number) : [];
+
+        if (!labels.length || !series.length || series.every(v => !v || v === 0)) {
+          if (chart) { chart.destroy(); chart = null; }
+          el.innerHTML = `
+            <div class="text-center text-muted py-5">
+              <i class="bi bi-graph-down"></i>
+              <div class="mt-2">Sem dados para este período.</div>
+            </div>`;
+          return;
         }
-      };
 
-      new ApexCharts(el, options).render();
+        el.innerHTML = '';
+        const options = buildOptions(labels, series);
+        if (chart) { chart.destroy(); chart = null; }
+        chart = new ApexCharts(el, options);
+        chart.render();
+      }
+
+      // inicial: 6 meses
+      render('m6');
+
+      sel.addEventListener('change', function() {
+        render(this.value);
+      });
     })();
   </script>
 </body>
