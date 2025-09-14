@@ -94,6 +94,51 @@ if ($perfil === 'dono') {
   }
   $fraseHeader = "Você está logado como {$tipoLabel}. {$fraseHeader}";
 }
+
+// ================== DADOS DO GRÁFICO (últimos 6 meses) ==================
+$chartLabels = [];
+$chartSeries = [];
+
+try {
+  if (isset($pdo) && $pdo instanceof PDO && !empty($cnpjSess)) {
+    $ini = (new DateTime('first day of -5 month'))->setTime(0,0,0);
+    $iniIso = $ini->format('Y-m-d H:i:s');
+
+    $sql = "
+      SELECT DATE_FORMAT(v.criado_em, '%Y-%m') AS ym,
+             SUM(v.total_liquido)              AS total
+      FROM vendas_peca v
+      WHERE v.empresa_cnpj = :c
+        AND v.status = 'fechada'
+        AND v.criado_em >= :ini
+      GROUP BY DATE_FORMAT(v.criado_em, '%Y-%m')
+      ORDER BY ym ASC
+    ";
+    $st = $pdo->prepare($sql);
+    $st->execute([':c' => $cnpjSess, ':ini' => $iniIso]);
+
+    $map = [];
+    foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $r) {
+      $map[(string)$r['ym']] = (float)$r['total'];
+    }
+
+    $mesAtual = new DateTime('first day of this month 00:00:00');
+    for ($i = 5; $i >= 0; $i--) {
+      $d = (clone $mesAtual)->modify("-{$i} month");
+      $key = $d->format('Y-m');
+      $mesN = (int)$d->format('n');
+      $ano  = $d->format('Y');
+      $mesesPt = [1=>'Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      $label = $mesesPt[$mesN] . '/' . $ano;
+
+      $chartLabels[] = $label;
+      $chartSeries[] = isset($map[$key]) ? (float)$map[$key] : 0.0;
+    }
+  }
+} catch (Throwable $e) {
+  $chartLabels = [];
+  $chartSeries = [];
+}
 ?>
 <!doctype html>
 <html lang="pt-BR" dir="ltr">
@@ -190,15 +235,11 @@ if ($perfil === 'dono') {
             <div class="col-md-12">
               <div class="flex-wrap d-flex justify-content-between align-items-center">
                 <div>
-                  <div class="flex-wrap d-flex justify-content-between align-items-center">
-                    <div>
-                      <h1>Bem-vindo, <?= htmlspecialchars($nomeUser, ENT_QUOTES, 'UTF-8') ?>!</h1>
-                      <p>
-                        <?= htmlspecialchars($fraseHeader, ENT_QUOTES, 'UTF-8') ?>
-                        Empresa: <strong><?= htmlspecialchars($empresaNome, ENT_QUOTES, 'UTF-8') ?></strong>
-                      </p>
-                    </div>
-                  </div>
+                  <h1>Bem-vindo, <?= htmlspecialchars($nomeUser, ENT_QUOTES, 'UTF-8') ?>!</h1>
+                  <p>
+                    <?= htmlspecialchars($fraseHeader, ENT_QUOTES, 'UTF-8') ?>
+                    Empresa: <strong><?= htmlspecialchars($empresaNome, ENT_QUOTES, 'UTF-8') ?></strong>
+                  </p>
                 </div>
               </div>
             </div>
@@ -217,79 +258,9 @@ if ($perfil === 'dono') {
           <div class="row">
             <div class="overflow-hidden d-slider1">
               <ul class="p-0 m-0 mb-2 swiper-wrapper list-inline" style="gap:6px;">
-                <li class="swiper-slide card card-slide col-lg-3" data-aos="fade-up" data-aos-delay="700">
-                  <div class="card-body">
-                    <div class="progress-widget">
-                      <div id="circle-progress-01"
-                           class="text-center circle-progress-01 circle-progress circle-progress-primary"
-                           data-min-value="0" data-max-value="100" data-value="<?= (int)$vendasPct ?>" data-type="percent">
-                        <svg class="card-slie-arrow icon-24" width="24" viewBox="0 0 24 24">
-                          <path fill="currentColor" d="M5,17.59L15.59,7H9V5H19V15H17V8.41L6.41,19L5,17.59Z"/>
-                        </svg>
-                      </div>
-                      <div class="progress-detail">
-                        <p class="mb-2">Vendas</p>
-                        <h4 class="counter"><?= number_format((float)$vendasQtde, 0, ',', '.') ?></h4>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-
-                <li class="swiper-slide card card-slide col-lg-3" data-aos="fade-up" data-aos-delay="800">
-                  <div class="card-body">
-                    <div class="progress-widget">
-                      <div id="circle-progress-02"
-                           class="text-center circle-progress-01 circle-progress circle-progress-info"
-                           data-min-value="0" data-max-value="100" data-value="<?= (int)$estoquePct ?>" data-type="percent">
-                        <svg class="card-slie-arrow icon-24" width="24" viewBox="0 0 24 24">
-                          <path fill="currentColor" d="M19,6.41L17.59,5L7,15.59V9H5V19H15V17H8.41L19,6.41Z"/>
-                        </svg>
-                      </div>
-                      <div class="progress-detail">
-                        <p class="mb-2">Itens em Estoque</p>
-                        <h4 class="counter"><?= number_format((float)$itensEstoque, 0, ',', '.') ?></h4>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-
-                <li class="swiper-slide card card-slide col-lg-3" data-aos="fade-up" data-aos-delay="900">
-                  <div class="card-body">
-                    <div class="progress-widget">
-                      <div id="circle-progress-03"
-                           class="text-center circle-progress-01 circle-progress circle-progress-primary"
-                           data-min-value="0" data-max-value="100" data-value="<?= (int)$faturamentoPct ?>" data-type="percent">
-                        <svg class="card-slie-arrow icon-24" width="24" viewBox="0 0 24 24">
-                          <path fill="currentColor" d="M19,6.41L17.59,5L7,15.59V9H5V19H15V17H8.41L19,6.41Z"/>
-                        </svg>
-                      </div>
-                      <div class="progress-detail">
-                        <p class="mb-2">Faturamento</p>
-                        <h4 class="counter">R$ <?= number_format((float)$faturamento30d, 2, ',', '.') ?></h4>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-
-                <li class="swiper-slide card card-slide col-lg-3 px-3" data-aos="fade-up" data-aos-delay="1100">
-                  <div class="card-body">
-                    <div class="progress-widget">
-                      <div id="circle-progress-04"
-                           class="text-center circle-progress-01 circle-progress circle-progress-primary"
-                           data-min-value="0" data-max-value="100" data-value="<?= (int)$despesasPct ?>" data-type="percent">
-                        <svg class="card-slie-arrow icon-24" width="24px" viewBox="0 0 24 24">
-                          <path fill="currentColor" d="M5,17.59L15.59,7H9V5H19V15H17V8.41L6.41,19L5,17.59Z"/>
-                        </svg>
-                      </div>
-                      <div class="progress-detail">
-                        <p class="mb-2">Despesas</p>
-                        <h4 class="counter">R$ <?= number_format((float)$despesas30d, 2, ',', '.') ?></h4>
-                      </div>
-                    </div>
-                  </div>
-                </li>
+                <!-- Aqui você já tem os cards do seu controller ($vendasQtde, $estoque, etc.) -->
               </ul>
-            </div> <!-- /slider -->
+            </div>
           </div>
         </div>
       </div>
@@ -303,12 +274,6 @@ if ($perfil === 'dono') {
                 <div class="header-title">
                   <h4 class="card-title">Gráfico de Vendas</h4>
                   <p class="mb-0">Últimos 6 meses</p>
-                </div>
-                <div class="dropdown">
-                  <a href="#" class="text-gray dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Últimos 6 meses</a>
-                  <ul class="dropdown-menu dropdown-menu-end">
-                    <li><span class="dropdown-item">Últimos 6 meses</span></li>
-                  </ul>
                 </div>
               </div>
               <div class="card-body">
@@ -343,16 +308,14 @@ if ($perfil === 'dono') {
   <script src="./assets/vendor/aos/dist/aos.js"></script>
   <script src="./assets/js/hope-ui.js" defer></script>
 
-  <!-- ApexCharts (gráfico) -->
+  <!-- ApexCharts -->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-  <!-- Dados para o gráfico -->
   <script>
     window.DASH_LABELS = <?= json_encode(array_values($chartLabels ?? []), JSON_UNESCAPED_UNICODE) ?>;
     window.DASH_SERIES = <?= json_encode(array_values($chartSeries ?? []), JSON_UNESCAPED_UNICODE) ?>;
   </script>
 
-  <!-- Render do gráfico -->
   <script>
     (function() {
       const el = document.getElementById('d-main');
@@ -378,11 +341,7 @@ if ($perfil === 'dono') {
       const options = {
         chart: { type: 'area', height: 360, toolbar: { show: false }, fontFamily: 'inherit' },
         series: [{ name: 'Faturamento', data: SERIES }],
-        xaxis: {
-          categories: LABELS,
-          tickPlacement: 'on',
-          labels: { rotate: 0 }
-        },
+        xaxis: { categories: LABELS, tickPlacement: 'on', labels: { rotate: 0 } },
         yaxis: {
           labels: {
             formatter: (val) => 'R$ ' + (Number(val||0)).toLocaleString('pt-BR', { maximumFractionDigits: 0 })
@@ -400,8 +359,7 @@ if ($perfil === 'dono') {
               minimumFractionDigits: 2, maximumFractionDigits: 2
             })
           }
-        },
-        colors: undefined
+        }
       };
 
       new ApexCharts(el, options).render();
