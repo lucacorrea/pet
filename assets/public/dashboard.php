@@ -18,30 +18,30 @@ $nomeUser = (string)($_SESSION['user_nome'] ?? 'Usuário');
 $perfil   = strtolower((string)($_SESSION['user_perfil'] ?? 'funcionario'));
 $tipo     = strtolower((string)($_SESSION['user_tipo'] ?? ''));
 
-// Util para comparar CNPJ mascarado ou não
-$CNPJ_MATCH_SQL = "(empresa_cnpj = :c OR REPLACE(REPLACE(REPLACE(empresa_cnpj,'.',''),'-',''),'/','') = :c)";
+// Comparação de CNPJ robusta (remove ., -, / e espaços no que está no BD)
+$CNPJ_MATCH_SQL = "(REPLACE(REPLACE(REPLACE(REPLACE(empresa_cnpj,'.',''),'-',''),'/',''),' ','') = :c)";
 
 // -------------------- Nome da empresa --------------------
 $empresaNome = '—';
 if ($pdo instanceof PDO && $cnpjSess) {
-    try {
-        $st = $pdo->prepare("SELECT nome_fantasia FROM empresas_peca WHERE $CNPJ_MATCH_SQL LIMIT 1");
-        $st->execute([':c' => $cnpjSess]);
-        if ($row = $st->fetch(PDO::FETCH_ASSOC)) $empresaNome = (string)$row['nome_fantasia'];
-    } catch (Throwable $e) {}
+  try {
+    $st = $pdo->prepare("SELECT nome_fantasia FROM empresas_peca WHERE $CNPJ_MATCH_SQL LIMIT 1");
+    $st->execute([':c' => $cnpjSess]);
+    if ($row = $st->fetch(PDO::FETCH_ASSOC)) $empresaNome = (string)$row['nome_fantasia'];
+  } catch (Throwable $e) {}
 }
 
 // -------------------- Mensagem header --------------------
 $rotTipo   = ['administrativo'=>'Administrativo','caixa'=>'Caixa','estoque'=>'Estoque','lavajato'=>'Lava Jato'];
 $tipoLabel = $rotTipo[$tipo] ?? 'Colaborador';
 $fraseHeader = $perfil === 'dono'
-    ? 'Você é o dono. Gerencie sua empresa, cadastre sua equipe e mantenha tudo em dia.'
-    : "Você está logado como {$tipoLabel}. " . match ($tipo) {
-        'administrativo' => 'Acompanhe o financeiro, cadastre produtos e dê suporte à operação.',
-        'caixa'          => 'Abra vendas rápidas, finalize pagamentos e agilize o atendimento.',
-        'estoque'        => 'Gerencie entradas e saídas, controle níveis e mantenha o estoque organizado.',
-        'lavajato'       => 'Registre lavagens, acompanhe status e mantenha o fluxo do box.',
-        default          => 'Bem-vindo ao sistema. Use o menu ao lado para começar.'
+  ? 'Você é o dono. Gerencie sua empresa, cadastre sua equipe e mantenha tudo em dia.'
+  : "Você está logado como {$tipoLabel}. ".match($tipo){
+      'administrativo'=>'Acompanhe o financeiro, cadastre produtos e dê suporte à operação.',
+      'caixa'=>'Abra vendas rápidas, finalize pagamentos e agilize o atendimento.',
+      'estoque'=>'Gerencie entradas e saídas, controle níveis e mantenha o estoque organizado.',
+      'lavajato'=>'Registre lavagens, acompanhe status e mantenha o fluxo do box.',
+      default=>'Bem-vindo ao sistema. Use o menu ao lado para começar.'
     };
 
 // -------------------- Cards (últimos 30 dias) --------------------
@@ -51,31 +51,31 @@ $itensEstoque = 0;
 $despesas30d = 0.0;
 
 if ($pdo instanceof PDO && $cnpjSess) {
-    try {
-        $st = $pdo->prepare("
-            SELECT COUNT(*) qtde, COALESCE(SUM(total_liquido),0) total
-            FROM vendas_peca
-            WHERE $CNPJ_MATCH_SQL
-              AND status='fechada'
-              AND criado_em >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        ");
-        $st->execute([':c'=>$cnpjSess]);
-        $v = $st->fetch(PDO::FETCH_ASSOC) ?: ['qtde'=>0,'total'=>0];
-        $vendasQtde     = (int)$v['qtde'];
-        $faturamento30d = (float)$v['total'];
-    } catch (Throwable $e) {}
-    try {
-        $st = $pdo->prepare("SELECT COUNT(*) FROM produtos_peca WHERE $CNPJ_MATCH_SQL AND ativo=1");
-        $st->execute([':c'=>$cnpjSess]);
-        $itensEstoque = (int)$st->fetchColumn();
-    } catch (Throwable $e) {}
+  try {
+    $st = $pdo->prepare("
+      SELECT COUNT(*) qtde, COALESCE(SUM(total_liquido),0) total
+      FROM vendas_peca
+      WHERE $CNPJ_MATCH_SQL
+        AND status='fechada'
+        AND criado_em >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    ");
+    $st->execute([':c'=>$cnpjSess]);
+    $v = $st->fetch(PDO::FETCH_ASSOC) ?: ['qtde'=>0,'total'=>0];
+    $vendasQtde     = (int)$v['qtde'];
+    $faturamento30d = (float)$v['total'];
+  } catch (Throwable $e) {}
+  try {
+    $st = $pdo->prepare("SELECT COUNT(*) FROM produtos_peca WHERE $CNPJ_MATCH_SQL AND ativo=1");
+    $st->execute([':c'=>$cnpjSess]);
+    $itensEstoque = (int)$st->fetchColumn();
+  } catch (Throwable $e) {}
 }
 
 // metas fictícias p/ progresso
 $limitaPct = static function (float $v, float $m): int {
-    if ($m <= 0) return 0;
-    $p = (int)round(($v / $m) * 100);
-    return max(0, min(100, $p));
+  if ($m <= 0) return 0;
+  $p = (int)round(($v/$m)*100);
+  return max(0, min(100, $p));
 };
 $vendasPct      = $limitaPct((float)$vendasQtde, 350);
 $estoquePct     = $limitaPct((float)$itensEstoque, 3210);
@@ -83,96 +83,97 @@ $faturamentoPct = $limitaPct((float)$faturamento30d, 7400.00);
 $despesasPct    = $limitaPct((float)$despesas30d, 1250.00);
 
 // -------------------- Gráfico: range e dados --------------------
-$range = strtolower((string)($_GET['range'] ?? '6m')); // week | month | 6m | 12m
+// Filtros: week (semana), month (30 dias), 6m (6 meses), 12m (12 meses)
+$range = strtolower((string)($_GET['range'] ?? '6m'));
 if (!in_array($range, ['week','month','6m','12m'], true)) $range = '6m';
 
 $rangeLabel = [
-    'week' => 'Última semana',
-    'month'=> 'Últimos 30 dias',
-    '6m'   => 'Últimos 6 meses',
-    '12m'  => 'Últimos 12 meses'
+  'week' => 'Última semana',
+  'month'=> 'Últimos 30 dias',
+  '6m'   => 'Últimos 6 meses',
+  '12m'  => 'Últimos 12 meses'
 ][$range] ?? 'Últimos 6 meses';
 
+// 1) SEMPRE montei labels/valores-base primeiro (independente do BD)
 $chartLabels = [];
 $chartSeries = [];
+$mapIndex    = []; // chave estável -> índice
+$ini = null; $fim = null;
 
+if ($range === 'week' || $range === 'month') {
+  // Diária
+  $dias  = ($range === 'week') ? 7 : 30;
+  $today = new DateTime('today');
+  $ini   = (clone $today)->modify('-'.($dias-1).' days')->setTime(0,0,0);
+  $fim   = (clone $today)->modify('+1 day')->setTime(0,0,0);
+
+  for ($i=0; $i<$dias; $i++) {
+    $d = (clone $ini)->modify("+{$i} days");
+    $chartLabels[] = $d->format('d/m');                  // rótulo visível
+    $mapIndex[$d->format('Y-m-d')] = $i;                 // chave estável
+  }
+  $chartSeries = array_fill(0, $dias, 0.0);
+
+} else {
+  // Mensal (6m / 12m)
+  $meses = $range === '12m' ? 12 : 6;
+  $first = new DateTime('first day of this month');
+  $ini   = (clone $first)->modify('-'.($meses-1).' months')->setTime(0,0,0);
+  $fim   = (clone $first)->modify('+1 month')->setTime(0,0,0);
+
+  for ($i=$meses-1; $i>=0; $i--) {
+    $p = (clone $first)->modify("-{$i} months");
+    $chartLabels[] = $p->format('m/Y');                          // rótulo visível
+    $mapIndex[sprintf('%04d-%02d',(int)$p->format('Y'),(int)$p->format('m'))] = count($chartLabels)-1; // Y-m
+  }
+  $chartSeries = array_fill(0, $meses, 0.0);
+}
+
+// 2) SÓ DEPOIS tento preencher a partir do BD
 if ($pdo instanceof PDO && $cnpjSess) {
-    try {
-        if ($range === 'week' || $range === 'month') {
-            // --- Diária ---
-            $dias  = $range === 'week' ? 7 : 30;
-            $today = new DateTime('today');
-            $ini   = (clone $today)->modify('-'.($dias-1).' days')->setTime(0,0,0);
-            $fim   = (clone $today)->modify('+1 day')->setTime(0,0,0);
-
-            $labels   = [];
-            $mapIndex = [];
-            for ($i = 0; $i < $dias; $i++) {
-                $d = (clone $ini)->modify("+{$i} days");
-                $labels[]                 = $d->format('d/m');      // rótulo visível
-                $mapIndex[$d->format('Y-m-d')] = $i;                // chave estável
-            }
-            $vals = array_fill(0, $dias, 0.0);
-
-            $st = $pdo->prepare("
-                SELECT DATE_FORMAT(criado_em,'%Y-%m-%d') dia, COALESCE(SUM(total_liquido),0) total
-                FROM vendas_peca
-                WHERE $CNPJ_MATCH_SQL
-                  AND status='fechada'
-                  AND criado_em >= :ini AND criado_em < :fim
-                GROUP BY DATE(criado_em)
-                ORDER BY DATE(criado_em)
-            ");
-            $st->execute([
-                ':c'   => $cnpjSess,
-                ':ini' => $ini->format('Y-m-d H:i:s'),
-                ':fim' => $fim->format('Y-m-d H:i:s'),
-            ]);
-            foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $r) {
-                $k = (string)$r['dia']; // 'YYYY-MM-DD'
-                if (isset($mapIndex[$k])) $vals[$mapIndex[$k]] = (float)$r['total'];
-            }
-            $chartLabels = $labels;
-            $chartSeries = $vals;
-
-        } else {
-            // --- Mensal (6m / 12m) ---
-            $meses = $range === '12m' ? 12 : 6;
-            $first = new DateTime('first day of this month');
-            $ini   = (clone $first)->modify('-'.($meses-1).' months')->setTime(0,0,0);
-            $fim   = (clone $first)->modify('+1 month')->setTime(0,0,0);
-
-            $labels   = [];
-            $mapIndex = [];
-            for ($i = $meses - 1; $i >= 0; $i--) {
-                $p = (clone $first)->modify("-{$i} months");
-                $labels[] = $p->format('m/Y'); // rótulo visível
-                $mapIndex[sprintf('%04d-%02d', (int)$p->format('Y'), (int)$p->format('m'))] = count($labels) - 1; // chave Y-m
-            }
-            $vals = array_fill(0, $meses, 0.0);
-
-            $st = $pdo->prepare("
-                SELECT YEAR(criado_em) AS y, MONTH(criado_em) AS m, COALESCE(SUM(total_liquido),0) AS total
-                FROM vendas_peca
-                WHERE $CNPJ_MATCH_SQL
-                  AND status='fechada'
-                  AND criado_em >= :ini AND criado_em < :fim
-                GROUP BY YEAR(criado_em), MONTH(criado_em)
-                ORDER BY YEAR(criado_em), MONTH(criado_em)
-            ");
-            $st->execute([
-                ':c'   => $cnpjSess,
-                ':ini' => $ini->format('Y-m-d H:i:s'),
-                ':fim' => $fim->format('Y-m-d H:i:s'),
-            ]);
-            foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $r) {
-                $key = sprintf('%04d-%02d', (int)$r['y'], (int)$r['m']); // 'YYYY-MM'
-                if (isset($mapIndex[$key])) $vals[$mapIndex[$key]] = (float)$r['total'];
-            }
-            $chartLabels = $labels;
-            $chartSeries = $vals;
-        }
-    } catch (Throwable $e) {}
+  try {
+    if ($range === 'week' || $range === 'month') {
+      // diária
+      $st = $pdo->prepare("
+        SELECT DATE_FORMAT(criado_em,'%Y-%m-%d') dia, COALESCE(SUM(total_liquido),0) total
+        FROM vendas_peca
+        WHERE $CNPJ_MATCH_SQL
+          AND status='fechada'
+          AND criado_em >= :ini AND criado_em < :fim
+        GROUP BY DATE(criado_em)
+        ORDER BY DATE(criado_em)
+      ");
+      $st->execute([
+        ':c'   => $cnpjSess,
+        ':ini' => $ini->format('Y-m-d H:i:s'),
+        ':fim' => $fim->format('Y-m-d H:i:s'),
+      ]);
+      foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $r) {
+        $k = (string)$r['dia']; // YYYY-MM-DD
+        if (isset($mapIndex[$k])) $chartSeries[$mapIndex[$k]] = (float)$r['total'];
+      }
+    } else {
+      // mensal
+      $st = $pdo->prepare("
+        SELECT YEAR(criado_em) y, MONTH(criado_em) m, COALESCE(SUM(total_liquido),0) total
+        FROM vendas_peca
+        WHERE $CNPJ_MATCH_SQL
+          AND status='fechada'
+          AND criado_em >= :ini AND criado_em < :fim
+        GROUP BY YEAR(criado_em), MONTH(criado_em)
+        ORDER BY YEAR(criado_em), MONTH(criado_em)
+      ");
+      $st->execute([
+        ':c'   => $cnpjSess,
+        ':ini' => $ini->format('Y-m-d H:i:s'),
+        ':fim' => $fim->format('Y-m-d H:i:s'),
+      ]);
+      foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $r) {
+        $key = sprintf('%04d-%02d',(int)$r['y'],(int)$r['m']);   // YYYY-MM
+        if (isset($mapIndex[$key])) $chartSeries[$mapIndex[$key]] = (float)$r['total'];
+      }
+    }
+  } catch (Throwable $e) {}
 }
 
 // -------------------- Verificação de cadastro incompleto --------------------
@@ -181,23 +182,23 @@ $msgCompletar    = '';
 $canEditEmpresa  = (($_SESSION['user_perfil'] ?? '') === 'dono');
 
 if ($pdo instanceof PDO && $cnpjSess) {
-    try {
-        $st = $pdo->prepare("SELECT * FROM empresas_peca WHERE $CNPJ_MATCH_SQL LIMIT 1");
-        $st->execute([':c' => $cnpjSess]);
-        $empresaRow = $st->fetch(PDO::FETCH_ASSOC) ?: null;
-        $obrig = ['nome_fantasia','email','telefone','endereco','cidade','estado','cep'];
-        if (!$empresaRow) {
-            $empresaPendente = true;
-            $msgCompletar = 'Sua empresa ainda não está cadastrada. Complete as informações para aproveitar todos os recursos.';
-        } else {
-            $falt = [];
-            foreach ($obrig as $k) if (trim((string)($empresaRow[$k] ?? '')) === '') $falt[] = $k;
-            if ($falt) {
-                $empresaPendente = true;
-                $msgCompletar = 'Algumas informações da empresa estão faltando: '.implode(', ', $falt).'.';
-            }
-        }
-    } catch (Throwable $e) {}
+  try {
+    $st = $pdo->prepare("SELECT * FROM empresas_peca WHERE $CNPJ_MATCH_SQL LIMIT 1");
+    $st->execute([':c' => $cnpjSess]);
+    $empresaRow = $st->fetch(PDO::FETCH_ASSOC) ?: null;
+    $obrig = ['nome_fantasia','email','telefone','endereco','cidade','estado','cep'];
+    if (!$empresaRow) {
+      $empresaPendente = true;
+      $msgCompletar = 'Sua empresa ainda não está cadastrada. Complete as informações para aproveitar todos os recursos.';
+    } else {
+      $falt = [];
+      foreach ($obrig as $k) if (trim((string)($empresaRow[$k] ?? '')) === '') $falt[] = $k;
+      if ($falt) {
+        $empresaPendente = true;
+        $msgCompletar = 'Algumas informações da empresa estão faltando: '.implode(', ', $falt).'.';
+      }
+    }
+  } catch (Throwable $e) {}
 }
 ?>
 <!doctype html>
@@ -226,32 +227,27 @@ if ($pdo instanceof PDO && $cnpjSess) {
 <body>
   <?php
   if (session_status() === PHP_SESSION_NONE) session_start();
-  $menuAtivo = 'dashboard'; // item ativo do sidebar
+  $menuAtivo = 'dashboard';
   include './layouts/dashboard.php';
   ?>
 
   <main class="main-content">
+
     <?php if ($empresaPendente): ?>
       <div class="modal fade" id="modalEmpresaIncompleta" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header bg-warning-subtle">
-              <h5 class="modal-title">
-                <i class="bi bi-exclamation-triangle me-2"></i>Completar cadastro da empresa
-              </h5>
+              <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i> Completar cadastro da empresa</h5>
             </div>
             <div class="modal-body">
               <p class="mb-0"><?= htmlspecialchars($msgCompletar, ENT_QUOTES, 'UTF-8') ?></p>
             </div>
             <div class="modal-footer text-center">
               <?php if ($canEditEmpresa): ?>
-                <a href="./configuracao/pages/empresa.php" class="btn btn-primary w-100">
-                  <i class="bi bi-building me-1"></i> Ir para Dados da Empresa
-                </a>
+                <a href="./configuracao/pages/empresa.php" class="btn btn-primary w-100"><i class="bi bi-building me-1"></i> Ir para Dados da Empresa</a>
               <?php else: ?>
-                <button class="btn btn-outline-secondary" disabled>
-                  <i class="bi bi-lock me-1"></i> Somente o dono pode editar
-                </button>
+                <button class="btn btn-outline-secondary" disabled><i class="bi bi-lock me-1"></i> Somente o dono pode editar</button>
               <?php endif; ?>
             </div>
           </div>
@@ -273,9 +269,7 @@ if ($pdo instanceof PDO && $cnpjSess) {
           <a href="./dashboard.php" class="navbar-brand"><h4 class="logo-title">Mundo Pets</h4></a>
           <div class="sidebar-toggle" data-toggle="sidebar" data-active="true">
             <i class="icon">
-              <svg width="20" class="icon-20" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"/>
-              </svg>
+              <svg width="20" class="icon-20" viewBox="0 0 24 24"><path fill="currentColor" d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"/></svg>
             </i>
           </div>
           <div class="input-group search-input">
@@ -449,8 +443,11 @@ if ($pdo instanceof PDO && $cnpjSess) {
       el.innerHTML = '<div class="text-muted">Biblioteca de gráfico indisponível.</div>';
       return;
     }
+
+    // NÃO mostramos mais "Sem dados para o período." só por faltar consulta.
+    // Labels sempre existem; se não houver vendas, aparece linha em zero.
     if (!LABELS.length) {
-      el.innerHTML = '<div class="text-center text-muted py-5"><i class="bi bi-graph-down"></i><div class="mt-2">Sem dados para o período.</div></div>';
+      el.innerHTML = '<div class="text-center text-muted py-5">Sem dados.</div>';
       return;
     }
 
@@ -470,7 +467,6 @@ if ($pdo instanceof PDO && $cnpjSess) {
       series: [{ name: 'Faturamento', data: SERIES }],
       xaxis: { categories: LABELS, tickPlacement: 'on', labels: { rotate: 0 } },
       yaxis: { labels: { formatter: v => 'R$ ' + Number(v||0).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) } },
-      // Cores explícitas garantem visibilidade no tema claro/escuro
       colors: ['#3b82f6'],
       stroke: { curve: 'smooth', width: 3, colors: ['#2563eb'] },
       markers: { size: 4, strokeWidth: 2, strokeColors: isDark() ? '#0f172a' : '#ffffff' },
@@ -478,16 +474,14 @@ if ($pdo instanceof PDO && $cnpjSess) {
       legend: { position: 'top' },
       grid: { borderColor: 'rgba(0,0,0,.08)' },
       fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.05, stops: [0,90,100] } },
-      tooltip: {
-        y: { formatter: v => 'R$ ' + Number(v||0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
-      },
+      tooltip: { y: { formatter: v => 'R$ ' + Number(v||0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) } },
       noData: { text: 'Sem dados' }
     };
 
     function hasSize(node){ const r=node.getBoundingClientRect(); return r.width>0 && r.height>0; }
     function renderWhenReady(){
       if (chart) return;
-      if (!hasSize(el)) return;  // espera card ficar visível
+      if (!hasSize(el)) return;
       chart = new ApexCharts(el, options);
       chart.render();
       setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
