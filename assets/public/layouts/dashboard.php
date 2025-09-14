@@ -167,7 +167,7 @@ if (!isset($menuAtivo)) {
 
         <li><hr class="hr-horizontal"></li>
         <li class="nav-item">
-          <a class="nav-link" href="./actions/logout.php">
+          <a class="nav-link" href="../../actions/logout.php">
             <i class="bi bi-box-arrow-right icon"></i><span class="item-name">Sair</span>
           </a>
         </li>
