@@ -281,7 +281,7 @@ function fmt($v)
                   <div class="col-md-6">
                     <div class="card stat-card border-0 bg-soft-primary">
                       <div class="card-body">
-                        <div class="text-muted small">Recebido (por forma) — <span class="fw-semibold">caixa_movimentos_peca</span></div>
+                        <div class="text-muted small">Recebido (por forma)  <span class="fw-semibold"></span></div>
                         <div class="mt-2 small">
                           <div>Dinheiro: <strong class="money">R$ <?= fmt($resumo['dinheiro']) ?></strong></div>
                           <div>PIX: <strong class="money">R$ <?= fmt($resumo['pix']) ?></strong></div>
