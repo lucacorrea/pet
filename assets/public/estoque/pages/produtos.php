@@ -340,9 +340,9 @@ $danfeVendaId = (int)($_GET['danfe'] ?? 0);
 </head>
 <!-- TOAST (1,4s) + REDIRECIONA PARA DANFE QUANDO SUCESSO -->
 <?php if ($ok || $err): ?>
-  <div id="toastMsg" class="toast show align-items-center border-0 position-fixed top-0 end-0 m-3 shadow-lg"
+  <div id="toastMsg" class="toast show align-items-center border-0 position-fixed top-0 end-0 m-3 shadow-lg <?= $ok ? 'bg-success' : 'bg-danger' ?>"
     role="alert" aria-live="assertive" aria-atomic="true"
-    style="z-index:2000;min-width:340px;border-radius:12px;overflow:hidden;" <?= $ok ? 'bg-success' : 'bg-danger' ?>>
+    style="z-index:2000;min-width:340px;border-radius:12px;overflow:hidden;">
     <div class="d-flex">
       <div class="toast-body d-flex align-items-center gap-2 text-white fw-semibold ">
         <i class="bi <?= $ok ? 'bi-check-circle-fill' : 'bi-x-circle-fill' ?> fs-4"></i>
