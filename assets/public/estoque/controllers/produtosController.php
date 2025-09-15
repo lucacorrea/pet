@@ -81,3 +81,53 @@ function produtos_list_viewmodel(PDO $pdo): array
     'msg'    => $msg,
   ];
 }
+
+// autoErp/public/estoque/controllers/produtosController.php
+// ... (mantenha o que você já tem)
+
+function produto_get_by_id(PDO $pdo, string $empresaCnpj, int $id): ?array {
+  $st = $pdo->prepare("
+    SELECT *
+    FROM produtos_peca
+    WHERE id = :id AND empresa_cnpj = :c
+    LIMIT 1
+  ");
+  $st->execute([':id'=>$id, ':c'=>$empresaCnpj]);
+  $r = $st->fetch(PDO::FETCH_ASSOC) ?: null;
+  return $r ?: null;
+}
+
+function produto_update(PDO $pdo, string $empresaCnpj, array $data): bool {
+  $sql = "
+    UPDATE produtos_peca
+       SET categoria_id   = :categoria_id,
+           nome           = :nome,
+           sku            = :sku,
+           ean            = :ean,
+           marca          = :marca,
+           unidade        = :unidade,
+           preco_custo    = :preco_custo,
+           preco_venda    = :preco_venda,
+           estoque_atual  = :estoque_atual,
+           estoque_minimo = :estoque_minimo,
+           ativo          = :ativo
+     WHERE id = :id AND empresa_cnpj = :c
+     LIMIT 1
+  ";
+  $st = $pdo->prepare($sql);
+  return $st->execute([
+    ':categoria_id'   => $data['categoria_id'] ?? null,
+    ':nome'           => (string)$data['nome'],
+    ':sku'            => $data['sku'] ?? null,
+    ':ean'            => $data['ean'] ?? null,
+    ':marca'          => $data['marca'] ?? null,
+    ':unidade'        => $data['unidade'] ?? 'UN',
+    ':preco_custo'    => (float)($data['preco_custo'] ?? 0),
+    ':preco_venda'    => (float)$data['preco_venda'],
+    ':estoque_atual'  => (float)($data['estoque_atual'] ?? 0),
+    ':estoque_minimo' => (float)($data['estoque_minimo'] ?? 0),
+    ':ativo'          => (int)($data['ativo'] ?? 0),
+    ':id'             => (int)$data['id'],
+    ':c'              => $empresaCnpj,
+  ]);
+}
