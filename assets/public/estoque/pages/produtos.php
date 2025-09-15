@@ -36,17 +36,19 @@ $filters = [
   'limit' => $limit,
 ];
 
-// ---- WHERE (sem mudar schema): CNPJ sem máscara + LIKE acento-insensível por expressão
-$where  = ["REPLACE(REPLACE(REPLACE(REPLACE(empresa_cnpj,'.',''),'-',''),'/',''),' ','') = :c"];
+// ---- WHERE
+// Usa empresa_cnpj_num se existir; senão, normaliza empresa_cnpj via REPLACE.
+// Isso permite funcionar mesmo que você ainda não tenha criado a coluna gerada na tabela.
+$where  = ["COALESCE(empresa_cnpj_num, REPLACE(REPLACE(REPLACE(REPLACE(empresa_cnpj,'.',''),'-',''),'/',''),' ')) = :c"];
 $params = [':c' => $empresaCnpj];
 
 if ($q !== '') {
-  // Não uso LOWER: collation *_ci já é case/acento-insensível
+  // Busca acento/case-insensível via COLLATE
   $params[':q'] = '%' . $q . '%';
   $where[] = "(
-      COALESCE(nome, '')           COLLATE utf8mb4_unicode_ci LIKE :q
-      OR COALESCE(CAST(sku AS CHAR), '') COLLATE utf8mb4_unicode_ci LIKE :q
-      OR COALESCE(CAST(ean AS CHAR), '') COLLATE utf8mb4_unicode_ci LIKE :q
+      COALESCE(nome, '')                      COLLATE utf8mb4_unicode_ci LIKE :q
+      OR COALESCE(CAST(sku AS CHAR), '')      COLLATE utf8mb4_unicode_ci LIKE :q
+      OR COALESCE(CAST(ean AS CHAR), '')      COLLATE utf8mb4_unicode_ci LIKE :q
     )";
 }
 if ($ativo !== '' && ($ativo === '0' || $ativo === '1')) {
@@ -76,7 +78,7 @@ try {
     SELECT id, nome, sku, ean, marca, preco_venda, estoque_atual, ativo
     FROM produtos_peca
     WHERE $whereSql
-    ORDER BY nome ASC, id DESC
+    ORDER BY nome COLLATE utf8mb4_unicode_ci ASC, id DESC
     LIMIT :limit OFFSET :offset
   ";
   $st = $pdo->prepare($sql);
@@ -217,7 +219,7 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
         <div class="container-fluid iq-container">
           <div class="row">
             <div class="col-12">
-              <h1 class="mb-0">Lista de Produto</h1>
+              <h1 class="mb-0">Lista de Produtos</h1>
               <p>Pesquise, filtre e gerencie seus produtos.</p>
             </div>
           </div>
@@ -350,9 +352,11 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
     document.addEventListener('click', (e) => {
       const a = e.target.closest('#paginationNav a.page-link');
       if (!a) return; e.preventDefault();
-      try{ const u = new URL(a.getAttribute('href'), window.location.origin);
-           const page = u.searchParams.get('page') || '1';
-           runSearch({ page }); }catch(err){ console.error(err); }
+      try{
+        const u = new URL(a.getAttribute('href'), window.location.origin);
+        const page = u.searchParams.get('page') || '1';
+        runSearch({ page });
+      }catch(err){ console.error(err); }
     });
   </script>
 </body>
