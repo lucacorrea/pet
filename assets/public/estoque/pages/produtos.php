@@ -33,13 +33,17 @@ $filters = [
   'limit' => $limit,
 ];
 
-// ---- WHERE
-$where  = ["empresa_cnpj = :c"];
+// ---- WHERE (corrigido: CNPJ sem máscara + CAST para SKU/EAN)
+$where  = ["REPLACE(REPLACE(REPLACE(REPLACE(empresa_cnpj,'.',''),'-',''),'/',''),' ','') = :c"];
 $params = [':c' => $empresaCnpj];
 
 if ($q !== '') {
-  $where[] = "(LOWER(nome) LIKE :q OR LOWER(sku) LIKE :q OR LOWER(ean) LIKE :q)";
-  $params[':q'] = '%' . strtolower($q) . '%';
+  $params[':q'] = '%' . mb_strtolower($q, 'UTF-8') . '%';
+  $where[] = "(
+      LOWER(COALESCE(nome, '')) LIKE :q
+      OR LOWER(COALESCE(CAST(sku AS CHAR), '')) LIKE :q
+      OR LOWER(COALESCE(CAST(ean AS CHAR), '')) LIKE :q
+    )";
 }
 if ($ativo !== '' && ($ativo === '0' || $ativo === '1')) {
   $where[] = "ativo = :ativo";
