@@ -361,7 +361,7 @@ $danfeVendaId = (int)($_GET['danfe'] ?? 0);
       const progress = document.getElementById("toastProgress");
       if (!toastEl) return;
 
-      const DURATION = 2400; // 1.4s
+      const DURATION = 3400; // 2.4s
       const toast = new bootstrap.Toast(toastEl, {
         delay: DURATION,
         autohide: true
