@@ -174,7 +174,7 @@ function n3($arr, $k){ return number_format((float)($arr[$k] ?? 0), 3, ',', '.')
                 <button type="submit" class="btn btn-primary">
                   <i class="bi bi-save me-1"></i> Salvar Alterações
                 </button>
-                <a href="./produtos.php" class="btn btn-outline-secondary">Cancelar</a>
+               
               </div>
 
             </form>
