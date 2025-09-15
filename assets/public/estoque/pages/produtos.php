@@ -45,7 +45,6 @@ if ($ativo !== '' && ($ativo === '0' || $ativo === '1')) {
   $where[] = "ativo = :ativo";
   $params[':ativo'] = (int)$ativo;
 }
-
 $whereSql = implode(' AND ', $where);
 
 // ---- COUNT
@@ -88,6 +87,68 @@ $mk = function(array $overrides = []) use ($filters) {
   $q = array_merge($filters, $overrides);
   return '?' . http_build_query($q);
 };
+
+// ---- Render helpers (para AJAX)
+function render_rows_html(array $rows): string {
+  ob_start();
+  if (!$rows): ?>
+    <tr><td colspan="8" class="text-center text-muted">Nenhum produto encontrado.</td></tr>
+  <?php else:
+    foreach ($rows as $r): ?>
+      <tr>
+        <td class="fw-semibold"><?= htmlspecialchars((string)$r['nome'], ENT_QUOTES, 'UTF-8') ?></td>
+        <td><?= htmlspecialchars((string)($r['sku'] ?? ''), ENT_QUOTES, 'UTF-8') ?: '<span class="text-muted">—</span>' ?></td>
+        <td><?= htmlspecialchars((string)($r['ean'] ?? ''), ENT_QUOTES, 'UTF-8') ?: '<span class="text-muted">—</span>' ?></td>
+        <td><?= htmlspecialchars((string)($r['marca'] ?? ''), ENT_QUOTES, 'UTF-8') ?: '<span class="text-muted">—</span>' ?></td>
+        <td class="text-end money">R$ <?= fmt_money($r['preco_venda']) ?></td>
+        <td class="text-end"><?= number_format((float)$r['estoque_atual'], 3, ',', '.') ?></td>
+        <td>
+          <?php $a = (int)($r['ativo'] ?? 0); ?>
+          <span class="badge bg-<?= $a ? 'success' : 'secondary' ?>"><?= $a ? 'Ativo' : 'Inativo' ?></span>
+        </td>
+        <td class="text-end text-nowrap">
+          <a class="btn btn-sm btn-primary" href="./produtosEditar.php?id=<?= (int)$r['id'] ?>" title="Editar">
+            <i class="bi bi-pencil"></i>
+          </a>
+        </td>
+      </tr>
+    <?php endforeach;
+  endif;
+  return (string)ob_get_clean();
+}
+
+function render_pagination_html(int $page, int $totalPages, callable $mk): string {
+  if ($totalPages <= 1) return '';
+  ob_start(); ?>
+  <ul class="pagination justify-content-end mb-0">
+    <li class="page-item <?= $page<=1?'disabled':'' ?>">
+      <a class="page-link" href="<?= $mk(['page'=>max(1,$page-1)]) ?>">«</a>
+    </li>
+    <li class="page-item disabled">
+      <span class="page-link">Página <?= $page ?> de <?= $totalPages ?></span>
+    </li>
+    <li class="page-item <?= $page>=$totalPages?'disabled':'' ?>">
+      <a class="page-link" href="<?= $mk(['page'=>min($totalPages,$page+1)]) ?>">»</a>
+    </li>
+  </ul>
+  <?php
+  return (string)ob_get_clean();
+}
+
+// ---- Resposta AJAX
+if ((string)($_GET['ajax'] ?? '') === '1') {
+  $tbody = render_rows_html($rows);
+  $pagination = render_pagination_html($page, $totalPages, $mk);
+  $summary = $totalRows . ' resultado' . ($totalRows===1?'':'s') . ' • Página ' . $page . ' de ' . $totalPages;
+
+  header('Content-Type: application/json; charset=utf-8');
+  echo json_encode([
+    'tbody'      => $tbody,
+    'pagination' => $pagination,
+    'summary'    => $summary,
+  ]);
+  exit;
+}
 ?>
 <!doctype html>
 <html lang="pt-BR" dir="ltr">
@@ -129,7 +190,7 @@ $mk = function(array $overrides = []) use ($filters) {
           <a href="../../dashboard.php" class="navbar-brand">
             <h4 class="logo-title">Mundo Pets</h4>
           </a>
-          <form method="get" action="" class="ms-auto d-none d-lg-block">
+          <form method="get" action="" class="ms-auto d-none d-lg-block" onsubmit="return false;">
             <div class="input-group search-input search-mini">
               <span class="input-group-text" id="search-input">
                 <svg class="icon-18" width="18" viewBox="0 0 24 24" fill="none">
@@ -137,7 +198,7 @@ $mk = function(array $overrides = []) use ($filters) {
                   <path d="M18.0186 18.4851L21.5426 22" stroke="currentColor" stroke-width="1.5"></path>
                 </svg>
               </span>
-              <input type="search" name="q" class="form-control" value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>" placeholder="Buscar por nome, SKU ou EAN...">
+              <input id="searchTop" type="search" name="q" class="form-control" value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>" placeholder="Buscar por nome, SKU ou EAN...">
               <input type="hidden" name="ativo" value="<?= htmlspecialchars($ativo, ENT_QUOTES, 'UTF-8') ?>">
             </div>
           </form>
@@ -163,27 +224,27 @@ $mk = function(array $overrides = []) use ($filters) {
       <div class="card" data-aos="fade-up" data-aos-delay="150">
         <div class="card-body">
           <!-- Filtros -->
-          <form method="get" action="" class="row g-2 align-items-end mb-3">
+          <form id="filtrosForm" method="get" action="" class="row g-2 align-items-end mb-3">
             <div class="col-md-6">
               <label class="form-label">Buscar</label>
-              <input type="text" name="q" class="form-control" value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>" placeholder="Nome, SKU ou EAN">
+              <input id="searchMain" type="text" name="q" class="form-control" value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>" placeholder="Nome, SKU ou EAN">
             </div>
             <div class="col-md-3">
               <label class="form-label">Status</label>
-              <select name="ativo" class="form-select">
+              <select id="filterAtivo" name="ativo" class="form-select">
                 <option value="">Todos</option>
                 <option value="1" <?= $ativo==='1'?'selected':''; ?>>Ativos</option>
                 <option value="0" <?= $ativo==='0'?'selected':''; ?>>Inativos</option>
               </select>
             </div>
             <div class="col-md-3 d-flex gap-2">
-              <button class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1"></i> Filtrar</button>
+              <button id="btnFiltrar" class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1"></i> Filtrar</button>
               <a class="btn btn-outline-secondary" href="?"><i class="bi bi-arrow-counterclockwise"></i></a>
             </div>
           </form>
 
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <div class="text-muted small">
+            <div id="summaryText" class="text-muted small">
               <?= $totalRows ?> resultado<?= $totalRows===1?'':'s' ?> • Página <?= $page ?> de <?= $totalPages ?>
             </div>
             <div>
@@ -207,47 +268,15 @@ $mk = function(array $overrides = []) use ($filters) {
                   <th class="text-end">Ações</th>
                 </tr>
               </thead>
-              <tbody>
-                <?php if (!$rows): ?>
-                  <tr><td colspan="8" class="text-center text-muted">Nenhum produto encontrado.</td></tr>
-                <?php else: foreach ($rows as $r): ?>
-                  <tr>
-                    <td class="fw-semibold"><?= htmlspecialchars((string)$r['nome'], ENT_QUOTES, 'UTF-8') ?></td>
-                    <td><?= htmlspecialchars((string)($r['sku'] ?? ''), ENT_QUOTES, 'UTF-8') ?: '<span class="text-muted">—</span>' ?></td>
-                    <td><?= htmlspecialchars((string)($r['ean'] ?? ''), ENT_QUOTES, 'UTF-8') ?: '<span class="text-muted">—</span>' ?></td>
-                    <td><?= htmlspecialchars((string)($r['marca'] ?? ''), ENT_QUOTES, 'UTF-8') ?: '<span class="text-muted">—</span>' ?></td>
-                    <td class="text-end money">R$ <?= fmt_money($r['preco_venda']) ?></td>
-                    <td class="text-end"><?= number_format((float)$r['estoque_atual'], 3, ',', '.') ?></td>
-                    <td>
-                      <?php $a = (int)($r['ativo'] ?? 0); ?>
-                      <span class="badge bg-<?= $a ? 'success' : 'secondary' ?>"><?= $a ? 'Ativo' : 'Inativo' ?></span>
-                    </td>
-                    <td class="text-end text-nowrap">
-                      <a class="btn btn-sm btn-primary" href="./produtosEditar.php?id=<?= (int)$r['id'] ?>" title="Editar">
-                        <i class="bi bi-pencil"></i>
-                      </a>
-                    </td>
-                  </tr>
-                <?php endforeach; endif; ?>
+              <tbody id="produtosBody">
+                <?= render_rows_html($rows) ?>
               </tbody>
             </table>
           </div>
 
-          <?php if ($totalPages > 1): ?>
-            <nav aria-label="Paginação" class="mt-3">
-              <ul class="pagination justify-content-end mb-0">
-                <li class="page-item <?= $page<=1?'disabled':'' ?>">
-                  <a class="page-link" href="<?= $mk(['page'=>max(1,$page-1)]) ?>">«</a>
-                </li>
-                <li class="page-item disabled">
-                  <span class="page-link">Página <?= $page ?> de <?= $totalPages ?></span>
-                </li>
-                <li class="page-item <?= $page>=$totalPages?'disabled':'' ?>">
-                  <a class="page-link" href="<?= $mk(['page'=>min($totalPages,$page+1)]) ?>">»</a>
-                </li>
-              </ul>
-            </nav>
-          <?php endif; ?>
+          <nav id="paginationNav" aria-label="Paginação" class="mt-3">
+            <?= render_pagination_html($page, $totalPages, $mk) ?>
+          </nav>
 
         </div>
       </div>
@@ -267,5 +296,85 @@ $mk = function(array $overrides = []) use ($filters) {
   <script src="../../assets/js/core/external.min.js"></script>
   <script src="../../assets/vendor/aos/dist/aos.js"></script>
   <script src="../../assets/js/hope-ui.js" defer></script>
+
+  <script>
+    // --- Util: debounce
+    function debounce(fn, delay){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), delay); } }
+
+    // --- Elementos
+    const searchTop   = document.getElementById('searchTop');
+    const searchMain  = document.getElementById('searchMain');
+    const selectAtivo = document.getElementById('filterAtivo');
+    const summaryText = document.getElementById('summaryText');
+    const tbody       = document.getElementById('produtosBody');
+    const pagNav      = document.getElementById('paginationNav');
+    const formFiltros = document.getElementById('filtrosForm');
+
+    // Sincroniza os dois campos de busca
+    function syncSearch(from, to){
+      if (!from || !to) return;
+      if (to.value !== from.value) to.value = from.value;
+    }
+
+    // Monta URL mantendo filtros
+    function buildUrl(extra = {}){
+      const params = new URLSearchParams(window.location.search);
+      if (searchMain) params.set('q', searchMain.value || '');
+      if (selectAtivo) {
+        const v = selectAtivo.value;
+        if (v === '' || v === null) params.delete('ativo'); else params.set('ativo', v);
+      }
+      // pagina volta para 1 ao mudar busca/filtro
+      if (extra.page) params.set('page', extra.page); else params.set('page', '1');
+      params.set('limit', '<?= (int)$limit ?>');
+      params.set('ajax', '1');
+      return window.location.pathname + '?' + params.toString();
+    }
+
+    // Faz a busca AJAX e atualiza a tabela
+    async function runSearch(extra = {}){
+      try{
+        const url = buildUrl(extra);
+        const res = await fetch(url, { headers: { 'X-Requested-With': 'fetch' } });
+        if(!res.ok) throw new Error('Erro ao buscar');
+        const data = await res.json();
+
+        if (typeof data.tbody === 'string') tbody.innerHTML = data.tbody;
+        if (typeof data.pagination === 'string') pagNav.innerHTML = data.pagination || '';
+        if (typeof data.summary === 'string') summaryText.textContent = data.summary;
+
+        // Atualiza a querystring no navegador (sem recarregar)
+        const newQs = new URL(url, window.location.origin).search.replace(/(&|\?)ajax=1(&|$)/,'$1').replace(/[?&]$/,'');
+        const newUrl = window.location.pathname + (newQs ? '?' + newQs : '');
+        window.history.replaceState(null, '', newUrl);
+      }catch(e){
+        console.error(e);
+      }
+    }
+
+    const runSearchDebounced = debounce(()=>runSearch(), 250);
+
+    // Eventos: digitação nos campos
+    if (searchTop)  searchTop.addEventListener('input', e => { syncSearch(searchTop, searchMain); runSearchDebounced(); });
+    if (searchMain) searchMain.addEventListener('input', e => { syncSearch(searchMain, searchTop); runSearchDebounced(); });
+
+    // Mudança de status
+    if (selectAtivo) selectAtivo.addEventListener('change', () => runSearch());
+
+    // Botão "Filtrar" do formulário não recarrega; usa AJAX
+    if (formFiltros) formFiltros.addEventListener('submit', (e) => { e.preventDefault(); runSearch(); });
+
+    // Paginação via delegação (captura cliques nos links)
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('#paginationNav a.page-link');
+      if (!a) return;
+      e.preventDefault();
+      try{
+        const u = new URL(a.getAttribute('href'), window.location.origin);
+        const page = u.searchParams.get('page') || '1';
+        runSearch({ page });
+      }catch(err){ console.error(err); }
+    });
+  </script>
 </body>
 </html>
