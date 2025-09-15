@@ -37,18 +37,17 @@ $filters = [
 ];
 
 // ---- WHERE
-// Usa empresa_cnpj_num se existir; senão, normaliza empresa_cnpj via REPLACE.
-// Isso permite funcionar mesmo que você ainda não tenha criado a coluna gerada na tabela.
-$where  = ["COALESCE(empresa_cnpj_num, REPLACE(REPLACE(REPLACE(REPLACE(empresa_cnpj,'.',''),'-',''),'/',''),' ')) = :c"];
-$params = [':c' => $empresaCnpj];
+// ⭐ Ajuste: use a coluna gerada indexada; mantém um fallback seguro só por garantia.
+$where  = ["(empresa_cnpj_num = :c OR (empresa_cnpj_num IS NULL AND REPLACE(REPLACE(REPLACE(REPLACE(empresa_cnpj,'.',''),'-',''),'/',''),' ') = :c))"];
+$params = [':c' => (string)$empresaCnpj];
 
 if ($q !== '') {
   // Busca acento/case-insensível via COLLATE
   $params[':q'] = '%' . $q . '%';
   $where[] = "(
-      COALESCE(nome, '')                      COLLATE utf8mb4_unicode_ci LIKE :q
-      OR COALESCE(CAST(sku AS CHAR), '')      COLLATE utf8mb4_unicode_ci LIKE :q
-      OR COALESCE(CAST(ean AS CHAR), '')      COLLATE utf8mb4_unicode_ci LIKE :q
+      COALESCE(nome, '')                 COLLATE utf8mb4_unicode_ci LIKE :q
+      OR COALESCE(CAST(sku AS CHAR), '') COLLATE utf8mb4_unicode_ci LIKE :q
+      OR COALESCE(CAST(ean AS CHAR), '') COLLATE utf8mb4_unicode_ci LIKE :q
     )";
 }
 if ($ativo !== '' && ($ativo === '0' || $ativo === '1')) {
@@ -61,7 +60,14 @@ $whereSql = implode(' AND ', $where);
 $totalRows = 0;
 try {
   $st = $pdo->prepare("SELECT COUNT(*) FROM produtos_peca WHERE $whereSql");
-  $st->execute($params);
+
+  // ⭐ Ajuste: tipagem explícita dos parâmetros
+  foreach ($params as $k => $v) {
+    if ($k === ':ativo')       $st->bindValue($k, (int)$v, PDO::PARAM_INT);
+    else                       $st->bindValue($k, (string)$v, PDO::PARAM_STR);
+  }
+
+  $st->execute();
   $totalRows = (int)$st->fetchColumn();
 } catch (Throwable $e) {
   $totalRows = 0;
@@ -82,9 +88,15 @@ try {
     LIMIT :limit OFFSET :offset
   ";
   $st = $pdo->prepare($sql);
-  foreach ($params as $k => $v) $st->bindValue($k, $v);
-  $st->bindValue(':limit', $limit, PDO::PARAM_INT);
+
+  // ⭐ Ajuste: repete a tipagem explícita
+  foreach ($params as $k => $v) {
+    if ($k === ':ativo')       $st->bindValue($k, (int)$v, PDO::PARAM_INT);
+    else                       $st->bindValue($k, (string)$v, PDO::PARAM_STR);
+  }
+  $st->bindValue(':limit',  $limit,  PDO::PARAM_INT);
   $st->bindValue(':offset', $offset, PDO::PARAM_INT);
+
   $st->execute();
   $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 } catch (Throwable $e) {
