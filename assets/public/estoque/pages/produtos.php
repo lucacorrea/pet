@@ -36,16 +36,15 @@ $filters = [
   'limit' => $limit,
 ];
 
-// ---- WHERE
-// ⭐ Ajuste: use a coluna gerada indexada; mantém um fallback seguro só por garantia.
-$where  = ["(empresa_cnpj_num = :c OR (empresa_cnpj_num IS NULL AND REPLACE(REPLACE(REPLACE(REPLACE(empresa_cnpj,'.',''),'-',''),'/',''),' ') = :c))"];
-$params = [':c' => (string)$empresaCnpj];
+// ---- WHERE (sem mudar schema): CNPJ sem máscara + LIKE acento-insensível por expressão
+$where  = ["REPLACE(REPLACE(REPLACE(REPLACE(empresa_cnpj,'.',''),'-',''),'/',''),' ','') = :c"];
+$params = [':c' => $empresaCnpj];
 
 if ($q !== '') {
-  // Busca acento/case-insensível via COLLATE
+  // Não uso LOWER: collation *_ci já é case/acento-insensível
   $params[':q'] = '%' . $q . '%';
   $where[] = "(
-      COALESCE(nome, '')                 COLLATE utf8mb4_unicode_ci LIKE :q
+      COALESCE(nome, '')           COLLATE utf8mb4_unicode_ci LIKE :q
       OR COALESCE(CAST(sku AS CHAR), '') COLLATE utf8mb4_unicode_ci LIKE :q
       OR COALESCE(CAST(ean AS CHAR), '') COLLATE utf8mb4_unicode_ci LIKE :q
     )";
@@ -60,14 +59,7 @@ $whereSql = implode(' AND ', $where);
 $totalRows = 0;
 try {
   $st = $pdo->prepare("SELECT COUNT(*) FROM produtos_peca WHERE $whereSql");
-
-  // ⭐ Ajuste: tipagem explícita dos parâmetros
-  foreach ($params as $k => $v) {
-    if ($k === ':ativo')       $st->bindValue($k, (int)$v, PDO::PARAM_INT);
-    else                       $st->bindValue($k, (string)$v, PDO::PARAM_STR);
-  }
-
-  $st->execute();
+  $st->execute($params);
   $totalRows = (int)$st->fetchColumn();
 } catch (Throwable $e) {
   $totalRows = 0;
@@ -84,19 +76,13 @@ try {
     SELECT id, nome, sku, ean, marca, preco_venda, estoque_atual, ativo
     FROM produtos_peca
     WHERE $whereSql
-    ORDER BY nome COLLATE utf8mb4_unicode_ci ASC, id DESC
+    ORDER BY nome ASC, id DESC
     LIMIT :limit OFFSET :offset
   ";
   $st = $pdo->prepare($sql);
-
-  // ⭐ Ajuste: repete a tipagem explícita
-  foreach ($params as $k => $v) {
-    if ($k === ':ativo')       $st->bindValue($k, (int)$v, PDO::PARAM_INT);
-    else                       $st->bindValue($k, (string)$v, PDO::PARAM_STR);
-  }
-  $st->bindValue(':limit',  $limit,  PDO::PARAM_INT);
+  foreach ($params as $k => $v) $st->bindValue($k, $v);
+  $st->bindValue(':limit', $limit, PDO::PARAM_INT);
   $st->bindValue(':offset', $offset, PDO::PARAM_INT);
-
   $st->execute();
   $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 } catch (Throwable $e) {
@@ -364,11 +350,9 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
     document.addEventListener('click', (e) => {
       const a = e.target.closest('#paginationNav a.page-link');
       if (!a) return; e.preventDefault();
-      try{
-        const u = new URL(a.getAttribute('href'), window.location.origin);
-        const page = u.searchParams.get('page') || '1';
-        runSearch({ page });
-      }catch(err){ console.error(err); }
+      try{ const u = new URL(a.getAttribute('href'), window.location.origin);
+           const page = u.searchParams.get('page') || '1';
+           runSearch({ page }); }catch(err){ console.error(err); }
     });
   </script>
 </body>
