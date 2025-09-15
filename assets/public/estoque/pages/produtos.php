@@ -40,21 +40,28 @@ $filters = [
 $where  = ["empresa_cnpj_num = :c"];
 $params = [':c' => (string)$empresaCnpj];
 
+// >>>>>>>>>>>>>>>>> CORREÇÃO PRINCIPAL AQUI <<<<<<<<<<<<<<<<<
+// Não reutilize o mesmo :q em PDO quando emulação está OFF.
+// Use :q1, :q2, :q3 e faça bind de cada um.
 if ($q !== '') {
-  $params[':q'] = '%' . $q . '%';
+  $like = '%' . $q . '%';
+  $params[':q1'] = $like;
+  $params[':q2'] = $like;
+  $params[':q3'] = $like;
   $where[] = "(
-    COALESCE(nome, '') COLLATE utf8mb4_unicode_ci LIKE :q
-    OR COALESCE(sku,  '') COLLATE utf8mb4_unicode_ci LIKE :q
-    OR COALESCE(ean,  '') COLLATE utf8mb4_unicode_ci LIKE :q
+    COALESCE(nome,'') LIKE CAST(:q1 AS CHAR) COLLATE utf8mb4_unicode_ci
+    OR COALESCE(sku, '') LIKE CAST(:q2 AS CHAR) COLLATE utf8mb4_unicode_ci
+    OR COALESCE(ean, '') LIKE CAST(:q3 AS CHAR) COLLATE utf8mb4_unicode_ci
   )";
 }
+
 if ($ativo !== '' && ($ativo === '0' || $ativo === '1')) {
   $where[] = "ativo = :ativo";
   $params[':ativo'] = (int)$ativo;
 }
 $whereSql = implode(' AND ', $where);
 
-// ---- DEBUG (acesse .../produtos.php?debug=1 e remova depois)
+// ---- DEBUG (?debug=1)
 if (($_GET['debug'] ?? '') === '1') {
   try {
     $db = $pdo->query('SELECT DATABASE()')->fetchColumn();
@@ -114,7 +121,7 @@ $totalPages = max(1, (int)ceil($totalRows / $limit));
 $page       = max(1, min($page, $totalPages));
 $offset     = ($page - 1) * $limit;
 
-// ---- LISTA (LIMIT/OFFSET diretamente no SQL para compatibilidade)
+// ---- LISTA (LIMIT/OFFSET direto no SQL)
 $rows = [];
 try {
   $limitInt  = (int)$limit;
