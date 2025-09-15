@@ -342,9 +342,9 @@ $danfeVendaId = (int)($_GET['danfe'] ?? 0);
 <?php if ($ok || $err): ?>
   <div id="toastMsg" class="toast show align-items-center border-0 position-fixed top-0 end-0 m-3 shadow-lg"
     role="alert" aria-live="assertive" aria-atomic="true"
-    style="z-index:2000;min-width:340px;border-radius:12px;overflow:hidden;">
+    style="z-index:2000;min-width:340px;border-radius:12px;overflow:hidden;" <?= $ok ? 'bg-success' : 'bg-danger' ?>>
     <div class="d-flex">
-      <div class="toast-body d-flex align-items-center gap-2 text-white fw-semibold <?= $ok ? 'bg-success' : 'bg-danger' ?>">
+      <div class="toast-body d-flex align-items-center gap-2 text-white fw-semibold ">
         <i class="bi <?= $ok ? 'bi-check-circle-fill' : 'bi-x-circle-fill' ?> fs-4"></i>
         <?= htmlspecialchars($msg ?: ($ok ? 'Operação realizada com sucesso!' : 'Falha ao executar operação.'), ENT_QUOTES, 'UTF-8') ?>
       </div>
@@ -370,7 +370,7 @@ $danfeVendaId = (int)($_GET['danfe'] ?? 0);
 
       // barra de tempo sincronizada
       let width = 100;
-      const stepMs = 20,
+      const stepMs = 50,
         step = 100 * stepMs / DURATION;
       const itv = setInterval(() => {
         width = Math.max(0, width - step);
@@ -378,13 +378,7 @@ $danfeVendaId = (int)($_GET['danfe'] ?? 0);
         if (width <= 0) clearInterval(itv);
       }, stepMs);
 
-      // redireciona para DANFE quando o toast some (apenas se houver danfe na URL e sucesso)
-      <?php if ($ok && $danfeVendaId > 0): ?>
-        const goDanfe = () => {
-          window.location.href = './danfe_nfce.php?venda_id=<?= (int)$danfeVendaId ?>';
-        };
-        toastEl.addEventListener('hidden.bs.toast', goDanfe);
-      <?php endif; ?>
+      
     });
   </script>
 <?php endif; ?>
