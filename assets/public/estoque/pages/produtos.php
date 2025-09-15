@@ -370,7 +370,7 @@ $danfeVendaId = (int)($_GET['danfe'] ?? 0);
 
       // barra de tempo sincronizada
       let width = 100;
-      const stepMs = 50,
+      const stepMs = 100,
         step = 100 * stepMs / DURATION;
       const itv = setInterval(() => {
         width = Math.max(0, width - step);
