@@ -303,7 +303,7 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
               </select>
             </div>
             <div class="col-md-3 d-flex gap-2">
-              <button id="btnFiltrar" class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1"></i> Filtrar</button>
+             
               <a class="btn btn-outline-secondary" href="?"><i class="bi bi-arrow-counterclockwise"></i></a>
             </div>
           </form>
