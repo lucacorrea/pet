@@ -165,7 +165,7 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mundo Pets — Produtos</title>
 
-  <link rel="icon" type="image/png" sizes="512x512" href="../../assets/images/dashboard/icon.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="../../assets/images/dashboard/logo.png">
   <link rel="shortcut icon" href="../../assets/images/favicon.ico">
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
   <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
@@ -217,7 +217,7 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
         <div class="container-fluid iq-container">
           <div class="row">
             <div class="col-12">
-              <h1 class="mb-0">Lista de Produtos</h1>
+              <h1 class="mb-0">Lista de Produto</h1>
               <p>Pesquise, filtre e gerencie seus produtos.</p>
             </div>
           </div>
