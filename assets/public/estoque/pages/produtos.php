@@ -13,7 +13,7 @@ $pathConexao = realpath(__DIR__ . '/../../../conexao/conexao.php');
 if ($pathConexao && file_exists($pathConexao)) require_once $pathConexao;
 if (!isset($pdo) || !($pdo instanceof PDO)) die('Conexão indisponível.');
 
-// Garante UTF-8 na sessão da conexão (não altera schema)
+// Garante charset e collation da conexão (safe se já estiver setado)
 try { $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"); } catch (Throwable $e) {}
 
 require_once __DIR__ . '/../../../lib/util.php';
@@ -36,15 +36,15 @@ $filters = [
   'limit' => $limit,
 ];
 
-// ---- WHERE (sem mudar schema): CNPJ sem máscara + LIKE acento-insensível por expressão
+// ---- WHERE (CNPJ sem máscara + busca acento-insensível)
 $where  = ["REPLACE(REPLACE(REPLACE(REPLACE(empresa_cnpj,'.',''),'-',''),'/',''),' ','') = :c"];
 $params = [':c' => $empresaCnpj];
 
 if ($q !== '') {
-  // Não uso LOWER: collation *_ci já é case/acento-insensível
+  // LIKE com collation acento-insensível e case-insensitive
   $params[':q'] = '%' . $q . '%';
   $where[] = "(
-      COALESCE(nome, '')           COLLATE utf8mb4_unicode_ci LIKE :q
+      COALESCE(nome, '') COLLATE utf8mb4_unicode_ci LIKE :q
       OR COALESCE(CAST(sku AS CHAR), '') COLLATE utf8mb4_unicode_ci LIKE :q
       OR COALESCE(CAST(ean AS CHAR), '') COLLATE utf8mb4_unicode_ci LIKE :q
     )";
@@ -165,7 +165,7 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mundo Pets — Produtos</title>
 
-  <link rel="icon" type="image/png" sizes="512x512" href="../../assets/images/dashboard/logo.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="../../assets/images/dashboard/icon.png">
   <link rel="shortcut icon" href="../../assets/images/favicon.ico">
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
   <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
@@ -306,7 +306,10 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
   <script src="../../assets/js/hope-ui.js" defer></script>
 
   <script>
+    // --- Util: debounce
     function debounce(fn, delay){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), delay); } }
+
+    // --- Elementos
     const searchTop   = document.getElementById('searchTop');
     const searchMain  = document.getElementById('searchMain');
     const selectAtivo = document.getElementById('filterAtivo');
@@ -315,44 +318,70 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
     const pagNav      = document.getElementById('paginationNav');
     const formFiltros = document.getElementById('filtrosForm');
 
-    function syncSearch(from, to){ if (from && to && to.value !== from.value) to.value = from.value; }
+    // Sincroniza os dois campos de busca
+    function syncSearch(from, to){
+      if (!from || !to) return;
+      if (to.value !== from.value) to.value = from.value;
+    }
 
+    // Monta URL mantendo filtros
     function buildUrl(extra = {}){
       const params = new URLSearchParams(window.location.search);
       if (searchMain) params.set('q', searchMain.value || '');
-      if (selectAtivo) { const v = selectAtivo.value; if (v === '' || v === null) params.delete('ativo'); else params.set('ativo', v); }
+      if (selectAtivo) {
+        const v = selectAtivo.value;
+        if (v === '' || v === null) params.delete('ativo'); else params.set('ativo', v);
+      }
+      // pagina volta para 1 ao mudar busca/filtro
       if (extra.page) params.set('page', extra.page); else params.set('page', '1');
-      params.set('limit', '<?= (int)$limit ?>'); params.set('ajax', '1');
+      params.set('limit', '<?= (int)$limit ?>');
+      params.set('ajax', '1');
       return window.location.pathname + '?' + params.toString();
     }
 
+    // Faz a busca AJAX e atualiza a tabela
     async function runSearch(extra = {}){
       try{
         const url = buildUrl(extra);
         const res = await fetch(url, { headers: { 'X-Requested-With': 'fetch' } });
         if(!res.ok) throw new Error('Erro ao buscar');
         const data = await res.json();
+
         if (typeof data.tbody === 'string') tbody.innerHTML = data.tbody;
         if (typeof data.pagination === 'string') pagNav.innerHTML = data.pagination || '';
         if (typeof data.summary === 'string') summaryText.textContent = data.summary;
+
+        // Atualiza a querystring no navegador (sem recarregar)
         const newQs = new URL(url, window.location.origin).search.replace(/(&|\?)ajax=1(&|$)/,'$1').replace(/[?&]$/,'');
         const newUrl = window.location.pathname + (newQs ? '?' + newQs : '');
         window.history.replaceState(null, '', newUrl);
-      }catch(e){ console.error(e); }
+      }catch(e){
+        console.error(e);
+      }
     }
 
     const runSearchDebounced = debounce(()=>runSearch(), 250);
+
+    // Eventos: digitação nos campos
     if (searchTop)  searchTop.addEventListener('input', e => { syncSearch(searchTop, searchMain); runSearchDebounced(); });
     if (searchMain) searchMain.addEventListener('input', e => { syncSearch(searchMain, searchTop); runSearchDebounced(); });
+
+    // Mudança de status
     if (selectAtivo) selectAtivo.addEventListener('change', () => runSearch());
+
+    // Botão "Filtrar" do formulário não recarrega; usa AJAX
     if (formFiltros) formFiltros.addEventListener('submit', (e) => { e.preventDefault(); runSearch(); });
 
+    // Paginação via delegação (captura cliques nos links)
     document.addEventListener('click', (e) => {
       const a = e.target.closest('#paginationNav a.page-link');
-      if (!a) return; e.preventDefault();
-      try{ const u = new URL(a.getAttribute('href'), window.location.origin);
-           const page = u.searchParams.get('page') || '1';
-           runSearch({ page }); }catch(err){ console.error(err); }
+      if (!a) return;
+      e.preventDefault();
+      try{
+        const u = new URL(a.getAttribute('href'), window.location.origin);
+        const page = u.searchParams.get('page') || '1';
+        runSearch({ page });
+      }catch(err){ console.error(err); }
     });
   </script>
 </body>
