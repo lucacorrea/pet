@@ -13,6 +13,9 @@ $pathConexao = realpath(__DIR__ . '/../../../conexao/conexao.php');
 if ($pathConexao && file_exists($pathConexao)) require_once $pathConexao;
 if (!isset($pdo) || !($pdo instanceof PDO)) die('Conexão indisponível.');
 
+// Garante charset e collation da conexão (safe se já estiver setado)
+try { $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"); } catch (Throwable $e) {}
+
 require_once __DIR__ . '/../../../lib/util.php';
 $empresaNome = empresa_nome_logada($pdo);
 
@@ -33,16 +36,17 @@ $filters = [
   'limit' => $limit,
 ];
 
-// ---- WHERE (CNPJ sem máscara + CAST p/ SKU/EAN)
+// ---- WHERE (CNPJ sem máscara + busca acento-insensível)
 $where  = ["REPLACE(REPLACE(REPLACE(REPLACE(empresa_cnpj,'.',''),'-',''),'/',''),' ','') = :c"];
 $params = [':c' => $empresaCnpj];
 
 if ($q !== '') {
-  $params[':q'] = '%' . mb_strtolower($q, 'UTF-8') . '%';
+  // LIKE com collation acento-insensível e case-insensitive
+  $params[':q'] = '%' . $q . '%';
   $where[] = "(
-      LOWER(COALESCE(nome, '')) LIKE :q
-      OR LOWER(COALESCE(CAST(sku AS CHAR), '')) LIKE :q
-      OR LOWER(COALESCE(CAST(ean AS CHAR), '')) LIKE :q
+      COALESCE(nome, '') COLLATE utf8mb4_unicode_ci LIKE :q
+      OR COALESCE(CAST(sku AS CHAR), '') COLLATE utf8mb4_unicode_ci LIKE :q
+      OR COALESCE(CAST(ean AS CHAR), '') COLLATE utf8mb4_unicode_ci LIKE :q
     )";
 }
 if ($ativo !== '' && ($ativo === '0' || $ativo === '1')) {
