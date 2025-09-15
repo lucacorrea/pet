@@ -33,7 +33,7 @@ $filters = [
   'limit' => $limit,
 ];
 
-// ---- WHERE (corrigido: CNPJ sem máscara + CAST para SKU/EAN)
+// ---- WHERE (CNPJ sem máscara + CAST p/ SKU/EAN)
 $where  = ["REPLACE(REPLACE(REPLACE(REPLACE(empresa_cnpj,'.',''),'-',''),'/',''),' ','') = :c"];
 $params = [':c' => $empresaCnpj];
 
