@@ -14,7 +14,10 @@ if ($pathConexao && file_exists($pathConexao)) require_once $pathConexao;
 if (!isset($pdo) || !($pdo instanceof PDO)) die('Conexão indisponível.');
 
 // UTF-8
-try { $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"); } catch (Throwable $e) {}
+try {
+  $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+} catch (Throwable $e) {
+}
 
 require_once __DIR__ . '/../../../lib/util.php';
 $empresaNome = empresa_nome_logada($pdo);
@@ -65,7 +68,10 @@ if (($_GET['debug'] ?? '') === '1') {
   try {
     $db = $pdo->query('SELECT DATABASE()')->fetchColumn();
     $emul = null;
-    try { $emul = $pdo->getAttribute(PDO::ATTR_EMULATE_PREPARES) ? 'on' : 'off'; } catch (Throwable $e) {}
+    try {
+      $emul = $pdo->getAttribute(PDO::ATTR_EMULATE_PREPARES) ? 'on' : 'off';
+    } catch (Throwable $e) {
+    }
 
     $sqlCnt = "SELECT COUNT(*) FROM produtos_peca WHERE $whereSql";
     $stCnt = $pdo->prepare($sqlCnt);
@@ -145,18 +151,24 @@ try {
 }
 
 // ---- Helpers
-function fmt_money($v){ return number_format((float)$v, 2, ',', '.'); }
-$mk = function(array $overrides = []) use ($filters) {
+function fmt_money($v)
+{
+  return number_format((float)$v, 2, ',', '.');
+}
+$mk = function (array $overrides = []) use ($filters) {
   $q = array_merge($filters, $overrides);
   return '?' . http_build_query($q);
 };
 
 // ---- Render helpers (para AJAX)
-function render_rows_html(array $rows): string {
+function render_rows_html(array $rows): string
+{
   ob_start();
   if (!$rows): ?>
-    <tr><td colspan="8" class="text-center text-muted">Nenhum produto encontrado.</td></tr>
-  <?php else:
+    <tr>
+      <td colspan="8" class="text-center text-muted">Nenhum produto encontrado.</td>
+    </tr>
+    <?php else:
     foreach ($rows as $r): ?>
       <tr>
         <td class="fw-semibold"><?= htmlspecialchars((string)$r['nome'], ENT_QUOTES, 'UTF-8') ?></td>
@@ -175,7 +187,7 @@ function render_rows_html(array $rows): string {
           </a>
         </td>
       </tr>
-    <?php endforeach;
+  <?php endforeach;
   endif;
   return (string)ob_get_clean();
 }
@@ -183,13 +195,14 @@ function render_rows_html(array $rows): string {
 /**
  * Paginação numerada (bonita) com janela de 5 páginas.
  */
-function render_pagination_html(int $page, int $totalPages, callable $mk, int $window = 2): string {
+function render_pagination_html(int $page, int $totalPages, callable $mk, int $window = 2): string
+{
   if ($totalPages <= 1) return '';
   $start = max(1, $page - $window);
   $end   = min($totalPages, $page + $window);
   // Ajusta janela se no começo/final
-  if ($page <= $window) $end = min($totalPages, 1 + 2*$window);
-  if ($page > $totalPages - $window) $start = max(1, $totalPages - 2*$window);
+  if ($page <= $window) $end = min($totalPages, 1 + 2 * $window);
+  if ($page > $totalPages - $window) $start = max(1, $totalPages - 2 * $window);
 
   ob_start(); ?>
   <ul class="pagination justify-content-end mb-0 pagination-rounded shadow-sm">
@@ -198,7 +211,7 @@ function render_pagination_html(int $page, int $totalPages, callable $mk, int $w
       <?php if ($page <= 1): ?>
         <span class="page-link" aria-label="Primeira"><i class="bi bi-chevron-double-left"></i></span>
       <?php else: ?>
-        <a class="page-link" href="<?= $mk(['page'=>1]) ?>" aria-label="Primeira"><i class="bi bi-chevron-double-left"></i></a>
+        <a class="page-link" href="<?= $mk(['page' => 1]) ?>" aria-label="Primeira"><i class="bi bi-chevron-double-left"></i></a>
       <?php endif; ?>
     </li>
     <!-- Anterior -->
@@ -206,28 +219,28 @@ function render_pagination_html(int $page, int $totalPages, callable $mk, int $w
       <?php if ($page <= 1): ?>
         <span class="page-link" aria-label="Anterior"><i class="bi bi-chevron-left"></i></span>
       <?php else: ?>
-        <a class="page-link" href="<?= $mk(['page'=>max(1,$page-1)]) ?>" aria-label="Anterior"><i class="bi bi-chevron-left"></i></a>
+        <a class="page-link" href="<?= $mk(['page' => max(1, $page - 1)]) ?>" aria-label="Anterior"><i class="bi bi-chevron-left"></i></a>
       <?php endif; ?>
     </li>
 
     <?php if ($start > 1): ?>
-      <li class="page-item"><a class="page-link" href="<?= $mk(['page'=>1]) ?>">1</a></li>
+      <li class="page-item"><a class="page-link" href="<?= $mk(['page' => 1]) ?>">1</a></li>
       <?php if ($start > 2): ?><li class="page-item disabled"><span class="page-link">…</span></li><?php endif; ?>
     <?php endif; ?>
 
-    <?php for ($i=$start; $i<=$end; $i++): ?>
-      <li class="page-item <?= $i===$page?'active':'' ?>">
-        <?php if ($i===$page): ?>
+    <?php for ($i = $start; $i <= $end; $i++): ?>
+      <li class="page-item <?= $i === $page ? 'active' : '' ?>">
+        <?php if ($i === $page): ?>
           <span class="page-link"><?= $i ?></span>
         <?php else: ?>
-          <a class="page-link" href="<?= $mk(['page'=>$i]) ?>"><?= $i ?></a>
+          <a class="page-link" href="<?= $mk(['page' => $i]) ?>"><?= $i ?></a>
         <?php endif; ?>
       </li>
     <?php endfor; ?>
 
     <?php if ($end < $totalPages): ?>
-      <?php if ($end < $totalPages-1): ?><li class="page-item disabled"><span class="page-link">…</span></li><?php endif; ?>
-      <li class="page-item"><a class="page-link" href="<?= $mk(['page'=>$totalPages]) ?>"><?= $totalPages ?></a></li>
+      <?php if ($end < $totalPages - 1): ?><li class="page-item disabled"><span class="page-link">…</span></li><?php endif; ?>
+      <li class="page-item"><a class="page-link" href="<?= $mk(['page' => $totalPages]) ?>"><?= $totalPages ?></a></li>
     <?php endif; ?>
 
     <!-- Próxima -->
@@ -235,7 +248,7 @@ function render_pagination_html(int $page, int $totalPages, callable $mk, int $w
       <?php if ($page >= $totalPages): ?>
         <span class="page-link" aria-label="Próxima"><i class="bi bi-chevron-right"></i></span>
       <?php else: ?>
-        <a class="page-link" href="<?= $mk(['page'=>min($totalPages,$page+1)]) ?>" aria-label="Próxima"><i class="bi bi-chevron-right"></i></a>
+        <a class="page-link" href="<?= $mk(['page' => min($totalPages, $page + 1)]) ?>" aria-label="Próxima"><i class="bi bi-chevron-right"></i></a>
       <?php endif; ?>
     </li>
     <!-- Última -->
@@ -243,11 +256,11 @@ function render_pagination_html(int $page, int $totalPages, callable $mk, int $w
       <?php if ($page >= $totalPages): ?>
         <span class="page-link" aria-label="Última"><i class="bi bi-chevron-double-right"></i></span>
       <?php else: ?>
-        <a class="page-link" href="<?= $mk(['page'=>$totalPages]) ?>" aria-label="Última"><i class="bi bi-chevron-double-right"></i></a>
+        <a class="page-link" href="<?= $mk(['page' => $totalPages]) ?>" aria-label="Última"><i class="bi bi-chevron-double-right"></i></a>
       <?php endif; ?>
     </li>
   </ul>
-  <?php
+<?php
   return (string)ob_get_clean();
 }
 
@@ -255,9 +268,9 @@ function render_pagination_html(int $page, int $totalPages, callable $mk, int $w
 if ((string)($_GET['ajax'] ?? '') === '1') {
   $tbody = render_rows_html($rows);
   $pagination = render_pagination_html($page, $totalPages, $mk);
-  $summary = $totalRows . ' resultado' . ($totalRows===1?'':'s')
-           . ' • Página ' . $page . ' de ' . $totalPages
-           . ' • ' . (int)$limit . ' por página';
+  $summary = $totalRows . ' resultado' . ($totalRows === 1 ? '' : 's')
+    . ' • Página ' . $page . ' de ' . $totalPages
+    . ' • ' . (int)$limit . ' por página';
 
   header('Content-Type: application/json; charset=utf-8');
   echo json_encode([
@@ -267,9 +280,15 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
   ]);
   exit;
 }
+
+$ok  = (int)($_GET['ok']  ?? 0);
+$err = (int)($_GET['err'] ?? 0);
+$msg = (string)($_GET['msg'] ?? '');
+$danfeVendaId = (int)($_GET['danfe'] ?? 0);
 ?>
 <!doctype html>
 <html lang="pt-BR" dir="ltr">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -287,33 +306,94 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
   <link rel="stylesheet" href="../../assets/css/rtl.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
-    .money{font-variant-numeric: tabular-nums}
-    .table thead th{white-space:nowrap}
-    .search-mini{max-width: 420px}
+    .money {
+      font-variant-numeric: tabular-nums
+    }
+
+    .table thead th {
+      white-space: nowrap
+    }
+
+    .search-mini {
+      max-width: 420px
+    }
 
     /* Paginação bonitinha */
     .pagination-rounded .page-link {
       border-radius: .65rem;
-      border: 1px solid rgba(0,0,0,.075);
+      border: 1px solid rgba(0, 0, 0, .075);
     }
+
     .pagination-rounded .page-item.active .page-link {
-      box-shadow: 0 .25rem .5rem rgba(0,0,0,.08);
+      box-shadow: 0 .25rem .5rem rgba(0, 0, 0, .08);
       font-weight: 600;
     }
+
     .pagination .page-link {
       transition: all .15s ease-in-out;
     }
+
     .pagination .page-link:hover {
       transform: translateY(-1px);
     }
   </style>
 </head>
+<!-- TOAST (1,4s) + REDIRECIONA PARA DANFE QUANDO SUCESSO -->
+<?php if ($ok || $err): ?>
+  <div id="toastMsg" class="toast show align-items-center border-0 position-fixed top-0 end-0 m-3 shadow-lg"
+    role="alert" aria-live="assertive" aria-atomic="true"
+    style="z-index:2000;min-width:340px;border-radius:12px;overflow:hidden;">
+    <div class="d-flex">
+      <div class="toast-body d-flex align-items-center gap-2 text-white fw-semibold <?= $ok ? 'bg-success' : 'bg-danger' ?>">
+        <i class="bi <?= $ok ? 'bi-check-circle-fill' : 'bi-x-circle-fill' ?> fs-4"></i>
+        <?= htmlspecialchars($msg ?: ($ok ? 'Operação realizada com sucesso!' : 'Falha ao executar operação.'), ENT_QUOTES, 'UTF-8') ?>
+      </div>
+      <button id="toastClose" type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+    </div>
+    <div class="progress" style="height:3px;">
+      <div id="toastProgress" class="progress-bar <?= $ok ? 'bg-light' : 'bg-warning' ?>" style="width:100%"></div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const toastEl = document.getElementById("toastMsg");
+      const progress = document.getElementById("toastProgress");
+      if (!toastEl) return;
+
+      const DURATION = 1400; // 1.4s
+      const toast = new bootstrap.Toast(toastEl, {
+        delay: DURATION,
+        autohide: true
+      });
+      toast.show();
+
+      // barra de tempo sincronizada
+      let width = 100;
+      const stepMs = 20,
+        step = 100 * stepMs / DURATION;
+      const itv = setInterval(() => {
+        width = Math.max(0, width - step);
+        if (progress) progress.style.width = width + "%";
+        if (width <= 0) clearInterval(itv);
+      }, stepMs);
+
+      // redireciona para DANFE quando o toast some (apenas se houver danfe na URL e sucesso)
+      <?php if ($ok && $danfeVendaId > 0): ?>
+        const goDanfe = () => {
+          window.location.href = './danfe_nfce.php?venda_id=<?= (int)$danfeVendaId ?>';
+        };
+        toastEl.addEventListener('hidden.bs.toast', goDanfe);
+      <?php endif; ?>
+    });
+  </script>
+<?php endif; ?>
 
 <body>
   <?php
-    if (session_status() === PHP_SESSION_NONE) session_start();
-    $menuAtivo = 'estoque-produtos';
-    include '../../layouts/sidebar.php';
+  if (session_status() === PHP_SESSION_NONE) session_start();
+  $menuAtivo = 'estoque-produtos';
+  include '../../layouts/sidebar.php';
   ?>
 
   <main class="main-content">
@@ -367,8 +447,8 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
               <label class="form-label">Status</label>
               <select id="filterAtivo" name="ativo" class="form-select">
                 <option value="">Todos</option>
-                <option value="1" <?= $ativo==='1'?'selected':''; ?>>Ativos</option>
-                <option value="0" <?= $ativo==='0'?'selected':''; ?>>Inativos</option>
+                <option value="1" <?= $ativo === '1' ? 'selected' : ''; ?>>Ativos</option>
+                <option value="0" <?= $ativo === '0' ? 'selected' : ''; ?>>Inativos</option>
               </select>
             </div>
             <div class="col-auto ms-auto">
@@ -385,7 +465,7 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
 
           <div class="d-flex justify-content-between align-items-center mb-2">
             <div id="summaryText" class="text-muted small">
-              <?= $totalRows ?> resultado<?= $totalRows===1?'':'s' ?> • Página <?= $page ?> de <?= $totalPages ?> • <?= (int)$limit ?> por página
+              <?= $totalRows ?> resultado<?= $totalRows === 1 ? '' : 's' ?> • Página <?= $page ?> de <?= $totalPages ?> • <?= (int)$limit ?> por página
             </div>
           </div>
 
@@ -420,7 +500,9 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
     <footer class="footer">
       <div class="footer-body d-flex justify-content-between align-items-center">
         <div class="left-panel">
-          © <script>document.write(new Date().getFullYear())</script> <?= htmlspecialchars($empresaNome, ENT_QUOTES, 'UTF-8') ?>
+          © <script>
+            document.write(new Date().getFullYear())
+          </script> <?= htmlspecialchars($empresaNome, ENT_QUOTES, 'UTF-8') ?>
         </div>
         <div class="right-panel">Desenvolvido por Lucas de S. Correa.</div>
       </div>
@@ -433,61 +515,92 @@ if ((string)($_GET['ajax'] ?? '') === '1') {
   <script src="../../assets/js/hope-ui.js" defer></script>
 
   <script>
-    function debounce(fn, delay){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), delay); } }
-    const searchTop   = document.getElementById('searchTop');
-    const searchMain  = document.getElementById('searchMain');
+    function debounce(fn, delay) {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), delay);
+      }
+    }
+    const searchTop = document.getElementById('searchTop');
+    const searchMain = document.getElementById('searchMain');
     const selectAtivo = document.getElementById('filterAtivo');
     const summaryText = document.getElementById('summaryText');
-    const tbody       = document.getElementById('produtosBody');
-    const pagNav      = document.getElementById('paginationNav');
+    const tbody = document.getElementById('produtosBody');
+    const pagNav = document.getElementById('paginationNav');
     const formFiltros = document.getElementById('filtrosForm');
 
-    function syncSearch(from, to){ if (from && to && to.value !== from.value) to.value = from.value; }
+    function syncSearch(from, to) {
+      if (from && to && to.value !== from.value) to.value = from.value;
+    }
 
-    function buildUrl(extra = {}){
+    function buildUrl(extra = {}) {
       const params = new URLSearchParams(window.location.search);
       if (searchMain) params.set('q', searchMain.value || '');
       if (selectAtivo) {
         const v = selectAtivo.value;
-        if (v === '' || v === null) params.delete('ativo'); else params.set('ativo', v);
+        if (v === '' || v === null) params.delete('ativo');
+        else params.set('ativo', v);
       }
-      if (extra.page) params.set('page', extra.page); else params.set('page', '1');
+      if (extra.page) params.set('page', extra.page);
+      else params.set('page', '1');
       params.set('limit', '<?= (int)$limit ?>'); // sempre 5
       params.set('ajax', '1');
       return window.location.pathname + '?' + params.toString();
     }
 
-    async function runSearch(extra = {}){
-      try{
+    async function runSearch(extra = {}) {
+      try {
         const url = buildUrl(extra);
-        const res = await fetch(url, { headers: { 'X-Requested-With': 'fetch' } });
-        if(!res.ok) throw new Error('Erro ao buscar');
+        const res = await fetch(url, {
+          headers: {
+            'X-Requested-With': 'fetch'
+          }
+        });
+        if (!res.ok) throw new Error('Erro ao buscar');
         const data = await res.json();
         if (typeof data.tbody === 'string') tbody.innerHTML = data.tbody;
         if (typeof data.pagination === 'string') pagNav.innerHTML = data.pagination || '';
         if (typeof data.summary === 'string') summaryText.textContent = data.summary;
-        const newQs = new URL(url, window.location.origin).search.replace(/(&|\?)ajax=1(&|$)/,'$1').replace(/[?&]$/,'');
+        const newQs = new URL(url, window.location.origin).search.replace(/(&|\?)ajax=1(&|$)/, '$1').replace(/[?&]$/, '');
         const newUrl = window.location.pathname + (newQs ? '?' + newQs : '');
         window.history.replaceState(null, '', newUrl);
-      }catch(e){ console.error(e); }
+      } catch (e) {
+        console.error(e);
+      }
     }
 
-    const runSearchDebounced = debounce(()=>runSearch(), 250);
-    if (searchTop)  searchTop.addEventListener('input', e => { syncSearch(searchTop, searchMain); runSearchDebounced(); });
-    if (searchMain) searchMain.addEventListener('input', e => { syncSearch(searchMain, searchTop); runSearchDebounced(); });
+    const runSearchDebounced = debounce(() => runSearch(), 250);
+    if (searchTop) searchTop.addEventListener('input', e => {
+      syncSearch(searchTop, searchMain);
+      runSearchDebounced();
+    });
+    if (searchMain) searchMain.addEventListener('input', e => {
+      syncSearch(searchMain, searchTop);
+      runSearchDebounced();
+    });
     if (selectAtivo) selectAtivo.addEventListener('change', () => runSearch());
-    if (formFiltros) formFiltros.addEventListener('submit', (e) => { e.preventDefault(); runSearch(); });
+    if (formFiltros) formFiltros.addEventListener('submit', (e) => {
+      e.preventDefault();
+      runSearch();
+    });
 
     // Captura todos os links da paginação (numerados, primeira/última, etc.)
     document.addEventListener('click', (e) => {
       const a = e.target.closest('#paginationNav a.page-link');
-      if (!a) return; e.preventDefault();
-      try{
+      if (!a) return;
+      e.preventDefault();
+      try {
         const u = new URL(a.getAttribute('href'), window.location.origin);
         const page = u.searchParams.get('page') || '1';
-        runSearch({ page });
-      }catch(err){ console.error(err); }
+        runSearch({
+          page
+        });
+      } catch (err) {
+        console.error(err);
+      }
     });
   </script>
 </body>
+
 </html>
