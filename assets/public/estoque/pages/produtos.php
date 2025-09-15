@@ -361,7 +361,7 @@ $danfeVendaId = (int)($_GET['danfe'] ?? 0);
       const progress = document.getElementById("toastProgress");
       if (!toastEl) return;
 
-      const DURATION = 1400; // 1.4s
+      const DURATION = 2400; // 1.4s
       const toast = new bootstrap.Toast(toastEl, {
         delay: DURATION,
         autohide: true
@@ -370,7 +370,7 @@ $danfeVendaId = (int)($_GET['danfe'] ?? 0);
 
       // barra de tempo sincronizada
       let width = 100;
-      const stepMs = 100,
+      const stepMs = 50,
         step = 100 * stepMs / DURATION;
       const itv = setInterval(() => {
         width = Math.max(0, width - step);
