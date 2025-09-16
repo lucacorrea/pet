@@ -70,7 +70,7 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="../../assets/images/dashboard/logo.png">
 
-  <!-- libs/tema (mantidos) -->
+  <!-- libs/tema -->
   <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
   <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
   <link rel="stylesheet" href="../../assets/css/hope-ui.min.css?v=4.0.0">
@@ -82,94 +82,78 @@ try {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
   <style>
-    /* === SUA PALETA PADRÃO === */
+    /* === SUA PALETA === */
     :root{
-      --bg:#0b0f18;
-      --panel:#121824;
-      --muted:#a0a8b8;
-      --text:#e6e9ef;
-      --primary:#3b82f6;
-      --primary-800:#1d4ed8;
-      --border:#243042;
-      --focus:#93c5fd;
-      --input-lg-h:48px;
+      --bg:#0b0f18; --panel:#121824; --text:#e6e9ef; --muted:#a0a8b8;
+      --primary:#3b82f6; --primary-800:#1d4ed8; --border:#243042; --focus:#93c5fd;
+      --input-lg-h:56px;           /* mais alto como no exemplo */
+      --tile-h:92px;               /* altura dos blocos/tiles */
+      --right-col:420px;           /* largura da coluna direita */
     }
 
-    /* === LAYOUT TELA CHEIA === */
+    /* Tela cheia / layout base */
     html,body{height:100%}
-    body{
-      margin:0; padding:0; background:var(--bg); color:var(--text);
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
-      overflow:hidden;
-    }
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial;overflow:hidden}
     .pdv-app{height:100vh;width:100vw;display:grid;grid-template-rows:auto 1fr}
 
-    /* Topo enxuto com marca/atalhos/estado do caixa */
-    .pdv-top{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      padding:10px 16px;
-      background:linear-gradient(0deg, rgba(18,24,36,.9), rgba(18,24,36,1));
-      border-bottom:1px solid var(--border);
-      box-shadow:0 6px 24px rgba(0,0,0,.35);
-    }
-    .pdv-brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px}
+    /* Topo compacto */
+    .pdv-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:linear-gradient(0deg, rgba(18,24,36,.9), rgba(18,24,36,1));border-bottom:1px solid var(--border)}
+    .pdv-brand{display:flex;align-items:center;gap:10px;font-weight:800}
     .pdv-brand i{color:var(--primary)}
-    .pdv-top .hint{color:var(--muted);font-size:.9rem}
-    .pdv-top .status{color:var(--muted);font-size:.9rem}
-    .pdv-top .status strong{color:var(--text)}
+    .hint,.status{color:var(--muted);font-size:.9rem}
+    .status strong{color:var(--text)}
 
-    /* Palco em 2 colunas: esquerda flexível / direita fixa */
-    .pdv-stage{display:grid;gap:14px;grid-template-columns:1fr 440px;padding:14px;height:100%;box-sizing:border-box}
+    /* Palco 2 colunas (igual imagem) */
+    .pdv-stage{display:grid;gap:14px;grid-template-columns:1fr var(--right-col);padding:14px;height:100%;box-sizing:border-box}
+    @media (max-width:1440px){ :root{ --right-col:380px } }
+    @media (max-width:1366px){ :root{ --right-col:360px; --input-lg-h:52px; --tile-h:86px } }
     @media (max-width:1100px){ .pdv-stage{grid-template-columns:1fr} }
 
-    /* Coluna esquerda usa grid para ocupar a altura toda */
     .pdv-left{display:grid;gap:14px;grid-template-rows:auto auto 1fr;min-height:0}
+    .pdv-right{min-height:0;display:flex;flex-direction:column;gap:14px}
+    .pdv-right-scroll{flex:1 1 auto;overflow:auto;display:flex;flex-direction:column;gap:14px}
 
-    /* Cartões base no seu dark */
-    .card-pdv{
-      background:var(--panel);
-      border:1px solid var(--border);
-      border-radius:16px;
-      box-shadow:0 10px 26px rgba(0,0,0,.35);
-    }
+    /* Cartões */
+    .card-pdv{background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 26px rgba(0,0,0,.35)}
     .card-pdv .card-header{padding:12px 16px;border-bottom:1px solid var(--border)}
     .card-pdv .card-body{padding:16px}
 
-    /* VISOR */
-    .pdv-visor{
-      background: radial-gradient(120% 140% at 0% 0%, rgba(59,130,246,.25) 0%, rgba(59,130,246,0) 55%) , var(--panel);
-      border:1px solid var(--border);
-      border-radius:16px; padding:18px 20px;
-      display:flex; align-items:center; justify-content:space-between;
-    }
+    /* VISOR (total grande) */
+    .pdv-visor{background:radial-gradient(120% 140% at 0% 0%, rgba(59,130,246,.25) 0%, rgba(59,130,246,0) 55%), var(--panel);border:1px solid var(--border);border-radius:16px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
     .pdv-visor .linha1{font-size:.95rem;color:var(--muted)}
-    .pdv-visor .linha2{font-size:2.2rem;font-weight:800;letter-spacing:.4px}
+    .pdv-visor .linha2{font-size:2.25rem;font-weight:800;letter-spacing:.3px}
     .pdv-visor .right{text-align:right}
-    @media (max-width:1199px){ .pdv-visor .linha2{font-size:1.85rem} }
+    @media (max-width:1366px){ .pdv-visor .linha2{font-size:1.9rem} }
 
-    /* Busca + sugestões (dark) */
+    /* === BLOCO DE CAMPOS (igual ao visual do exemplo) === */
+    .grid-campos{display:grid;grid-template-columns:1.4fr .55fr .75fr;gap:12px;align-items:stretch}
+    @media (max-width:1366px){ .grid-campos{grid-template-columns:1.2fr .6fr .7fr} }
+    @media (max-width:1100px){ .grid-campos{grid-template-columns:1fr 1fr} .col-span-2{grid-column:1/-1} }
+
+    .tile{background:#0e1421;border:1px solid var(--border);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;height:var(--tile-h)}
+    .tile .tile-label{color:var(--muted);font-size:.85rem}
+    .tile .tile-value{display:flex;gap:8px;align-items:center;height:100%}
+    .tile .tile-input{flex:1 1 auto}
+    .tile input{height:calc(var(--tile-h) - 38px);font-size:1.15rem;background:#0e1421;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:0 12px}
+    .tile input:focus{border-color:var(--focus);box-shadow:0 0 0 .2rem rgba(147,197,253,.15)}
+    .tile .money-prefix{padding:0 10px;border:1px solid var(--border);border-radius:10px;background:#0e1421;color:var(--muted);height:calc(var(--tile-h) - 38px);display:flex;align-items:center}
+
+    /* Sugestões (dark) */
     .pdv-busca{position:relative}
-    .pdv-suggest{
-      position:absolute;left:0;right:0;top:100%;
-      background:var(--panel); color:var(--text);
-      border:1px solid var(--border); border-top:0;
-      max-height:320px; overflow:auto; z-index:1060; display:none;
-      border-bottom-left-radius:12px; border-bottom-right-radius:12px;
-      box-shadow:0 10px 22px rgba(0,0,0,.45);
-    }
+    .pdv-suggest{position:absolute;left:0;right:0;top:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);border-top:0;max-height:320px;overflow:auto;z-index:1060;display:none;border-bottom-left-radius:12px;border-bottom-right-radius:12px;box-shadow:0 10px 22px rgba(0,0,0,.45)}
     .pdv-suggest .item{padding:.6rem .8rem;cursor:pointer}
     .pdv-suggest .item:hover{background:rgba(59,130,246,.08)}
     .pdv-suggest .muted{color:var(--muted);font-size:.85em}
 
-    /* Inputs grandes/coerentes */
-    .form-label{margin-bottom:.35rem;color:var(--muted)}
-    .form-control,.form-select{background:#0e1421;color:var(--text);border:1px solid var(--border)}
-    .form-control:focus,.form-select:focus{border-color:var(--focus); box-shadow:0 0 0 .2rem rgba(147,197,253,.15)}
-    .form-control-lg{height:var(--input-lg-h);line-height:calc(var(--input-lg-h) - 2px)}
-    .input-group-text{height:var(--input-lg-h);display:flex;align-items:center;background:#0e1421;border:1px solid var(--border);color:var(--muted)}
-    .btn.kbtn{height:var(--input-lg-h);display:flex;align-items:center;min-width:98px}
+    /* Barra de ações (botões altos) */
+    .acoes{display:flex;flex-wrap:wrap;gap:10px}
+    .kbtn{height:var(--input-lg-h);min-width:110px;display:flex;align-items:center;justify-content:center;border-radius:12px}
+    .btn-primary{background:var(--primary);border-color:var(--primary)}
+    .btn-primary:hover{background:var(--primary-800);border-color:var(--primary-800)}
+    .btn-outline-light{color:var(--text);border-color:var(--border)}
+    .btn-outline-light:hover{background:rgba(255,255,255,.06)}
 
-    /* Tabela de itens rolável */
+    /* Itens com rolagem */
     .pdv-itens-card{min-height:0;display:flex;flex-direction:column}
     .pdv-itens-wrap{flex:1 1 auto;overflow:auto}
     .table{color:var(--text)}
@@ -177,36 +161,24 @@ try {
     .table-striped>tbody>tr:nth-of-type(odd)>*{background-color:rgba(255,255,255,.02)}
     .table>:not(caption)>*>*{border-bottom:1px solid var(--border)}
 
-    /* Direita com rolagem interna */
-    .pdv-right{min-height:0;display:flex;flex-direction:column;gap:14px}
-    .pdv-right-scroll{flex:1 1 auto;overflow:auto;display:flex;flex-direction:column;gap:14px}
+    /* Totais (tile grande) */
+    .totais-card{background:linear-gradient(180deg, rgba(59,130,246,.06), rgba(59,130,246,.02));border:1px dashed rgba(147,197,253,.35);border-radius:16px}
+    .money{font-variant-numeric:tabular-nums}
+    .total-num{font-size:2.1rem;font-weight:800}
+    @media (max-width:1366px){ .total-num{font-size:1.8rem} }
 
-    .totais-card{
-      background:linear-gradient(180deg, rgba(59,130,246,.06), rgba(59,130,246,.02));
-      border:1px dashed rgba(147,197,253,.35);
-      border-radius:16px;
-    }
-
-    .kbd{background:#0b1220;color:#cbd5e1;padding:.15rem .45rem;border-radius:.35rem;font-size:.85rem;border:1px solid #1f2937}
-    .pay-btn{height:var(--input-lg-h);font-size:1.05rem}
+    /* Pagamento (recebido/troco estilo tile) */
+    .pay-btn{height:var(--input-lg-h);font-size:1.05rem;border-radius:12px}
     .btn-success{background:#16a34a;border-color:#16a34a}
     .btn-success:hover{background:#15803d;border-color:#15803d}
-    .btn-primary{background:var(--primary);border-color:var(--primary)}
-    .btn-primary:hover{background:var(--primary-800);border-color:var(--primary-800)}
-    .btn-outline-light{color:var(--text);border-color:var(--border)}
-    .btn-outline-light:hover{background:rgba(255,255,255,.06)}
-
-    .money{font-variant-numeric:tabular-nums}
     .troco-ok{color:#22c55e} .troco-neg{color:#f87171}
-
     .text-muted{color:var(--muted)!important}
-    .link-light{color:var(--text)}
-    .link-light:hover{color:var(--primary)}
+    .kbd{background:#0b1220;color:#cbd5e1;padding:.15rem .45rem;border-radius:.35rem;border:1px solid #1f2937}
   </style>
 </head>
 <body>
 
-  <!-- TOAST (1,4s) -->
+  <!-- TOAST -->
   <?php if ($ok || $err): ?>
     <div id="toastMsg" class="toast show align-items-center border-0 position-fixed top-0 end-0 m-3 shadow-lg"
       role="alert" aria-live="assertive" aria-atomic="true"
@@ -224,7 +196,8 @@ try {
     </div>
     <script>
       document.addEventListener("DOMContentLoaded", function() {
-        const toastEl = document.getElementById("toastMsg"), progress = document.getElementById("toastProgress");
+        const toastEl = document.getElementById("toastMsg");
+        const progress = document.getElementById("toastProgress");
         if (!toastEl) return;
         const DURATION = 1400;
         const toast = new bootstrap.Toast(toastEl, { delay: DURATION, autohide: true });
@@ -245,7 +218,6 @@ try {
         <i class="bi bi-basket2-fill fs-5"></i>
         <span><?= htmlspecialchars($empresaNome ?: 'PDV', ENT_QUOTES, 'UTF-8') ?> — Venda Rápida</span>
       </div>
-
       <div class="status d-none d-md-block">
         <?php if (!$caixaAberto): ?>
           <i class="bi bi-exclamation-triangle me-1" style="color:#f87171"></i> Nenhum caixa aberto —
@@ -258,13 +230,12 @@ try {
           desde <?= htmlspecialchars($caixaAberto['quando'], ENT_QUOTES, 'UTF-8') ?>
         <?php endif; ?>
       </div>
-
       <div class="hint d-none d-sm-block">
         Atalhos: <span class="kbd">Enter</span> Adicionar • <span class="kbd">F2</span> Quantidade • <span class="kbd">F4</span> Finalizar
       </div>
     </div>
 
-    <!-- Palco principal -->
+    <!-- Palco -->
     <div class="pdv-stage">
       <!-- ESQUERDA -->
       <div class="pdv-left">
@@ -280,50 +251,53 @@ try {
           </div>
         </div>
 
-        <!-- Info/atalhos secundarios -->
+        <!-- Campos em blocos/tiles -->
         <div class="card-pdv">
-          <div class="card-body py-2">
-            <span class="text-muted">Use leitor de código de barras ou busque pelo nome do produto.</span>
+          <div class="card-body">
+            <div class="grid-campos">
+              <!-- BUSCA: ocupa 2 colunas em telas pequenas -->
+              <div class="tile col-span-2">
+                <div class="tile-label">Código / Nome / SKU / EAN</div>
+                <div class="tile-value pdv-busca">
+                  <input type="text" id="inp-busca" class="tile-input" placeholder="Digite o nome ou use o leitor" autocomplete="off" <?= $caixaAberto ? '' : 'disabled' ?>>
+                  <div class="pdv-suggest" id="box-suggest"></div>
+                </div>
+              </div>
+
+              <!-- QTD -->
+              <div class="tile">
+                <div class="tile-label">Quantidade</div>
+                <div class="tile-value">
+                  <input type="number" id="inp-qtd" class="tile-input text-end" step="0.001" min="0.001" value="1.000" <?= $caixaAberto ? '' : 'disabled' ?>>
+                </div>
+              </div>
+
+              <!-- PREÇO UNIT -->
+              <div class="tile">
+                <div class="tile-label">Vlr. Unit (R$)</div>
+                <div class="tile-value">
+                  <span class="money-prefix">R$</span>
+                  <input type="number" id="inp-preco" class="tile-input text-end" step="0.01" min="0" value="0.00" <?= $caixaAberto ? '' : 'disabled' ?>>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="acoes mt-3">
+              <button type="button" class="btn btn-primary kbtn" id="btn-add" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-plus-lg"></i>&nbsp;Adicionar <span class="small ms-1 kbd">Enter</span></button>
+              <button type="button" class="btn btn-outline-light kbtn" id="btn-qtd" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-123"></i>&nbsp;Qtd <span class="small ms-1 kbd">F2</span></button>
+              <button type="button" class="btn btn-outline-light kbtn" id="btn-desc" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-percent"></i>&nbsp;Desconto</button>
+              <button type="button" class="btn btn-outline-danger kbtn" id="btn-clear" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-trash3"></i>&nbsp;Limpar</button>
+            </div>
           </div>
         </div>
 
-        <!-- Form principal -->
+        <!-- LISTA DE ITENS -->
         <form method="post" action="../actions/vendaRapidaSalvar.php" id="form-venda" class="pdv-itens-card card-pdv" data-caixa="<?= $caixaAberto ? '1' : '0' ?>">
           <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
           <input type="hidden" name="itens_json" id="itens_json">
           <input type="hidden" name="desconto" id="desconto_hidden" value="0.00">
 
-          <div class="card-body">
-            <div class="row g-3">
-              <div class="col-lg-7">
-                <label class="form-label">Código / Nome / SKU / EAN</label>
-                <div class="pdv-busca">
-                  <input type="text" class="form-control form-control-lg" id="inp-busca" placeholder="Digite o Nome do Produto" autocomplete="off" <?= $caixaAberto ? '' : 'disabled' ?>>
-                  <div class="pdv-suggest" id="box-suggest"></div>
-                </div>
-                <div class="form-text" style="color:var(--muted)">Pressione <span class="kbd">Enter</span> para adicionar.</div>
-              </div>
-
-              <div class="col-lg-2">
-                <label class="form-label">Qtd</label>
-                <input type="number" class="form-control form-control-lg text-end" id="inp-qtd" step="0.001" min="0.001" value="1.000" <?= $caixaAberto ? '' : 'disabled' ?>>
-              </div>
-
-              <div class="col-lg-3">
-                <label class="form-label">Vlr. Unit (R$)</label>
-                <input type="number" class="form-control form-control-lg text-end" id="inp-preco" step="0.01" min="0" value="0.00" <?= $caixaAberto ? '' : 'disabled' ?>>
-              </div>
-
-              <div class="col-12 d-flex flex-wrap gap-2">
-                <button type="button" class="btn btn-primary kbtn" id="btn-add" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-plus-lg"></i>&nbsp;Adicionar <span class="small ms-1 kbd">Enter</span></button>
-                <button type="button" class="btn btn-outline-light kbtn" id="btn-qtd" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-123"></i>&nbsp;Qtd <span class="small ms-1 kbd">F2</span></button>
-                <button type="button" class="btn btn-outline-light kbtn" id="btn-desc" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-percent"></i>&nbsp;Desconto</button>
-                <button type="button" class="btn btn-outline-danger kbtn" id="btn-clear" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-trash3"></i>&nbsp;Limpar</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Itens (rolagem) -->
           <div class="pdv-itens-wrap">
             <div class="card-pdv" style="background:transparent;border:none;box-shadow:none;">
               <div class="card-body pt-0">
@@ -341,7 +315,7 @@ try {
                     <tbody></tbody>
                     <tfoot>
                       <tr>
-                        <td colspan="5" class="text-muted small">Dica: clique no valor para editar; use o ícone <i class="bi bi-x"></i> para remover.</td>
+                        <td colspan="5" class="text-muted small">Clique no valor para editar; use <i class="bi bi-x"></i> para remover.</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -355,6 +329,7 @@ try {
       <!-- DIREITA -->
       <div class="pdv-right">
         <div class="pdv-right-scroll">
+          <!-- TOTAIS -->
           <div class="card totais-card">
             <div class="card-body">
               <div class="d-flex justify-content-between"><span class="text-muted">Itens</span><strong id="tot-itens">0</strong></div>
@@ -366,11 +341,12 @@ try {
               <hr>
               <div class="d-flex justify-content-between align-items-center">
                 <span class="fs-5">TOTAL</span>
-                <span class="fs-3 fw-bold money" id="tot-geral">R$ 0,00</span>
+                <span class="total-num money" id="tot-geral">R$ 0,00</span>
               </div>
             </div>
           </div>
 
+          <!-- PAGAMENTO -->
           <div class="card-pdv">
             <div class="card-header">
               <h5 class="mb-0">Pagamento</h5>
@@ -393,15 +369,26 @@ try {
                 </select>
               </div>
 
+              <!-- Recebido/Troco como tiles grandes -->
               <div id="grp-dinheiro" class="mt-3" style="display:none;">
-                <label class="form-label">Valor Recebido (Dinheiro)</label>
-                <div class="input-group">
-                  <span class="input-group-text">R$</span>
-                  <input type="number" step="0.01" min="0" class="form-control text-end" id="inp-recebido" name="valor_recebido" placeholder="0,00">
-                </div>
-                <div class="d-flex justify-content-between mt-2">
-                  <span class="text-muted">Troco</span>
-                  <strong id="lbl-troco" class="money">R$ 0,00</strong>
+                <div class="row g-2">
+                  <div class="col-12">
+                    <div class="tile">
+                      <div class="tile-label">Valor Recebido</div>
+                      <div class="tile-value">
+                        <span class="money-prefix">R$</span>
+                        <input type="number" step="0.01" min="0" class="tile-input text-end" id="inp-recebido" name="valor_recebido" placeholder="0,00">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="tile" style="align-items:flex-start">
+                      <div class="tile-label">Troco</div>
+                      <div class="tile-value">
+                        <div id="lbl-troco" class="money total-num">R$ 0,00</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -522,9 +509,9 @@ try {
     const selFP=el('#forma_pagamento'), grpDin=el('#grp-dinheiro'), inpRec=el('#inp-recebido'), lblTroco=el('#lbl-troco');
     function toggleDinheiroUI(){ const isDin=selFP.value==='dinheiro'; grpDin.style.display=isDin?'block':'none'; if(isDin) setTimeout(()=>inpRec.focus(),50); validateFinalizeButton(); }
     function recalcTroco(){
-      if(selFP.value!=='dinheiro'){ lblTroco.textContent='R$ 0,00'; lblTroco.className='money'; return; }
+      if(selFP.value!=='dinheiro'){ lblTroco.textContent='R$ 0,00'; lblTroco.className='money total-num'; return; }
       const t=totalGeral(), r=parseFloat(inpRec.value||'0'), tr=r-t;
-      lblTroco.textContent='R$ '+fmt(tr); lblTroco.className='money '+(tr>=0?'troco-ok':'troco-neg'); validateFinalizeButton();
+      lblTroco.textContent='R$ '+fmt(tr); lblTroco.className='money total-num '+(tr>=0?'troco-ok':'troco-neg'); validateFinalizeButton();
     }
     function validateFinalizeButton(){
       const b=document.getElementById('btn-finalizar');
@@ -551,13 +538,6 @@ try {
     }
 
     recalc(); toggleDinheiroUI();
-  </script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function(){
-      const m=document.getElementById('modalCaixaObrigatorio');
-      if(m){ const modal=new bootstrap.Modal(m); modal.show(); }
-    });
   </script>
 </body>
 </html>
