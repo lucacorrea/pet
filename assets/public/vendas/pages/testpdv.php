@@ -592,13 +592,12 @@ try {
             <!-- LISTA DE PRODUTOS (OCUPA O 1fr E ROLA POR DENTRO) -->
             <div class="card-pdv list-card">
                 <div class="card-header">LISTA DE ITENS</div>
-                <div class="card-pdv" style="min-height:0">
+             
                    
                         <span>Prévia NFC-e (itens)</span>
                         <span class="badge text-bg-warning text-dark">Somente pré-visualização</span>
                         <div class="ticket" id="ticket"><!-- render via JS --></div>
                    
-                </div>
             </div>
 
             <!-- PRÉVIA NFC-e (SOMENTE ITENS) + SUBTOTAIS EMBAIXO -->
