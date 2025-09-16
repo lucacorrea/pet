@@ -80,146 +80,59 @@ try {
   <link rel="stylesheet" href="../../assets/css/rtl.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
-    :root {
-      --input-lg-h: 48px;
-    }
+    :root { --input-lg-h: 48px; }
 
     /* visor */
     .pdv-visor {
-      background: #002f8cff;
-      color: #f0f0f0;
-      border-radius: 14px;
-      padding: 16px 20px;
+      background: #002f8cff; color: #f0f0f0; border-radius: 14px; padding: 16px 20px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: inset 0 0 0 1px #111827, 0 10px 28px rgba(0, 0, 0, .15);
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: inset 0 0 0 1px #111827, 0 10px 28px rgba(0,0,0,.15);
     }
+    .pdv-visor .linha1 { font-size: 1rem; opacity: .9 }
+    .pdv-visor .linha2 { font-size: 2.2rem; font-weight: 700; letter-spacing: .5px }
+    .pdv-visor .right { text-align: right }
 
-    .pdv-visor .linha1 {
-      font-size: 1rem;
-      opacity: .9
-    }
+    .pdv-busca { position: relative; }
+    .pdv-suggest { position: absolute; left:0; right:0; top:100%; background:#fff; border:1px solid #e5e7eb; border-top:0; max-height:320px; overflow:auto; z-index:1060; display:none; border-bottom-left-radius:10px; border-bottom-right-radius:10px; }
+    .pdv-suggest .item { padding:.55rem .75rem; cursor:pointer; }
+    .pdv-suggest .item:hover { background:#f3f4f6; }
+    .pdv-suggest .item.active { background:#eef2ff; }
+    .pdv-suggest .muted { color:#6b7280; font-size:.85em }
 
-    .pdv-visor .linha2 {
-      font-size: 2.2rem;
-      font-weight: 700;
-      letter-spacing: .5px
-    }
+    .itens-table td, .itens-table th { vertical-align: middle; }
 
-    .pdv-visor .right {
-      text-align: right
-    }
+    .totais-card { border:1px dashed #c7c9d1; border-radius:16px; background:#f9fafb; }
 
-    .pdv-busca {
-      position: relative;
-    }
+    .kbtn { min-width: 84px; }
+    .kbd { background:#0b1220; color:#cbd5e1; padding:.15rem .45rem; border-radius:.35rem; font-size:.85rem; border:1px solid #1f2937; }
 
-    .pdv-suggest {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 100%;
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-top: 0;
-      max-height: 320px;
-      overflow: auto;
-      z-index: 1060;
-      display: none;
-      border-bottom-left-radius: 10px;
-      border-bottom-right-radius: 10px;
-    }
-
-    .pdv-suggest .item {
-      padding: .55rem .75rem;
-      cursor: pointer;
-    }
-
-    .pdv-suggest .item:hover {
-      background: #f3f4f6;
-    }
-
-    .pdv-suggest .muted {
-      color: #6b7280;
-      font-size: .85em
-    }
-
-    .itens-table td,
-    .itens-table th {
-      vertical-align: middle;
-    }
-
-    .totais-card {
-      border: 1px dashed #c7c9d1;
-      border-radius: 16px;
-      background: #f9fafb;
-    }
-
-    .kbtn {
-      min-width: 84px;
-    }
-
-    .kbd {
-      background: #0b1220;
-      color: #cbd5e1;
-      padding: .15rem .45rem;
-      border-radius: .35rem;
-      font-size: .85rem;
-      border: 1px solid #1f2937;
-    }
-
-    .pay-btn {
-      height: var(--input-lg-h);
-      font-size: 1.05rem;
-    }
-
-    .money {
-      font-variant-numeric: tabular-nums;
-    }
-
-    .troco-ok {
-      color: #16a34a;
-    }
-
-    .troco-neg {
-      color: #dc2626;
-    }
+    .pay-btn { height: var(--input-lg-h); font-size: 1.05rem; }
+    .money { font-variant-numeric: tabular-nums; }
+    .troco-ok { color:#16a34a; }
+    .troco-neg { color:#dc2626; }
 
     /* normalização */
-    .form-label {
-      margin-bottom: .35rem;
-    }
+    .form-label { margin-bottom:.35rem; }
+    .form-control-lg { height: var(--input-lg-h); line-height: calc(var(--input-lg-h) - 2px); }
+    .input-group-text { height: var(--input-lg-h); display:flex; align-items:center; }
+    .btn.kbtn { height: var(--input-lg-h); display:flex; align-items:center; }
+    .pdv-help { min-height: 22px; }
 
-    .form-control-lg {
-      height: var(--input-lg-h);
-      line-height: calc(var(--input-lg-h) - 2px);
-    }
+    @media (max-width: 1199px) { .pdv-visor .linha2 { font-size: 1.8rem; } }
 
-    .input-group-text {
-      height: var(--input-lg-h);
-      display: flex;
-      align-items: center;
-    }
+    /* ====== MODO TELA INTEIRA (PDV FULL) ====== */
+    body.pdv-full { overflow: hidden; }
+    body.pdv-full .sidebar { display: none !important; }
+    body.pdv-full .main-content { margin-left: 0 !important; width: 100vw; }
+    body.pdv-full .iq-navbar-header, body.pdv-full .navbar, body.pdv-full .iq-header-img { display: none !important; }
+    body.pdv-full .content-inner { padding: 10px !important; margin: 0 !important; }
+    body.pdv-full .pdv-visor .linha2 { font-size: clamp(1.8rem, 2.3vw + 1rem, 3.6rem); }
+    body.pdv-full .pay-btn { height: 60px; font-size: 1.05rem; }
+    body.pdv-full .kbtn { height: 48px; }
 
-    .btn.kbtn {
-      height: var(--input-lg-h);
-      display: flex;
-      align-items: center;
-    }
-
-    .pdv-help {
-      min-height: 22px;
-    }
-
-    /* mesma “barriga” sob as 3 colunas */
-
-    @media (max-width: 1199px) {
-      .pdv-visor .linha2 {
-        font-size: 1.8rem;
-      }
-    }
+    /* Modal de atalhos */
+    .atalhos-list li { margin-bottom: .35rem; }
   </style>
 </head>
 
@@ -239,6 +152,11 @@ try {
           </a>
           <div class="ms-auto d-none d-lg-flex align-items-center gap-3">
             <span class="text-muted small">Atalhos: <span class="kbd">Enter</span> Adicionar • <span class="kbd">F2</span> Quantidade • <span class="kbd">F4</span> Finalizar</span>
+            <!-- Botões extras -->
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-full" data-action="toggle-full">
+              <i class="bi bi-arrows-fullscreen"></i> Tela inteira <span class="small ms-1 kbd d-none d-xl-inline">F8</span>
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-atalhos" title="Ver atalhos (F1)"><i class="bi bi-keyboard"></i></button>
           </div>
         </div>
       </nav>
@@ -266,27 +184,16 @@ try {
             if (!toastEl) return;
 
             const DURATION = 1400; // 1.4s
-            const toast = new bootstrap.Toast(toastEl, {
-              delay: DURATION,
-              autohide: true
-            });
+            const toast = new bootstrap.Toast(toastEl, { delay: DURATION, autohide: true });
             toast.show();
 
             // barra de tempo sincronizada
-            let width = 100;
-            const stepMs = 20,
-              step = 100 * stepMs / DURATION;
-            const itv = setInterval(() => {
-              width = Math.max(0, width - step);
-              if (progress) progress.style.width = width + "%";
-              if (width <= 0) clearInterval(itv);
-            }, stepMs);
+            let width = 100; const stepMs = 20, step = 100 * stepMs / DURATION;
+            const itv = setInterval(() => { width = Math.max(0, width - step); if (progress) progress.style.width = width + "%"; if (width <= 0) clearInterval(itv); }, stepMs);
 
             // redireciona para DANFE quando o toast some (auto ou clique)
             <?php if ($ok && $vendaId > 0): ?>
-              const goDanfe = () => {
-                window.location.href = './danfe_nfce.php?venda_id=<?= (int)$vendaId ?>';
-              };
+              const goDanfe = () => { window.location.href = './danfe_nfce.php?venda_id=<?= (int)$vendaId ?>'; };
               toastEl.addEventListener('hidden.bs.toast', goDanfe);
             <?php endif; ?>
           });
@@ -379,8 +286,8 @@ try {
                   <div class="col-12 d-flex gap-2">
                     <button type="button" class="btn btn-primary kbtn" id="btn-add" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-plus-lg"></i>&nbsp;Adicionar <span class="small ms-1 kbd">Enter</span></button>
                     <button type="button" class="btn btn-outline-secondary kbtn" id="btn-qtd" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-123"></i>&nbsp;Qtd <span class="small ms-1 kbd">F2</span></button>
-                    <button type="button" class="btn btn-outline-secondary kbtn" id="btn-desc" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-percent"></i>&nbsp;Desconto</button>
-                    <button type="button" class="btn btn-outline-danger kbtn" id="btn-clear" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-trash3"></i>&nbsp;Limpar</button>
+                    <button type="button" class="btn btn-outline-secondary kbtn" id="btn-desc" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-percent"></i>&nbsp;Desconto <span class="small ms-1 kbd">F3</span></button>
+                    <button type="button" class="btn btn-outline-danger kbtn" id="btn-clear" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-trash3"></i>&nbsp;Limpar <span class="small ms-1 kbd">Ctrl+Backspace</span></button>
                   </div>
                 </div>
               </div>
@@ -483,268 +390,193 @@ try {
     </div>
   </main>
 
+  <!-- Modal de Atalhos -->
+  <div class="modal fade" id="atalhosModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-keyboard me-2"></i>Atalhos do PDV</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="atalhos-list">
+            <li><span class="kbd">F8</span> Alternar tela inteira</li>
+            <li><span class="kbd">F1</span> Mostrar/ocultar esta ajuda</li>
+            <li><span class="kbd">Enter</span> Adicionar item (ou confirmar sugestão)</li>
+            <li><span class="kbd">↑</span>/<span class="kbd">↓</span> Navegar sugestões</li>
+            <li><span class="kbd">Esc</span> Fechar sugestões</li>
+            <li><span class="kbd">F2</span> Focar Qtd</li>
+            <li><span class="kbd">F3</span> Focar Desconto</li>
+            <li><span class="kbd">F4</span> Finalizar venda</li>
+            <li><span class="kbd">F6</span> Alternar forma de pagamento</li>
+            <li><span class="kbd">D</span>/<span class="kbd">P</span>/<span class="kbd">B</span>/<span class="kbd">C</span> Dinheiro/PIX/Débito/Crédito</li>
+            <li><span class="kbd">+</span>/<span class="kbd">-</span> Aumentar/reduzir qtd. do último item</li>
+            <li><span class="kbd">Ctrl</span> + <span class="kbd">Backspace</span> Limpar todos os itens</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="../../assets/js/core/libs.min.js"></script>
   <script src="../../assets/js/core/external.min.js"></script>
   <script src="../../assets/vendor/aos/dist/aos.js"></script>
   <script src="../../assets/js/hope-ui.js" defer></script>
+
   <script>
     const PRODUTOS = <?= json_encode($produtos, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
 
     // helpers
-    const fmt = v => (Number(v || 0)).toLocaleString('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
+    const fmt = v => (Number(v || 0)).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
     const el = sel => document.querySelector(sel);
     const tbody = document.querySelector('#tbl-itens tbody');
     let itens = [];
     const form = document.getElementById('form-venda');
     const temCaixa = form.getAttribute('data-caixa') === '1';
 
-    function totalGeral() {
-      let subtotal = 0;
-      itens.forEach(i => subtotal += i.qtd * i.unit);
-      const d = parseFloat(el('#inp-desconto').value || '0');
-      return Math.max(subtotal - d, 0);
-    }
+    function totalGeral(){ let subtotal=0; itens.forEach(i=> subtotal += i.qtd*i.unit); const d=parseFloat(el('#inp-desconto').value||'0'); return Math.max(subtotal - d, 0); }
 
-    function recalc() {
-      let subtotal = 0,
-        count = 0;
-      itens.forEach(i => {
-        subtotal += i.qtd * i.unit;
-        count++;
-      });
-      const d = parseFloat(el('#inp-desconto').value || '0'),
-        total = Math.max(subtotal - d, 0);
-      el('#tot-subtotal').textContent = 'R$ ' + fmt(subtotal);
-      el('#tot-geral').textContent = 'R$ ' + fmt(total);
-      el('#tot-itens').textContent = count;
-      el('#visor-subtotal').textContent = 'R$ ' + fmt(total);
-      el('#desconto_hidden').value = (d || 0).toFixed(2);
-      el('#itens_json').value = JSON.stringify(itens);
-      renderTable();
-      recalcTroco();
-      validateFinalizeButton();
-    }
+    function recalc(){ let subtotal=0, count=0; itens.forEach(i=>{subtotal+=i.qtd*i.unit; count++;}); const d=parseFloat(el('#inp-desconto').value||'0'), total=Math.max(subtotal-d,0);
+      el('#tot-subtotal').textContent='R$ '+fmt(subtotal);
+      el('#tot-geral').textContent='R$ '+fmt(total);
+      el('#tot-itens').textContent=count;
+      el('#visor-subtotal').textContent='R$ '+fmt(total);
+      el('#desconto_hidden').value=(d||0).toFixed(2);
+      el('#itens_json').value=JSON.stringify(itens);
+      renderTable(); recalcTroco(); validateFinalizeButton(); }
 
-    function renderTable() {
-      tbody.innerHTML = itens.map((i, idx) => `
+    function renderTable(){ tbody.innerHTML = itens.map((i,idx)=>`
         <tr>
           <td>${escapeHtml(i.nome)}</td>
           <td class="text-end"><input type="number" min="0.001" step="0.001" class="form-control form-control-sm text-end inp-qtd" data-idx="${idx}" value="${i.qtd.toFixed(3)}" ${temCaixa?'':'disabled'}></td>
           <td class="text-end"><input type="number" min="0" step="0.01" class="form-control form-control-sm text-end inp-unit" data-idx="${idx}" value="${i.unit.toFixed(2)}" ${temCaixa?'':'disabled'}></td>
           <td class="text-end money">R$ ${fmt(i.qtd*i.unit)}</td>
           <td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger btn-del" data-idx="${idx}" ${temCaixa?'':'disabled'}><i class="bi bi-x"></i></button></td>
-        </tr>`).join('');
-    }
+        </tr>`).join(''); }
 
-    function escapeHtml(s) {
-      return String(s || '').replace(/[&<>"'`=\/]/g, c => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-        '/': '&#x2F;',
-        '`': '&#x60;',
-        '=': '&#x3D;'
-      } [c]));
-    }
+    function escapeHtml(s){ return String(s||'').replace(/[&<>"'`=\/]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c])); }
 
     // busca
-    const box = el('#box-suggest'),
-      inpBusca = el('#inp-busca'),
-      inpQtd = el('#inp-qtd'),
-      inpPreco = el('#inp-preco');
+    const box = el('#box-suggest'), inpBusca = el('#inp-busca'), inpQtd = el('#inp-qtd'), inpPreco = el('#inp-preco');
+    let sugIndex = -1;
 
-    function filtra(q) {
-      q = (q || '').trim().toLowerCase();
-      if (!q) return [];
-      return PRODUTOS.filter(p => (p.nome || '').toLowerCase().includes(q) || (p.sku || '').toLowerCase().includes(q) || (p.ean || '').toLowerCase().includes(q) || (p.marca || '').toLowerCase().includes(q)).slice(0, 50);
-    }
+    function filtra(q){ q=(q||'').trim().toLowerCase(); if(!q) return []; return PRODUTOS.filter(p => (p.nome||'').toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q) || (p.ean||'').toLowerCase().includes(q) || (p.marca||'').toLowerCase().includes(q)).slice(0,50); }
 
-    function showSugestoes(lista) {
-      if (!lista.length) {
-        box.style.display = 'none';
-        box.innerHTML = '';
-        return;
-      }
-      box.innerHTML = lista.map(p => `
+    function showSugestoes(lista){ if(!lista.length){ box.style.display='none'; box.innerHTML=''; sugIndex=-1; return; }
+      box.innerHTML = lista.map(p=>`
         <div class="item" data-id="${p.id}" data-preco="${Number(p.preco_venda||0)}" data-nome="${escapeHtml(p.nome||'')}">
           <div><strong>${escapeHtml(p.nome||'-')}</strong></div>
           <div class="muted">${escapeHtml([p.marca,p.sku,p.ean].filter(Boolean).join(' • '))}</div>
           <div class="muted">R$ ${fmt(p.preco_venda||0)} ${p.unidade?(' / '+escapeHtml(p.unidade)) : ''}</div>
         </div>`).join('');
-      box.style.display = 'block';
-    }
+      box.style.display='block'; sugIndex = -1; }
+
+    function chooseSuggestByIndex(idx){ const items = box.querySelectorAll('.item'); if(!items.length || idx<0 || idx>=items.length) return false; const it = items[idx]; el('#visor-produto').textContent = it.getAttribute('data-nome') || '—'; inpPreco.value = parseFloat(it.getAttribute('data-preco')||'0').toFixed(2); box.style.display='none'; setTimeout(()=> inpQtd.focus(), 10); return true; }
+
+    function highlightSuggest(){ const items = box.querySelectorAll('.item'); items.forEach((n,i)=> n.classList.toggle('active', i===sugIndex)); }
+
     if (temCaixa) {
-      inpBusca.addEventListener('input', () => {
-        showSugestoes(filtra(inpBusca.value));
+      inpBusca.addEventListener('input', ()=>{ showSugestoes(filtra(inpBusca.value)); });
+      // navegação teclado na busca
+      inpBusca.addEventListener('keydown', (e)=>{
+        const visible = box.style.display === 'block';
+        if (e.key==='ArrowDown' && visible){ e.preventDefault(); const items=box.querySelectorAll('.item'); if(items.length){ sugIndex = (sugIndex+1) % items.length; highlightSuggest(); } }
+        else if (e.key==='ArrowUp' && visible){ e.preventDefault(); const items=box.querySelectorAll('.item'); if(items.length){ sugIndex = (sugIndex-1+items.length) % items.length; highlightSuggest(); } }
+        else if (e.key==='Enter'){
+          if (visible && sugIndex>=0){ e.preventDefault(); e.stopPropagation(); chooseSuggestByIndex(sugIndex); }
+          // caso contrário, o listener do form (abaixo) cuidará de adicionar
+        }
+        else if (e.key==='Escape' && visible){ e.preventDefault(); box.style.display='none'; sugIndex=-1; }
       });
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('.pdv-busca')) box.style.display = 'none';
-      });
-      box.addEventListener('click', (e) => {
-        const it = e.target.closest('.item');
-        if (!it) return;
-        el('#visor-produto').textContent = it.getAttribute('data-nome') || '—';
-        inpPreco.value = parseFloat(it.getAttribute('data-preco') || '0').toFixed(2);
-        box.style.display = 'none';
-        setTimeout(() => inpQtd.focus(), 10);
-      });
+
+      document.addEventListener('click', (e)=>{ if (!e.target.closest('.pdv-busca')) { box.style.display='none'; sugIndex=-1; } });
+      box.addEventListener('click', (e)=>{ const it = e.target.closest('.item'); if(!it) return; el('#visor-produto').textContent = it.getAttribute('data-nome') || '—'; inpPreco.value = parseFloat(it.getAttribute('data-preco')||'0').toFixed(2); box.style.display='none'; setTimeout(()=> inpQtd.focus(),10); });
     }
 
     // adicionar item
-    function addItemFromInputs() {
-      if (!temCaixa) return;
-      const nomeVisor = (el('#visor-produto').textContent || '').trim();
-      const qtd = parseFloat(inpQtd.value || '0'),
-        unit = parseFloat(inpPreco.value || '0'),
-        termo = (inpBusca.value || '').trim();
-      let finalNome = nomeVisor;
-      if (!finalNome || finalNome === '—') {
-        const lista = filtra(termo);
-        if (lista[0]) {
-          finalNome = lista[0].nome || '';
-          if (!inpPreco.value || parseFloat(inpPreco.value || '0') <= 0) inpPreco.value = Number(lista[0].preco_venda || 0).toFixed(2);
-        } else finalNome = termo || 'Item';
-      }
-      if (qtd <= 0 || unit < 0) return;
-      itens.push({
-        nome: finalNome,
-        qtd,
-        unit
-      });
-      inpBusca.value = '';
-      el('#visor-produto').textContent = '—';
-      inpQtd.value = '1.000';
-      recalc();
-      inpBusca.focus();
-    }
+    function addItemFromInputs(){ if(!temCaixa) return; const nomeVisor=(el('#visor-produto').textContent||'').trim(); const qtd=parseFloat(inpQtd.value||'0'), unit=parseFloat(inpPreco.value||'0'), termo=(inpBusca.value||'').trim(); let finalNome=nomeVisor; if(!finalNome||finalNome==='—'){ const lista=filtra(termo); if(lista[0]){ finalNome=lista[0].nome||''; if(!inpPreco.value || parseFloat(inpPreco.value||'0')<=0) inpPreco.value=Number(lista[0].preco_venda||0).toFixed(2); } else finalNome=termo||'Item'; }
+      if (qtd<=0 || unit<0) return; itens.push({nome:finalNome, qtd, unit}); inpBusca.value=''; el('#visor-produto').textContent='—'; inpQtd.value='1.000'; recalc(); inpBusca.focus(); }
 
     if (temCaixa) {
       el('#btn-add').addEventListener('click', addItemFromInputs);
-      el('#btn-clear').addEventListener('click', () => {
-        itens = [];
-        recalc();
-        inpBusca.value = '';
-        inpQtd.value = '1.000';
-        inpPreco.value = '0.00';
-        el('#visor-produto').textContent = '—';
-        inpBusca.focus();
+      el('#btn-clear').addEventListener('click', ()=>{ if(!itens.length) return; if(confirm('Limpar todos os itens da venda?')){ itens=[]; recalc(); inpBusca.value=''; inpQtd.value='1.000'; inpPreco.value='0.00'; el('#visor-produto').textContent='—'; inpBusca.focus(); }});
+      el('#btn-qtd').addEventListener('click', ()=> inpQtd.select());
+      el('#btn-desc').addEventListener('click', ()=> el('#inp-desconto').select());
+      tbody.addEventListener('input', (e)=>{
+        if (e.target.matches('.inp-qtd')){ const i=+e.target.dataset.idx, v=parseFloat(e.target.value||'0'); if(itens[i]) itens[i].qtd=Math.max(v,0); recalc(); }
+        else if (e.target.matches('.inp-unit')){ const i=+e.target.dataset.idx, v=parseFloat(e.target.value||'0'); if(itens[i]) itens[i].unit=Math.max(v,0); recalc(); }
       });
-      el('#btn-qtd').addEventListener('click', () => inpQtd.select());
-      el('#btn-desc').addEventListener('click', () => el('#inp-desconto').select());
-      tbody.addEventListener('input', (e) => {
-        if (e.target.matches('.inp-qtd')) {
-          const i = +e.target.dataset.idx,
-            v = parseFloat(e.target.value || '0');
-          if (itens[i]) itens[i].qtd = Math.max(v, 0);
-          recalc();
-        } else if (e.target.matches('.inp-unit')) {
-          const i = +e.target.dataset.idx,
-            v = parseFloat(e.target.value || '0');
-          if (itens[i]) itens[i].unit = Math.max(v, 0);
-          recalc();
-        }
-      });
-      tbody.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-del')) {
-          const i = +e.target.closest('.btn-del').dataset.idx;
-          itens.splice(i, 1);
-          recalc();
-        }
-      });
+      tbody.addEventListener('click', (e)=>{ if (e.target.closest('.btn-del')){ const i=+e.target.closest('.btn-del').dataset.idx; itens.splice(i,1); recalc(); } });
       el('#inp-desconto').addEventListener('input', recalc);
     }
 
     // pagamento
-    const selFP = el('#forma_pagamento'),
-      grpDin = el('#grp-dinheiro'),
-      inpRec = el('#inp-recebido'),
-      lblTroco = el('#lbl-troco');
+    const selFP = el('#forma_pagamento'), grpDin = el('#grp-dinheiro'), inpRec = el('#inp-recebido'), lblTroco = el('#lbl-troco');
 
-    function toggleDinheiroUI() {
-      const isDin = selFP.value === 'dinheiro';
-      grpDin.style.display = isDin ? 'block' : 'none';
-      if (isDin) setTimeout(() => inpRec.focus(), 50);
-      validateFinalizeButton();
-    }
+    function toggleDinheiroUI(){ const isDin = selFP.value==='dinheiro'; grpDin.style.display = isDin ? 'block' : 'none'; if(isDin) setTimeout(()=> inpRec.focus(), 50); validateFinalizeButton(); }
 
-    function recalcTroco() {
-      if (selFP.value !== 'dinheiro') {
-        lblTroco.textContent = 'R$ 0,00';
-        lblTroco.className = 'money';
-        return;
-      }
-      const t = totalGeral(),
-        r = parseFloat(inpRec.value || '0'),
-        tr = r - t;
-      lblTroco.textContent = 'R$ ' + fmt(tr);
-      lblTroco.className = 'money ' + (tr >= 0 ? 'troco-ok' : 'troco-neg');
-      validateFinalizeButton();
-    }
+    function recalcTroco(){ if (selFP.value!=='dinheiro'){ lblTroco.textContent='R$ 0,00'; lblTroco.className='money'; return; } const t=totalGeral(), r=parseFloat(inpRec.value||'0'), tr=r-t; lblTroco.textContent='R$ '+fmt(tr); lblTroco.className='money '+(tr>=0?'troco-ok':'troco-neg'); validateFinalizeButton(); }
 
-    function validateFinalizeButton() {
-      const b = el('#btn-finalizar');
-      if (!temCaixa || !itens.length) {
-        b.disabled = true;
-        return;
-      }
-      if (selFP.value === 'dinheiro') {
-        const t = totalGeral(),
-          r = parseFloat(inpRec.value || '0');
-        b.disabled = !(r >= t);
-      } else b.disabled = false;
-    }
+    function validateFinalizeButton(){ const b=el('#btn-finalizar'); if(!temCaixa || !itens.length){ b.disabled=true; return; } if(selFP.value==='dinheiro'){ const t=totalGeral(), r=parseFloat(inpRec.value||'0'); b.disabled = !(r>=t); } else b.disabled=false; }
+
+    function setPagamento(mode){ if(!temCaixa) return; if(!['dinheiro','pix','debito','credito'].includes(mode)) return; selFP.value = mode; toggleDinheiroUI(); }
+
     if (temCaixa) {
-      document.querySelectorAll('[data-pay]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          selFP.value = btn.getAttribute('data-pay');
-          toggleDinheiroUI();
-        });
-      });
+      document.querySelectorAll('[data-pay]').forEach(btn=>{ btn.addEventListener('click', ()=>{ selFP.value = btn.getAttribute('data-pay'); toggleDinheiroUI(); }); });
       selFP.addEventListener('change', toggleDinheiroUI);
       inpRec.addEventListener('input', recalcTroco);
     }
 
-    // atalhos
+    // atalhos (enter no campo de busca já foi tratado acima)
     if (temCaixa) {
-      form.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          if (document.activeElement === el('#inp-busca')) addItemFromInputs();
-        }
-      });
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'F2') {
-          e.preventDefault();
-          el('#inp-qtd').select();
-        }
-        if (e.key === 'F4') {
-          e.preventDefault();
-          if (!el('#btn-finalizar').disabled) {
-            form.requestSubmit ? form.requestSubmit(el('#btn-finalizar')) : el('#btn-finalizar').click();
+      form.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); if(document.activeElement===el('#inp-busca')) addItemFromInputs(); }});
+      document.addEventListener('keydown', (e)=>{
+        const tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase();
+        const typing = ['input','textarea','select'].includes(tag) || (document.activeElement && document.activeElement.isContentEditable);
+        if (e.key==='F2'){ e.preventDefault(); el('#inp-qtd').select(); }
+        if (e.key==='F3'){ e.preventDefault(); el('#inp-desconto').select(); }
+        if (e.key==='F4'){ e.preventDefault(); if(!el('#btn-finalizar').disabled){ form.requestSubmit ? form.requestSubmit(el('#btn-finalizar')) : el('#btn-finalizar').click(); } }
+        if (e.key==='F6'){ e.preventDefault(); const modes=['dinheiro','pix','debito','credito']; const cur=selFP.value; const idx=(modes.indexOf(cur)+1)%modes.length; setPagamento(modes[idx]); }
+        if (!typing){
+          if (e.key==='+' || e.key==='='){ if(itens.length){ itens[itens.length-1].qtd = (itens[itens.length-1].qtd||0)+1; recalc(); } }
+          if (e.key==='-' || e.key==='_'){ if(itens.length){ itens[itens.length-1].qtd = Math.max((itens[itens.length-1].qtd||0)-1, 0.001); recalc(); } }
+          if (!e.ctrlKey && e.key){
+            if (e.key.toLowerCase()==='d') { e.preventDefault(); setPagamento('dinheiro'); }
+            if (e.key.toLowerCase()==='p') { e.preventDefault(); setPagamento('pix'); }
+            if (e.key.toLowerCase()==='b') { e.preventDefault(); setPagamento('debito'); }
+            if (e.key.toLowerCase()==='c') { e.preventDefault(); setPagamento('credito'); }
           }
         }
+        if (e.ctrlKey && e.key==='Backspace'){ if(itens.length && confirm('Limpar todos os itens da venda?')){ itens=[]; recalc(); } }
       });
     }
 
+    // ===== Tela inteira (F8 / botão / ?full=1) =====
+    const btnFull = document.getElementById('btn-full');
+    function isFull(){ return document.body.classList.contains('pdv-full'); }
+    function updateFullBtn(){ if(!btnFull) return; const i = btnFull.querySelector('i'); if(isFull()){ btnFull.innerHTML = '<i class="bi bi-fullscreen-exit"></i> Sair tela inteira <span class="small ms-1 kbd d-none d-xl-inline">F8</span>'; } else { btnFull.innerHTML = '<i class="bi bi-arrows-fullscreen"></i> Tela inteira <span class="small ms-1 kbd d-none d-xl-inline">F8</span>'; } }
+    function applyFull(flag){ document.body.classList.toggle('pdv-full', !!flag); localStorage.setItem('pdv_full', flag? '1':'0'); updateFullBtn(); }
+    function toggleFull(){ applyFull(!isFull()); }
+
+    // Inicializa estado: URL ?full=1 tem prioridade, senão localStorage
+    (function initFull(){ const urlFull = new URLSearchParams(location.search).get('full'); if(urlFull==='1' || urlFull==='true'){ applyFull(true); } else { applyFull(localStorage.getItem('pdv_full')==='1'); } })();
+
+    if (btnFull) btnFull.addEventListener('click', toggleFull);
+    document.addEventListener('keydown', (e)=>{ if(e.key==='F8'){ e.preventDefault(); toggleFull(); }});
+
+    // Modal de Atalhos (F1)
+    const atalhosModalEl = document.getElementById('atalhosModal');
+    const atalhosModal = atalhosModalEl ? new bootstrap.Modal(atalhosModalEl) : null;
+    const btnAtalhos = document.getElementById('btn-atalhos');
+    if (btnAtalhos && atalhosModal) btnAtalhos.addEventListener('click', ()=> atalhosModal.toggle());
+    document.addEventListener('keydown', (e)=>{ if(e.key==='F1'){ e.preventDefault(); atalhosModal && atalhosModal.toggle(); }});
+
     // start
-    recalc();
-    toggleDinheiroUI();
+    recalc(); toggleDinheiroUI();
   </script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const m = document.getElementById('modalCaixaObrigatorio');
-      if (m) {
-        const modal = new bootstrap.Modal(m);
-        modal.show();
-      }
-    });
+    document.addEventListener('DOMContentLoaded', function(){ const m = document.getElementById('modalCaixaObrigatorio'); if (m){ const modal = new bootstrap.Modal(m); modal.show(); } });
   </script>
 </body>
-
 </html>
