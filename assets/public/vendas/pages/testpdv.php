@@ -17,7 +17,7 @@ $empresaNome = empresa_nome_logada($pdo);
 $empresaCnpj = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj'] ?? ''));
 if (!preg_match('/^\d{14}$/', $empresaCnpj)) die('Empresa não vinculada ao usuário.');
 
-// Formata CNPJ p/ exibição no preview
+// Somente para formatação (não será usado na prévia)
 $empresaCnpjFmt = preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $empresaCnpj);
 
 if (empty($_SESSION['csrf_venda_rapida'])) {
@@ -57,10 +57,10 @@ try{
 <style>
 /* ===== Cores do print / tema ===== */
 :root{
-  --bg:#0b1130;            /* fundo geral */
-  --brand:#0d2f53;         /* topo escuro */
+  --bg:#0b1130;
+  --brand:#0d2f53;
   --brand2:#123b6a;
-  --panel:#173e6d;         /* cartões */
+  --panel:#173e6d;
   --panel2:#1d4f86;
   --border:#2d5a93;
   --text:#eaf2ff;
@@ -77,17 +77,16 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
 
 /* Topo */
 .topbar{
-  height:64px; display:grid; grid-template-columns:1fr 320px; gap:0;
+  height:64px; display:grid; grid-template-columns:1fr; gap:0;
   background:linear-gradient(180deg,var(--brand2),var(--brand));
   border-bottom:1px solid #0b1c33; box-shadow:0 8px 18px rgba(0,0,0,.45);
 }
 .top-left{display:flex;align-items:center;gap:14px;padding:0 18px}
 .top-left .brand{font-weight:800; letter-spacing:.15rem; text-transform:uppercase; font-size:1.05rem;}
-.top-right{
-  background:linear-gradient(180deg,#1a2640,#273650);
-  display:flex;align-items:center;justify-content:center; border-left:1px solid #0f1f38;
+.caixa-status{
+  background:#0f2f59;border:1px solid #2c538c;border-radius:10px;padding:6px 10px;
+  text-align:center;text-transform:uppercase;font-weight:900;letter-spacing:.12rem
 }
-.top-right .yz{opacity:.9;font-weight:700;letter-spacing:.12rem}
 
 /* Área principal 3 colunas */
 .stage{
@@ -129,19 +128,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
   font-size:1.25rem; color:#315986; opacity:.9;
 }
 
-/* Sugestões com cara de cupom */
-#sug{
-  top:62px !important; display:none; max-height:300px; overflow:auto;
-  border:2px dashed #cdd9f3 !important;
-}
-#sug .sug-item{
-  cursor:pointer; border-bottom:1px dotted #e3eaf8;
-}
-#sug .sug-item:last-child{border-bottom:0}
-#sug .sug-item:hover{background:#f4f7ff}
-#sug .price{font-family:ui-monospace,Menlo,Consolas,monospace}
-
-/* Inputs numéricos “money” */
+/* Inputs base */
 .inp{
   background:#fff;color:#0e1b2a;border:2px solid #7fb2ff;border-radius:10px;height:50px;padding:0 10px;font-weight:600;width:100%
 }
@@ -152,21 +139,19 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
 .money-input{border-left:0;border-radius:0 10px 10px 0}
 .money{font-variant-numeric:tabular-nums}
 
-/* Caixa status */
-.caixa-status{
-  background:#0f2f59;border:1px solid #2c538c;border-radius:10px;padding:9px 12px;
-  text-align:center;text-transform:uppercase;font-weight:900;letter-spacing:.12rem
-}
-
 /* Centro (lista) */
 .center{display:grid;grid-template-rows:auto 1fr auto;gap:12px;min-height:0}
 .visor{background:#123c6b;border:1px solid #2b5288;border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
 .visor .big{font-size:1.95rem;font-weight:900}
-.table-wrap{min-height:0;overflow:auto}
 
-/* ===== Tabela com estética “cupom” ===== */
+/* LISTA: ocupa o 1fr e rola dentro */
+.list-card{min-height:0; display:flex; flex-direction:column;}
+.table-wrap{min-height:0; overflow:auto}
 table{color:#eaf2ff}
+#tbl{width:100%}
 #tbl thead th{
+  position:sticky; top:0;
+  z-index:1;
   background:#0f2f59;border-bottom:1px solid #2b5288;
   font-size:.75rem; letter-spacing:.06rem; text-transform:uppercase;
 }
@@ -180,7 +165,8 @@ table{color:#eaf2ff}
   border-color:#7fb2ff; box-shadow:0 0 0 .2rem rgba(127,178,255,.15);
 }
 
-/* Subtotais */
+/* Subtotais + prévia embaixo */
+.bottom{display:grid; grid-template-rows:auto auto; gap:12px; min-height:0}
 .subgrid{display:grid;grid-template-columns:1fr 300px;gap:12px}
 .box-num{background:#0f2f59;border:1px solid #2b5288;border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
 .box-num .lab{opacity:.9}
@@ -198,13 +184,7 @@ table{color:#eaf2ff}
 .shortcuts{font-size:.92rem;color:var(--muted);line-height:1.2}
 .kbd{background:#0f2140;border:1px solid #1f355c;border-radius:.35rem;padding:.12rem .38rem;color:#dbe7ff}
 
-/* Faixa lateral */
-.side-band{
-  position:fixed;top:64px;right:0;width:420px;height:calc(100vh - 64px);
-  background:linear-gradient(180deg,#2a3344 10%, #2a3344 90%);opacity:.45;pointer-events:none;
-}
-
-/* ===== Preview de Cupom NFC-e (DEMO) ===== */
+/* ===== Prévia de Cupom NFC-e (somente itens) ===== */
 .ticket-wrap{display:flex;justify-content:center}
 .ticket{
   width:340px; max-width:100%; margin:0 auto;
@@ -213,29 +193,18 @@ table{color:#eaf2ff}
   padding:14px 14px 18px;
   font-family:ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
   font-size:12.5px; line-height:1.28;
-  position:relative;
 }
-.ticket:before,.ticket:after{
-  content:""; position:absolute; top:50%; transform:translateY(-50%);
-  width:10px; height:10px; background:var(--bg); border:1px solid var(--ticket-edge); border-radius:50%;
-}
-.ticket:before{left:-6px} .ticket:after{right:-6px}
-.t-head{ text-align:center; margin-bottom:8px }
-.t-title{ font-weight:800; font-size:13px }
-.t-sub{ color:#475569 }
-.t-divider{ height:1px; background:linear-gradient(90deg,#dbe0ea 25%, transparent 25%); background-size:8px 1px; margin:10px 0 }
 .t-line{ display:grid; grid-template-columns:1fr auto; gap:6px; padding:4px 0; border-bottom:1px dotted #ccd6e5 }
 .t-line:last-child{border-bottom:0}
 .t-desc{ font-weight:700; color:#0b1323 }
 .t-meta{ color:#475569 }
 .t-val{ font-weight:800; text-align:right }
-.t-sum > div{ display:flex; justify-content:space-between; padding:4px 0 }
-.t-total-row{ font-weight:900; font-size:13px }
-.t-foot{ color:#475569; text-align:center; margin-top:6px }
-.t-qr{
-  margin:10px auto 0; width:112px; height:112px; border:1px dashed #c9d3e4; border-radius:8px;
-  background:repeating-linear-gradient(45deg,#eef3fb 0,#eef3fb 6px,#f7f9fe 6px,#f7f9fe 12px);
-  display:flex;align-items:center;justify-content:center; color:#64748b; font-size:11px
+.t-list{ max-height:280px; overflow:auto; padding-right:2px }
+
+/* Faixa lateral (estética) */
+.side-band{
+  position:fixed;top:64px;right:0;width:420px;height:calc(100vh - 64px);
+  background:linear-gradient(180deg,#2a3344 10%, #2a3344 90%);opacity:.45;pointer-events:none;
 }
 </style>
 </head>
@@ -246,7 +215,6 @@ table{color:#eaf2ff}
     <div class="brand">Mundo Pets – PDV</div>
     <div class="caixa-status">CAIXA <?= $caixaAberto ? 'ABERTO' : 'FECHADO' ?></div>
   </div>
-  
 </div>
 
 <div class="side-band"></div>
@@ -259,7 +227,6 @@ table{color:#eaf2ff}
         <div class="tile">
           <div class="lbl d-flex align-items-center gap-2">
             <span>CÓDIGO DE BARRAS</span>
-            
           </div>
           <div class="value nfce-input">
             <i class="bi bi-upc-scan inp-icon"></i>
@@ -315,42 +282,57 @@ table{color:#eaf2ff}
       </div>
     </div>
 
-    <div class="card-pdv" style="min-height:0">
-      <div class="card-header">LISTA DE PRODUTOS</div>
-        <!-- PREVIEW DE CUPOM NFC-e (DEMO) -->
-    <div class="card-pdv mt-2" style="min-height:0">
-      <div class="card-header d-flex align-items-center gap-2">
-        <span></span>
-        <span class="badge text-bg-warning text-dark">Somente pré-visualização</span>
+    <!-- LISTA DE PRODUTOS (OCUPA O 1fr E ROLA POR DENTRO) -->
+    <div class="card-pdv list-card">
+      <div class="card-header">LISTA DE ITENS</div>
+      <div class="card-body table-wrap">
+        <table id="tbl" class="table table-sm table-striped align-middle">
+          <thead>
+            <tr>
+              <th style="width:56px">#</th>
+              <th style="width:120px">SKU</th>
+              <th>Produto</th>
+              <th style="width:140px" class="text-end">Qtd</th>
+              <th style="width:140px" class="text-end">Unit.</th>
+              <th style="width:140px" class="text-end">Total</th>
+              <th style="width:64px" class="text-end">Rem.</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
-      <div class="card-body ticket-wrap">
-        <div class="ticket" id="ticket">
-          <!-- renderizado via JS -->
+    </div>
+
+    <!-- PRÉVIA NFC-e (SOMENTE ITENS) + SUBTOTAIS EMBAIXO -->
+    <div class="bottom">
+      <div class="card-pdv" style="min-height:0">
+        <div class="card-header d-flex align-items-center gap-2">
+          <span>Prévia NFC-e (itens)</span>
+          <span class="badge text-bg-warning text-dark">Somente pré-visualização</span>
+        </div>
+        <div class="card-body ticket-wrap">
+          <div class="ticket" id="ticket"><!-- render via JS --></div>
         </div>
       </div>
-    </div>
-    </div>
 
-    <!-- PREVIEW DE CUPOM NFC-e (DEMO) -->
- 
-
-    <div class="subgrid">
-      <div class="box-num">
-        <div class="lab">SUBTOTAL</div>
-        <div id="tot-subtotal" class="num money">R$ 0,00</div>
-      </div>
-      <div class="box-num">
-        <div class="lab me-2">DESCONTO</div>
-        <div class="money-wrap" style="width:180px">
-          <span class="money-prefix">R$</span>
-          <input id="inp-desc" type="number" step="0.01" min="0" value="0.00" class="inp money-input text-end">
+      <div class="subgrid">
+        <div class="box-num">
+          <div class="lab">SUBTOTAL</div>
+          <div id="tot-subtotal" class="num money">R$ 0,00</div>
+        </div>
+        <div class="box-num">
+          <div class="lab me-2">DESCONTO</div>
+          <div class="money-wrap" style="width:180px">
+            <span class="money-prefix">R$</span>
+            <input id="inp-desc" type="number" step="0.01" min="0" value="0.00" class="inp money-input text-end">
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- DIREITA -->
-  <div class="">
+  <div class="right">
     <div class="totalzao">
       <div class="d-flex justify-content-between">
         <span class="">Itens</span><strong id="tot-itens">0</strong>
@@ -412,8 +394,6 @@ table{color:#eaf2ff}
 
 <script>
 const PRODUTOS = <?= json_encode($produtos, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?>;
-const EMPRESA_NOME = "<?= htmlspecialchars($empresaNome ?: 'PDV', ENT_QUOTES, 'UTF-8') ?>";
-const EMPRESA_CNPJ = "<?= htmlspecialchars($empresaCnpjFmt ?: '00.000.000/0000-00', ENT_QUOTES, 'UTF-8') ?>";
 
 const el=s=>document.querySelector(s);
 const tbody=el('#tbl tbody');
@@ -526,12 +506,9 @@ if(inpRec){ inpRec.addEventListener('input', ()=>{ troco(); validateBtn(); }); }
 function syncHidden(){ document.getElementById('desconto_hidden').value=(parseFloat(el('#inp-desc').value||'0')||0).toFixed(2); }
 el('#inp-desc').addEventListener('input', syncHidden);
 
-/* ===== Render do Cupom (DEMO) ===== */
+/* ===== Prévia NFC-e (somente itens – sem cabeçalho, sem total, sem QR) ===== */
 function renderTicket(){
   const t = el('#ticket'); if(!t) return;
-  const desc = parseFloat(document.getElementById('inp-desc').value||'0')||0;
-  const sub  = itens.reduce((s,i)=>s + i.qtd*i.unit, 0);
-  const tot  = Math.max(sub - desc, 0);
   const linhas = itens.map(i=>`
     <div class="t-line">
       <div>
@@ -541,24 +518,7 @@ function renderTicket(){
       <div class="t-val">R$ ${fmt(i.qtd*i.unit)}</div>
     </div>
   `).join('') || `<div class="text-muted">Sem itens</div>`;
-  t.innerHTML = `
-    <div class="t-head">
-      <div class="t-title">${esc(EMPRESA_NOME)}</div>
-      <div class="t-sub">CNPJ ${esc(EMPRESA_CNPJ)}</div>
-      <div class="t-sub">NFC-e — Pré-visualização</div>
-    </div>
-    <div class="t-divider"></div>
-    ${linhas}
-    <div class="t-divider"></div>
-    <div class="t-sum">
-      <div><span>SUBTOTAL</span><span>R$ ${fmt(sub)}</span></div>
-      <div><span>DESCONTO</span><span>R$ ${fmt(desc)}</span></div>
-      <div class="t-total-row"><span>TOTAL</span><span>R$ ${fmt(tot)}</span></div>
-    </div>
-    <div class="t-divider"></div>
-    <div class="t-foot">* Demonstração — sem valor fiscal</div>
-    <div class="t-qr">QR CODE</div>
-  `;
+  t.innerHTML = `<div class="t-list">${linhas}</div>`;
 }
 
 upItemTile(); recalc(); toggleDin(); renderTicket();
