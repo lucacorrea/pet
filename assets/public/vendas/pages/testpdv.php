@@ -243,12 +243,10 @@ table{color:#eaf2ff}
 
 <div class="topbar">
   <div class="top-left">
-    <div class="brand">YZIDRO® – PDV</div>
+    <div class="brand">Mundo Pets – PDV</div>
     <div class="caixa-status">CAIXA <?= $caixaAberto ? 'ABERTO' : 'FECHADO' ?></div>
   </div>
-  <div class="top-right">
-    <div class="yz">YZIDRO SISTEMAS ERP</div>
-  </div>
+  
 </div>
 
 <div class="side-band"></div>
