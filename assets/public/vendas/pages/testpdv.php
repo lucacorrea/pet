@@ -317,28 +317,7 @@ table{color:#eaf2ff}
 
     <div class="card-pdv" style="min-height:0">
       <div class="card-header">LISTA DE PRODUTOS</div>
-      <div class="card-body table-wrap">
-        <table class="table table-striped align-middle mb-0" id="tbl">
-          <thead>
-            <tr>
-              <th style="width:60px">Item</th>
-              <th style="width:120px">Código</th>
-              <th>Descrição</th>
-              <th class="text-end" style="width:110px">Qtd</th>
-              <th class="text-end" style="width:120px">Vlr. Unit</th>
-              <th class="text-end" style="width:120px">Total</th>
-              <th class="text-end" style="width:40px"></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-          <tfoot>
-            <tr><td colspan="7" class="text-muted small">Edite quantidade/valor diretamente na tabela • clique no <i class="bi bi-x"></i> para remover.</td></tr>
-          </tfoot>
-        </table>
-      </div>
-    </div>
-
-    <!-- PREVIEW DE CUPOM NFC-e (DEMO) -->
+        <!-- PREVIEW DE CUPOM NFC-e (DEMO) -->
     <div class="card-pdv mt-2" style="min-height:0">
       <div class="card-header d-flex align-items-center gap-2">
         <span></span>
@@ -350,8 +329,9 @@ table{color:#eaf2ff}
         </div>
       </div>
     </div>
+    </div>
 
-    <div class="subgrid">
+  
       <div class="box-num">
         <div class="lab">SUBTOTAL</div>
         <div id="tot-subtotal" class="num money">R$ 0,00</div>
