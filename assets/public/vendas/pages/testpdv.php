@@ -332,17 +332,7 @@ table{color:#eaf2ff}
     </div>
 
     <!-- PREVIEW DE CUPOM NFC-e (DEMO) -->
-    <div class="card-pdv mt-2" style="min-height:0">
-      <div class="card-header d-flex align-items-center gap-2">
-        <span></span>
-        <span class="badge text-bg-warning text-dark">Somente pré-visualização</span>
-      </div>
-      <div class="card-body ticket-wrap">
-        <div class="ticket" id="ticket">
-          <!-- renderizado via JS -->
-        </div>
-      </div>
-    </div>
+ 
 
     <div class="subgrid">
       <div class="box-num">
