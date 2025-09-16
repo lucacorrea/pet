@@ -184,7 +184,7 @@ $usuarioCpf   = $vm['usuarioCpf'];
                           <td><?= htmlspecialchars(($m['produto_nome'] ?? '-') . ' (' . ($m['unidade'] ?? 'UN') . ')', ENT_QUOTES, 'UTF-8') ?></td>
                           <td><span class="badge bg-<?= $badge ?>"><?= ucfirst($tipo) ?></span></td>
                           <td><?= htmlspecialchars((string)$m['origem'], ENT_QUOTES, 'UTF-8') ?></td>
-                          <td class="text-end"><?= number_format((float)$m['qtd'], 3, ',', '.') ?></td>
+                          <td class="text-end"><?= number_format((float)$m['qtd'], 0, ',', '.') ?></td>
                           <td><?= htmlspecialchars((string)$m['quando'], ENT_QUOTES, 'UTF-8') ?></td>
                         </tr>
                     <?php endforeach;
