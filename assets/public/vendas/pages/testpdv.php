@@ -370,9 +370,9 @@ table{color:#eaf2ff}
   <div class="right">
     <div class="totalzao">
       <div class="d-flex justify-content-between">
-        <span class="opacity-75">Itens</span><strong id="tot-itens">0</strong>
+        <span class="">Itens</span><strong id="tot-itens">0</strong>
       </div>
-      <hr class="border-light border-opacity-25">
+      <hr class="border-light ">
       <div class="d-flex justify-content-between align-items-center">
         <span class="fs-6">TOTAL</span>
         <span id="tot-geral" class="fs-1 fw-bold money">R$ 0,00</span>
