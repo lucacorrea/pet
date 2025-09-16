@@ -91,6 +91,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
 .stage{
   height:calc(100vh - 64px);
   display:grid; grid-template-columns:var(--left) 1fr var(--right); gap:16px; padding:16px;
+  position:relative; z-index:1; /* para ficar acima da side-band */
 }
 @media (max-width:1100px){ .stage{grid-template-columns:1fr; overflow:auto} }
 
@@ -156,7 +157,6 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
   font-family:ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
   font-size:12.5px; line-height:1.28;
 }
-/* expandir para ocupar toda a div */
 .ticket.ticket-full{ width:100%; max-width:none; height:100%; display:flex; flex-direction:column }
 .t-line{ display:grid; grid-template-columns:1fr auto; gap:6px; padding:4px 0; border-bottom:1px dotted #ccd6e5 }
 .t-line:last-child{border-bottom:0}
@@ -174,7 +174,13 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
 
 /* Direita */
 .right{display:grid;grid-template-rows:auto 1fr;gap:16px;min-height:0}
-.totalzao{background:linear-gradient(180deg,#215a9d33,#1a4d8b22);border:1px dashed #7fb2ff;border-radius:14px;padding:12px}
+/* >>> SÓLIDO (sem alpha) para não parecer lavado */
+.totalzao{
+  background: linear-gradient(180deg, #215a9d, #1a4d8b);
+  border:1px dashed #7fb2ff;
+  border-radius:14px;
+  padding:12px;
+}
 .pay .btn{height:52px;border-radius:12px}
 .rt{background:#0f2f59;border:1px solid #2b5288;border-radius:12px;padding:12px}
 .rt .n{font-size:1.8rem;font-weight:900}
@@ -184,11 +190,13 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
 .shortcuts{font-size:.92rem;color:var(--muted);line-height:1.2}
 .kbd{background:#0f2140;border:1px solid #1f355c;border-radius:.35rem;padding:.12rem .38rem;color:#dbe7ff}
 
-/* Faixa lateral (estética) */
+/* Faixa lateral (estética) — atrás do conteúdo */
 .side-band{
   position:fixed;top:64px;right:0;width:420px;height:calc(100vh - 64px);
-  background:linear-gradient(180deg,#2a3344 10%, #2a3344 90%);opacity:.45;pointer-events:none;
+  background:linear-gradient(180deg,#2a3344 10%, #2a3344 90%);
+  opacity:.45;pointer-events:none; z-index:0; /* atrás */
 }
+.topbar{ position:relative; z-index:1; } /* garante topo acima */
 </style>
 </head>
 <body>
@@ -327,9 +335,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
             </div>
             <div class="col-5">
               <div class="rt h-100 d-flex flex-column">
-
-                    <div class="fw-semibold">TROCO</div>
-
+                <div class="fw-semibold">TROCO</div>
                 <div id="lbl-troco" class="n money mt-auto">R$ 0,00</div>
               </div>
             </div>
@@ -378,10 +384,7 @@ function recalc(){
   troco(); validateBtn(); renderTicket();
 }
 
-// apenas para compatibilidade (não há tabela)
-function paint(){}
-
-function esc(s){return String(s||'').replace(/[&<>"'`=\/]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c]));}
+function esc(s){return String(s||'').replace(/[&<>"'`=\/]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;','/':'&#x2F;','`':'&#x60','=':'&#x3D;'}[c]));}
 
 const sug = el('#sug'), busca = el('#inp-busca'), qtd = el('#inp-qtd'), preco = el('#inp-preco');
 
