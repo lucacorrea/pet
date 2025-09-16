@@ -17,6 +17,9 @@ $empresaNome = empresa_nome_logada($pdo);
 $empresaCnpj = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj'] ?? ''));
 if (!preg_match('/^\d{14}$/', $empresaCnpj)) die('Empresa não vinculada ao usuário.');
 
+// Formata CNPJ p/ exibição no preview
+$empresaCnpjFmt = preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $empresaCnpj);
+
 if (empty($_SESSION['csrf_venda_rapida'])) {
   $_SESSION['csrf_venda_rapida'] = bin2hex(random_bytes(32));
 }
@@ -52,7 +55,7 @@ try{
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
 <style>
-/* ===== Cores do print ===== */
+/* ===== Cores do print / tema ===== */
 :root{
   --bg:#0b1130;            /* fundo geral */
   --brand:#0d2f53;         /* topo escuro */
@@ -63,6 +66,7 @@ try{
   --text:#eaf2ff;
   --muted:#c6d6f6;
   --left:360px; --right:360px;
+  --ticket-edge:#ced7e6;
 }
 @media (max-width:1440px){ :root{ --left:350px; --right:340px } }
 @media (max-width:1100px){ :root{ --left:1fr; --right:1fr } }
@@ -71,16 +75,14 @@ try{
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial;overflow:hidden}
 
-/* Topo com “YZIDRO – PDV” e faixa lateral direita */
+/* Topo */
 .topbar{
   height:64px; display:grid; grid-template-columns:1fr 320px; gap:0;
   background:linear-gradient(180deg,var(--brand2),var(--brand));
   border-bottom:1px solid #0b1c33; box-shadow:0 8px 18px rgba(0,0,0,.45);
 }
 .top-left{display:flex;align-items:center;gap:14px;padding:0 18px}
-.top-left .brand{
-  font-weight:800; letter-spacing:.15rem; text-transform:uppercase; font-size:1.05rem;
-}
+.top-left .brand{font-weight:800; letter-spacing:.15rem; text-transform:uppercase; font-size:1.05rem;}
 .top-right{
   background:linear-gradient(180deg,#1a2640,#273650);
   display:flex;align-items:center;justify-content:center; border-left:1px solid #0f1f38;
@@ -94,7 +96,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
 }
 @media (max-width:1100px){ .stage{grid-template-columns:1fr; overflow:auto} }
 
-/* Cards azuis */
+/* Cards */
 .card-pdv{
   background:linear-gradient(180deg,var(--panel2),var(--panel));
   border:1px solid var(--border); border-radius:14px; color:var(--text);
@@ -105,23 +107,52 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
 
 /* Coluna esquerda */
 .left{display:grid;grid-template-rows:auto auto 1fr;gap:16px;min-height:0}
-.block-left{display:grid;grid-template-columns:130px 1fr;gap:12px}
-.cart{
-  background:#0e2a50; border:1px solid #2a4e83; height:138px; border-radius:12px;
-  display:flex;align-items:center;justify-content:center
-}
-.cart img{max-width:98%;max-height:98%}
 .tile{background:#0f2f59;border:1px solid #2c538c;border-radius:12px;padding:8px 10px;margin-bottom:10px}
 .tile .lbl{font-size:.8rem;text-transform:uppercase;color:#d5e4ff;letter-spacing:.06rem}
 .tile .value{display:flex;align-items:center;gap:8px;margin-top:6px}
+
+/* ===== Input estilo NFC (PDV) ===== */
+.nfce-input{position:relative;width:100%}
+.nfce-input .inp{
+  width:100%; height:58px; padding:0 12px 0 46px;
+  background:#f8fbff; color:#0e1b2a;
+  border:2px dashed #7fb2ff; border-radius:12px;
+  font-weight:700; letter-spacing:.02rem;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75);
+}
+.nfce-input .inp::placeholder{color:#7a8aa6}
+.nfce-input .inp:focus{
+  outline:none; border-color:#a7c6ff; box-shadow:0 0 0 4px rgba(127,178,255,.22);
+}
+.nfce-input .inp-icon{
+  position:absolute; left:12px; top:50%; transform:translateY(-50%);
+  font-size:1.25rem; color:#315986; opacity:.9;
+}
+
+/* Sugestões com cara de cupom */
+#sug{
+  top:62px !important; display:none; max-height:300px; overflow:auto;
+  border:2px dashed #cdd9f3 !important;
+}
+#sug .sug-item{
+  cursor:pointer; border-bottom:1px dotted #e3eaf8;
+}
+#sug .sug-item:last-child{border-bottom:0}
+#sug .sug-item:hover{background:#f4f7ff}
+#sug .price{font-family:ui-monospace,Menlo,Consolas,monospace}
+
+/* Inputs numéricos “money” */
 .inp{
   background:#fff;color:#0e1b2a;border:2px solid #7fb2ff;border-radius:10px;height:50px;padding:0 10px;font-weight:600;width:100%
 }
 .money-wrap{display:flex;align-items:center}
-.money-prefix{background:#fff;border:2px solid #7fb2ff;border-right:0;border-radius:10px 0 0 10px;height:50px;display:flex;align-items:center;padding:0 12px;color:#304562;font-weight:700}
+.money-prefix{
+  background:#fff;border:2px solid #7fb2ff;border-right:0;border-radius:10px 0 0 10px;height:50px;display:flex;align-items:center;padding:0 12px;color:#304562;font-weight:700
+}
 .money-input{border-left:0;border-radius:0 10px 10px 0}
+.money{font-variant-numeric:tabular-nums}
 
-/* “CAIXA ABERTO” faixa grande */
+/* Caixa status */
 .caixa-status{
   background:#0f2f59;border:1px solid #2c538c;border-radius:10px;padding:9px 12px;
   text-align:center;text-transform:uppercase;font-weight:900;letter-spacing:.12rem
@@ -132,18 +163,30 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
 .visor{background:#123c6b;border:1px solid #2b5288;border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
 .visor .big{font-size:1.95rem;font-weight:900}
 .table-wrap{min-height:0;overflow:auto}
-table{color:#eaf2ff}
-thead th{background:#0f2f59;border-bottom:1px solid #2b5288}
-.table>:not(caption)>*>*{border-bottom:1px solid #19426f}
-.table-striped>tbody>tr:nth-of-type(odd)>*{background:#0b2a55}
 
-/* Subtotal e desconto (como na imagem) */
+/* ===== Tabela com estética “cupom” ===== */
+table{color:#eaf2ff}
+#tbl thead th{
+  background:#0f2f59;border-bottom:1px solid #2b5288;
+  font-size:.75rem; letter-spacing:.06rem; text-transform:uppercase;
+}
+.table>:not(caption)>*>*{border-bottom:1px dotted #2b5288}
+.table-striped>tbody>tr:nth-of-type(odd)>*{background:#0b2a55}
+#tbl .form-control-sm{
+  background:transparent; color:var(--text);
+  border:1px solid #3a5f92; border-radius:8px; height:34px;
+}
+#tbl .form-control-sm:focus{
+  border-color:#7fb2ff; box-shadow:0 0 0 .2rem rgba(127,178,255,.15);
+}
+
+/* Subtotais */
 .subgrid{display:grid;grid-template-columns:1fr 300px;gap:12px}
 .box-num{background:#0f2f59;border:1px solid #2b5288;border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
 .box-num .lab{opacity:.9}
 .box-num .num{font-size:2.2rem;font-weight:900}
 
-/* Direita (totais/recebido/troco) */
+/* Direita */
 .right{display:grid;grid-template-rows:auto 1fr;gap:16px;min-height:0}
 .totalzao{background:linear-gradient(180deg,#215a9d33,#1a4d8b22);border:1px dashed #7fb2ff;border-radius:14px;padding:12px}
 .pay .btn{height:52px;border-radius:12px}
@@ -151,17 +194,48 @@ thead th{background:#0f2f59;border-bottom:1px solid #2b5288}
 .rt .n{font-size:1.8rem;font-weight:900}
 .ok{color:#22c55e} .neg{color:#ff8c8c}
 
-/* Atalhos (rodapé esquerdo) */
+/* Atalhos */
 .shortcuts{font-size:.92rem;color:var(--muted);line-height:1.2}
 .kbd{background:#0f2140;border:1px solid #1f355c;border-radius:.35rem;padding:.12rem .38rem;color:#dbe7ff}
 
-/* R$ fixo tabular */
-.money{font-variant-numeric:tabular-nums}
-
-/* faixa lateral cinza (como no print) atrás da coluna direita */
+/* Faixa lateral */
 .side-band{
   position:fixed;top:64px;right:0;width:420px;height:calc(100vh - 64px);
   background:linear-gradient(180deg,#2a3344 10%, #2a3344 90%);opacity:.45;pointer-events:none;
+}
+
+/* ===== Preview de Cupom NFC-e (DEMO) ===== */
+.ticket-wrap{display:flex;justify-content:center}
+.ticket{
+  width:340px; max-width:100%; margin:0 auto;
+  background:#fff; color:#0f172a;
+  border:1px dashed var(--ticket-edge); border-radius:16px;
+  padding:14px 14px 18px;
+  font-family:ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:12.5px; line-height:1.28;
+  position:relative;
+}
+.ticket:before,.ticket:after{
+  content:""; position:absolute; top:50%; transform:translateY(-50%);
+  width:10px; height:10px; background:var(--bg); border:1px solid var(--ticket-edge); border-radius:50%;
+}
+.ticket:before{left:-6px} .ticket:after{right:-6px}
+.t-head{ text-align:center; margin-bottom:8px }
+.t-title{ font-weight:800; font-size:13px }
+.t-sub{ color:#475569 }
+.t-divider{ height:1px; background:linear-gradient(90deg,#dbe0ea 25%, transparent 25%); background-size:8px 1px; margin:10px 0 }
+.t-line{ display:grid; grid-template-columns:1fr auto; gap:6px; padding:4px 0; border-bottom:1px dotted #ccd6e5 }
+.t-line:last-child{border-bottom:0}
+.t-desc{ font-weight:700; color:#0b1323 }
+.t-meta{ color:#475569 }
+.t-val{ font-weight:800; text-align:right }
+.t-sum > div{ display:flex; justify-content:space-between; padding:4px 0 }
+.t-total-row{ font-weight:900; font-size:13px }
+.t-foot{ color:#475569; text-align:center; margin-top:6px }
+.t-qr{
+  margin:10px auto 0; width:112px; height:112px; border:1px dashed #c9d3e4; border-radius:8px;
+  background:repeating-linear-gradient(45deg,#eef3fb 0,#eef3fb 6px,#f7f9fe 6px,#f7f9fe 12px);
+  display:flex;align-items:center;justify-content:center; color:#64748b; font-size:11px
 }
 </style>
 </head>
@@ -184,21 +258,21 @@ thead th{background:#0f2f59;border-bottom:1px solid #2b5288}
   <div class="left">
     <div class="card-pdv">
       <div class="card-body">
-        <div class="block-left">
-          
-          <div>
-            <div class="tile">
-              <div class="lbl">CÓDIGO DE BARRAS</div>
-              <div class="value position-relative">
-                <input class="inp" id="inp-busca" placeholder="Passe o leitor ou digite" autocomplete="off" <?= $caixaAberto ? '' : 'disabled' ?>>
-                <div id="sug" class="position-absolute w-100 bg-white text-dark border rounded-2 shadow" style="top:52px;display:none;max-height:280px;overflow:auto"></div>
-              </div>
-            </div>
-            <div class="tile">
-              <div class="lbl">CÓDIGO</div>
-              <div class="value"><input class="inp" id="inp-sku" placeholder="SKU / interno (opcional)"></div>
-            </div>
+        <div class="tile">
+          <div class="lbl d-flex align-items-center gap-2">
+            <span>CÓDIGO DE BARRAS</span>
+            <span class="badge text-bg-primary">NFC-e</span>
           </div>
+          <div class="value nfce-input">
+            <i class="bi bi-upc-scan inp-icon"></i>
+            <input class="inp" id="inp-busca" placeholder="Passe o leitor ou digite" autocomplete="off" <?= $caixaAberto ? '' : 'disabled' ?>>
+            <div id="sug" class="position-absolute w-100 bg-white text-dark rounded-2 shadow"></div>
+          </div>
+        </div>
+
+        <div class="tile">
+          <div class="lbl">CÓDIGO</div>
+          <div class="value"><input class="inp" id="inp-sku" placeholder="SKU / interno (opcional)"></div>
         </div>
 
         <div class="tile">
@@ -213,15 +287,12 @@ thead th{background:#0f2f59;border-bottom:1px solid #2b5288}
           <div class="lbl">TOTAL DO ITEM</div>
           <div class="value"><strong id="tile-item-total" class="money fs-4">R$ 0,00</strong></div>
         </div>
-      </div>
-    </div>
 
-    <div class="card-pdv">
-      <div class="card-body">
         <div class="tile">
           <div class="lbl">QUANTIDADE</div>
           <div class="value"><input id="inp-qtd" type="number" step="0.001" min="0.001" value="1.000" class="inp text-end" <?= $caixaAberto ? '' : 'disabled' ?>></div>
         </div>
+
         <div class="d-flex gap-2 flex-wrap">
           <button id="btn-add" class="btn btn-primary btn-sm" type="button" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-plus-lg"></i> Adicionar</button>
           <button id="btn-clear" class="btn btn-outline-light btn-sm" type="button" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-trash3"></i> Limpar</button>
@@ -266,6 +337,19 @@ thead th{background:#0f2f59;border-bottom:1px solid #2b5288}
             <tr><td colspan="7" class="text-muted small">Edite quantidade/valor diretamente na tabela • clique no <i class="bi bi-x"></i> para remover.</td></tr>
           </tfoot>
         </table>
+      </div>
+    </div>
+
+    <!-- PREVIEW DE CUPOM NFC-e (DEMO) -->
+    <div class="card-pdv mt-2" style="min-height:0">
+      <div class="card-header d-flex align-items-center gap-2">
+        <span>CUPOM NFC-e (DEMO)</span>
+        <span class="badge text-bg-warning text-dark">Somente pré-visualização</span>
+      </div>
+      <div class="card-body ticket-wrap">
+        <div class="ticket" id="ticket">
+          <!-- renderizado via JS -->
+        </div>
       </div>
     </div>
 
@@ -347,6 +431,9 @@ thead th{background:#0f2f59;border-bottom:1px solid #2b5288}
 
 <script>
 const PRODUTOS = <?= json_encode($produtos, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?>;
+const EMPRESA_NOME = "<?= htmlspecialchars($empresaNome ?: 'PDV', ENT_QUOTES, 'UTF-8') ?>";
+const EMPRESA_CNPJ = "<?= htmlspecialchars($empresaCnpjFmt ?: '00.000.000/0000-00', ENT_QUOTES, 'UTF-8') ?>";
+
 const el=s=>document.querySelector(s);
 const tbody=el('#tbl tbody');
 let itens=[];
@@ -354,7 +441,7 @@ const temCaixa = (document.getElementById('form-venda')?.dataset.caixa==='1');
 
 const fmt=v=>(Number(v||0)).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 
-function itemTotal(){return (parseFloat(el('#inp-qtd').value||'0')*parseFloat(el('#inp-preco').value||'0'));}
+function itemTotal(){return (parseFloat(el('#inp-qtd').value||'0')*parseFloat(el('#inp-preco').value||'0')); }
 function upItemTile(){ el('#tile-item-total').textContent='R$ '+fmt(itemTotal()); }
 
 function recalc(){
@@ -366,7 +453,7 @@ function recalc(){
   el('#tot-itens').textContent=itens.length;
   el('#desconto_hidden').value=(desc||0).toFixed(2);
   el('#itens_json').value=JSON.stringify(itens);
-  paint(); troco(); validateBtn();
+  paint(); troco(); validateBtn(); renderTicket();
 }
 function paint(){
   tbody.innerHTML = itens.map((i,ix)=>`
@@ -384,13 +471,18 @@ function paint(){
 function esc(s){return String(s||'').replace(/[&<>"'`=\/]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c]));}
 
 const sug=el('#sug'), busca=el('#inp-busca'), qtd=el('#inp-qtd'), preco=el('#inp-preco');
-function filtra(q){q=(q||'').trim().toLowerCase(); if(!q) return []; return PRODUTOS.filter(p=>(p.nome||'').toLowerCase().includes(q)||(p.sku||'').toLowerCase().includes(q)||(p.ean||'').toLowerCase().includes(q)||(p.marca||'').toLowerCase().includes(q)).slice(0,50);}
+function filtra(q){
+  q=(q||'').trim().toLowerCase(); if(!q) return [];
+  return PRODUTOS.filter(p=>(p.nome||'').toLowerCase().includes(q)||(p.sku||'').toLowerCase().includes(q)||(p.ean||'').toLowerCase().includes(q)||(p.marca||'').toLowerCase().includes(q)).slice(0,50);
+}
 function showSug(list){
   if(!list.length){sug.style.display='none';sug.innerHTML='';return;}
   sug.innerHTML = list.map(p=>`<div class="p-2 sug-item" data-preco="${Number(p.preco_venda||0)}" data-nome="${esc(p.nome||'')}" data-sku="${esc(p.sku||'')}">
-    <div><strong>${esc(p.nome||'-')}</strong></div>
-    <div class="text-secondary small">${esc([p.marca,p.sku,p.ean].filter(Boolean).join(' • '))}</div>
-    <div class="text-secondary small">R$ ${fmt(p.preco_venda||0)} ${(p.unidade?(' / '+esc(p.unidade)):'')}</div>
+    <div class="d-flex justify-content-between">
+      <strong>${esc(p.nome||'-')}</strong>
+      <span class="price">R$ ${fmt(p.preco_venda||0)}</span>
+    </div>
+    <div class="text-secondary small">${esc([p.marca,p.sku,p.ean].filter(Boolean).join(' • '))}${p.unidade?(' • '+esc(p.unidade)):''}</div>
   </div>`).join('');
   sug.style.display='block';
 }
@@ -453,7 +545,42 @@ if(inpRec){ inpRec.addEventListener('input', ()=>{ troco(); validateBtn(); }); }
 function syncHidden(){ document.getElementById('desconto_hidden').value=(parseFloat(el('#inp-desc').value||'0')||0).toFixed(2); }
 el('#inp-desc').addEventListener('input', syncHidden);
 
-upItemTile(); recalc(); toggleDin();
+/* ===== Render do Cupom (DEMO) ===== */
+function renderTicket(){
+  const t = el('#ticket'); if(!t) return;
+  const desc = parseFloat(document.getElementById('inp-desc').value||'0')||0;
+  const sub  = itens.reduce((s,i)=>s + i.qtd*i.unit, 0);
+  const tot  = Math.max(sub - desc, 0);
+  const linhas = itens.map(i=>`
+    <div class="t-line">
+      <div>
+        <div class="t-desc">${esc(i.nome)}</div>
+        <div class="t-meta">${i.qtd.toFixed(3)} × ${fmt(i.unit)}</div>
+      </div>
+      <div class="t-val">R$ ${fmt(i.qtd*i.unit)}</div>
+    </div>
+  `).join('') || `<div class="text-muted">Sem itens</div>`;
+  t.innerHTML = `
+    <div class="t-head">
+      <div class="t-title">${esc(EMPRESA_NOME)}</div>
+      <div class="t-sub">CNPJ ${esc(EMPRESA_CNPJ)}</div>
+      <div class="t-sub">NFC-e — Pré-visualização</div>
+    </div>
+    <div class="t-divider"></div>
+    ${linhas}
+    <div class="t-divider"></div>
+    <div class="t-sum">
+      <div><span>SUBTOTAL</span><span>R$ ${fmt(sub)}</span></div>
+      <div><span>DESCONTO</span><span>R$ ${fmt(desc)}</span></div>
+      <div class="t-total-row"><span>TOTAL</span><span>R$ ${fmt(tot)}</span></div>
+    </div>
+    <div class="t-divider"></div>
+    <div class="t-foot">* Demonstração — sem valor fiscal</div>
+    <div class="t-qr">QR CODE</div>
+  `;
+}
+
+upItemTile(); recalc(); toggleDin(); renderTicket();
 </script>
 </body>
 </html>
