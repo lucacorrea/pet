@@ -318,7 +318,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
           <div class="row g-2">
             <div class="col-7">
               <div class="rt">
-                <div class="opacity-75 mb-1">TOTAL RECEBIDO</div>
+                <div class="mb-1 fw-semibold">TOTAL RECEBIDO</div>
                 <div class="money-wrap">
                   <span class="money-prefix">R$</span>
                   <input id="inp-recebido" name="valor_recebido" type="number" step="0.01" min="0" class="inp money-input text-end" placeholder="0,00">
@@ -327,7 +327,9 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
             </div>
             <div class="col-5">
               <div class="rt h-100 d-flex flex-column">
-                <div class="opacity-75">TROCO</div>
+
+                    <div class="fw-semibold">TROCO</div>
+
                 <div id="lbl-troco" class="n money mt-auto">R$ 0,00</div>
               </div>
             </div>
