@@ -163,7 +163,7 @@ $usuarioCpf   = $vm['usuarioCpf'];
                       <th>Produto</th>
                       <th>Tipo</th>
                       <th>Origem</th>
-                      <th class="text-end">Qtd</th>
+                      <th class="text-end">Quantidade</th>
                       <th>Quando</th>
                     </tr>
                   </thead>
