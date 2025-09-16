@@ -259,7 +259,7 @@ table{color:#eaf2ff}
         <div class="tile">
           <div class="lbl d-flex align-items-center gap-2">
             <span>CÓDIGO DE BARRAS</span>
-            <span class="badge text-bg-primary">NFC-e</span>
+            
           </div>
           <div class="value nfce-input">
             <i class="bi bi-upc-scan inp-icon"></i>
@@ -341,7 +341,7 @@ table{color:#eaf2ff}
     <!-- PREVIEW DE CUPOM NFC-e (DEMO) -->
     <div class="card-pdv mt-2" style="min-height:0">
       <div class="card-header d-flex align-items-center gap-2">
-        <span>CUPOM NFC-e (DEMO)</span>
+        <span></span>
         <span class="badge text-bg-warning text-dark">Somente pré-visualização</span>
       </div>
       <div class="card-body ticket-wrap">
