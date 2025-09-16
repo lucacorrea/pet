@@ -367,7 +367,7 @@ table{color:#eaf2ff}
   </div>
 
   <!-- DIREITA -->
-  <div class="right">
+  <div class="">
     <div class="totalzao">
       <div class="d-flex justify-content-between">
         <span class="">Itens</span><strong id="tot-itens">0</strong>
