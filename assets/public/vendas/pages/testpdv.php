@@ -593,13 +593,11 @@ try {
             <div class="card-pdv list-card">
                 <div class="card-header">LISTA DE ITENS</div>
                 <div class="card-pdv" style="min-height:0">
-                    <div class="card-header d-flex align-items-center gap-2">
+                   
                         <span>Prévia NFC-e (itens)</span>
                         <span class="badge text-bg-warning text-dark">Somente pré-visualização</span>
-                    </div>
-                    <div class="card-body ticket-wrap">
                         <div class="ticket" id="ticket"><!-- render via JS --></div>
-                    </div>
+                   
                 </div>
             </div>
 
