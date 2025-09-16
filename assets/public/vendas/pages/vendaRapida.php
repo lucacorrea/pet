@@ -378,9 +378,6 @@ try {
                     <i class="bi bi-check2-circle me-1"></i> Finalizar Venda <span class="small kbd">F4</span>
                   </button>
                 </div>
-                <div class="d-grid mt-2">
-                  <a href="../../dashboard.php" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
-                </div>
               </div>
             </div>
 
@@ -578,5 +575,6 @@ try {
   <script>
     document.addEventListener('DOMContentLoaded', function(){ const m = document.getElementById('modalCaixaObrigatorio'); if (m){ const modal = new bootstrap.Modal(m); modal.show(); } });
   </script>
+  <script>document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('pdv-full'); localStorage.setItem('pdv_full','1');});</script>
 </body>
 </html>
