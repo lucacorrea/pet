@@ -185,9 +185,7 @@ thead th{background:#0f2f59;border-bottom:1px solid #2b5288}
     <div class="card-pdv">
       <div class="card-body">
         <div class="block-left">
-          <div class="cart">
-            <img src="../../assets/images/dashboard/cart.png" alt="Carrinho">
-          </div>
+          
           <div>
             <div class="tile">
               <div class="lbl">CÓDIGO DE BARRAS</div>
