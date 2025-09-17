@@ -576,7 +576,7 @@ try {
           </div>
 
           <div class="tile">
-            <div class="lbl">TOTAL DO ITEM</div>
+            <div class="lbl">TOTAL DO IT</div>
             <div class="value"><strong id="tile-item-total" class="money fs-4">R$ 0,00</strong></div>
           </div>
 
