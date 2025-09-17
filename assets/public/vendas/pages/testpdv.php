@@ -56,10 +56,10 @@ try{
 /* ===== Tema claro (tons do print) ===== */
 :root{
   /* Base */
-  --bg:#f4f7fb;                 /* fundo da página */
-  --text:#0f172a;               /* texto principal (escuro) */
-  --muted:#64748b;              /* texto secundário */
-  --border:#e2e8f0;             /* bordas suaves */
+  --bg:#f4f7fb;
+  --text:#0f172a;
+  --muted:#64748b;
+  --border:#e2e8f0;
   --shadow:0 8px 16px rgba(15,23,42,.06);
   --ticket-edge:#e2e8f0;
 
@@ -199,7 +199,7 @@ body{
 .box-num .num{font-size:2.2rem;font-weight:900;color:#0f1e4a}
 
 /* Direita (cards claros) */
-.right{display:grid;grid-template-rows:auto 1fr;gap:16px;min-height:0}
+.right{display:grid;grid-template-rows:auto auto 1fr;gap:16px;min-height:0}
 .totalzao{
   background:#fff; border:1px solid var(--border); border-radius:14px; padding:14px;
   box-shadow:var(--shadow)
@@ -273,8 +273,16 @@ body{
           <button id="btn-add" class="btn btn-primary btn-sm" type="button" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-plus-lg"></i> Adicionar</button>
           <button id="btn-clear" class="btn btn-outline-light btn-sm" type="button" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-trash3"></i> Limpar</button>
         </div>
+
+        <!-- Atalhos atualizados -->
         <div class="shortcuts mt-3">
-          <div><span class="kbd">F2</span> – Alterar Qtd &nbsp; • &nbsp; <span class="kbd">Enter</span> – Adicionar &nbsp; • &nbsp; <span class="kbd">F4</span> – Finalizar</div>
+          <div>
+            <span class="kbd">F2</span> – Alterar Qtd &nbsp; • &nbsp;
+            <span class="kbd">F3</span> – Desconto &nbsp; • &nbsp;
+            <span class="kbd">F6</span> – Total Recebido &nbsp; • &nbsp;
+            <span class="kbd">Enter</span> – Adicionar &nbsp; • &nbsp;
+            <span class="kbd">F4</span> – Finalizar
+          </div>
         </div>
       </div>
     </div>
@@ -314,14 +322,19 @@ body{
 
   <!-- DIREITA -->
   <div class="right">
-     <div class="box-num mt-3">
-          <div class="lab me-2">DESCONTO</div>
-          <div class="money-wrap" style="width:210px">
-            <span class="money-prefix">R$</span>
-            <input id="inp-desc" type="number" step="0.01" min="0" value="0.00" class="inp money-input text-end">
-          </div>
-        </div>
+    <!-- Total geral para referência visual -->
+    <div class="box-num">
+      <div class="lab">TOTAL</div>
+      <div id="tot-geral" class="num money">R$ 0,00</div>
+    </div>
 
+    <div class="box-num">
+      <div class="lab me-2">DESCONTO</div>
+      <div class="money-wrap" style="width:210px">
+        <span class="money-prefix">R$</span>
+        <input id="inp-desc" type="number" step="0.01" min="0" value="0.00" class="inp money-input text-end">
+      </div>
+    </div>
 
     <div class="card-pdv pay" style="min-height:0">
       <div class="card-header">Pagamento</div>
@@ -332,6 +345,7 @@ body{
           <div class="col-6"><button class="btn btn-outline-light w-100" type="button" data-pay="debito" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-credit-card-2-back me-1"></i> Débito</button></div>
           <div class="col-6"><button class="btn btn-outline-light w-100" type="button" data-pay="credito" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-credit-card me-1"></i> Crédito</button></div>
         </div>
+
         <div id="grp-din" class="mt-3" style="display:none">
           <div class="row g-2">
             <div class="col-12">
@@ -380,29 +394,38 @@ const fmt = v => (Number(v||0)).toLocaleString('pt-BR',{minimumFractionDigits:2,
 function itemTotal(){return (parseFloat(el('#inp-qtd').value||'0')*parseFloat(el('#inp-preco').value||'0')); }
 function upItemTile(){ const t=el('#tile-item-total'); if(t) t.textContent='R$ '+fmt(itemTotal()); }
 
+function totalAtual(){
+  let sub=0; itens.forEach(i=> sub+=i.qtd*i.unit);
+  const desc=parseFloat(el('#inp-desc').value||'0');
+  return Math.max(sub - (desc||0), 0);
+}
+
 function recalc(){
   let sub=0; itens.forEach(i=> sub+=i.qtd*i.unit);
   const desc=parseFloat(el('#inp-desc').value||'0'); const total=Math.max(sub-desc,0);
-  const s = sel => { const n=el(sel); if(n) n.textContent='R$ '+fmt(sel==='#tot-itens'?itens.length: (sel==='#tot-subtotal'?sub:total)); };
+
   el('#tot-subtotal') && (el('#tot-subtotal').textContent='R$ '+fmt(sub));
   el('#tot-geral') && (el('#tot-geral').textContent='R$ '+fmt(total));
   el('#visor-subtotal') && (el('#visor-subtotal').textContent='R$ '+fmt(total));
   el('#tot-itens') && (el('#tot-itens').textContent=itens.length);
   el('#desconto_hidden') && (el('#desconto_hidden').value=(desc||0).toFixed(2));
   el('#itens_json') && (el('#itens_json').value=JSON.stringify(itens));
+
   troco(); validateBtn(); renderTicket();
 }
 
 function esc(s){return String(s||'').replace(/[&<>"'`=\/]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;','/':'&#x2F;','`':'&#x60','=':'&#x3D;'}[c]));}
 
 const sug=el('#sug'), busca=el('#inp-busca'), qtd=el('#inp-qtd'), preco=el('#inp-preco');
+
 function filtra(q){
   q=(q||'').trim().toLowerCase(); if(!q) return [];
   return PRODUTOS.filter(p=>(p.nome||'').toLowerCase().includes(q)||(p.sku||'').toLowerCase().includes(q)||(p.ean||'').toLowerCase().includes(q)||(p.marca||'').toLowerCase().includes(q)).slice(0,50);
 }
+
 function showSug(list){
   if(!list.length){sug.style.display='none';sug.innerHTML='';return;}
-  sug.innerHTML = list.map(p=>`<div class="p-2 sug-item" data-preco="${Number(p.preco_venda||0)}" data-nome="${esc(p.nome||'')}" data-sku="${esc(p.sku||'')}">
+  sug.innerHTML = list.map(p=>`<div class="p-2 sug-item" data-preco="${Number(p.preco_venda||0)}" data-nome="${esc(p.nome||'')}" data-sku="${esc(p.sku||'')}" data-ean="${esc(p.ean||'')}">
     <div class="d-flex justify-content-between">
       <strong>${esc(p.nome||'-')}</strong>
       <span class="price">R$ ${fmt(p.preco_venda||0)}</span>
@@ -411,15 +434,64 @@ function showSug(list){
   </div>`).join('');
   sug.style.display='block';
 }
+
+/* ==== Seleção/Scanner: auto-adicionar ==== */
+function setProdutoSelecionado(data){
+  // data: {nome, preco_venda, sku}
+  el('#visor-produto') && (el('#visor-produto').textContent=data.nome||'Item');
+  preco && (preco.value=parseFloat(data.preco_venda||0).toFixed(2));
+  el('#inp-sku') && (el('#inp-sku').value=data.sku||'');
+  upItemTile();
+}
+
+let autoAddTimer=null;
+function tryAutoAddFromBusca(q){
+  if(!temCaixa) return;
+  q=(q||'').trim();
+  if(!q) return;
+
+  // 1) Match exato por EAN ou SKU
+  const exact = PRODUTOS.find(p => (p.ean && String(p.ean)===q) || (p.sku && String(p.sku).toLowerCase()===q.toLowerCase()));
+  if(exact){
+    setProdutoSelecionado({nome:exact.nome, preco_venda:exact.preco_venda, sku:exact.sku});
+    sug.style.display='none';
+    // pequeno delay para garantir valores setados
+    setTimeout(()=>addItem(), 0);
+    return;
+  }
+
+  // 2) Se restar só 1 sugestão e já tem um termo razoável, auto-adiciona após leve pausa
+  const list = filtra(q);
+  if(list.length===1 && q.length>=4){
+    clearTimeout(autoAddTimer);
+    autoAddTimer = setTimeout(()=>{
+      setProdutoSelecionado({nome:list[0].nome, preco_venda:list[0].preco_venda, sku:list[0].sku});
+      sug.style.display='none';
+      addItem();
+    }, 180);
+  }
+}
+
 if(temCaixa){
-  busca && busca.addEventListener('input',()=>showSug(filtra(busca.value)));
+  busca && busca.addEventListener('input',()=>{
+    const q = busca.value;
+    showSug(filtra(q));
+    tryAutoAddFromBusca(q);
+  });
   document.addEventListener('click',(e)=>{ if(!e.target.closest('#sug') && !e.target.closest('#inp-busca')) sug.style.display='none'; });
+
+  // Clique na sugestão => seleciona e já adiciona automaticamente
   sug && sug.addEventListener('click',(e)=>{
     const it=e.target.closest('.sug-item'); if(!it) return;
-    el('#visor-produto') && (el('#visor-produto').textContent=it.dataset.nome||'—');
-    preco && (preco.value=parseFloat(it.dataset.preco||'0').toFixed(2));
-    el('#inp-sku') && (el('#inp-sku').value=it.dataset.sku||'');
-    upItemTile(); sug.style.display='none'; setTimeout(()=>qtd && qtd.focus(),20);
+    const data = {
+      nome: it.dataset.nome || 'Item',
+      preco_venda: parseFloat(it.dataset.preco||'0'),
+      sku: it.dataset.sku || ''
+    };
+    setProdutoSelecionado(data);
+    sug.style.display='none';
+    // adiciona imediatamente
+    setTimeout(()=>addItem(),0);
   });
 }
 
@@ -429,10 +501,16 @@ function addItem(){
   const q=parseFloat(qtd?.value||'0'), u=parseFloat(preco?.value||'0'), sku=(el('#inp-sku')?.value||'').trim();
   if(q<=0 || u<0) return;
   itens.push({nome,qtd:q,unit:u,sku});
-  if(busca) busca.value=''; if(el('#inp-sku')) el('#inp-sku').value='';
+
+  // Limpa campos para próxima leitura
+  if(busca) busca.value='';
+  if(el('#inp-sku')) el('#inp-sku').value='';
   if(el('#visor-produto')) el('#visor-produto').textContent='—';
-  if(qtd) qtd.value='1.000'; if(preco) preco.value='0.00'; upItemTile();
-  recalc(); busca && busca.focus();
+  if(qtd) qtd.value='1.000';
+  if(preco) preco.value='0.00';
+  upItemTile();
+  recalc();
+  busca && busca.focus();
 }
 
 if(temCaixa){
@@ -440,21 +518,47 @@ if(temCaixa){
   document.getElementById('btn-clear')?.addEventListener('click', ()=>{itens=[]; recalc();});
   qtd && qtd.addEventListener('input', upItemTile);
   preco && preco.addEventListener('input', upItemTile);
+
   document.addEventListener('keydown',(e)=>{
-    if(e.key==='F2'){e.preventDefault(); qtd && qtd.select();}
-    if(e.key==='F4'){e.preventDefault(); const f=document.getElementById('form-venda'); const b=document.getElementById('btn-finalizar'); if(b && !b.disabled){ f?.requestSubmit ? f.requestSubmit(b) : b.click(); } }
+    // F2: Alterar quantidade
+    if(e.key==='F2'){ e.preventDefault(); qtd && (qtd.select(), qtd.scrollIntoView({block:'center'})); }
+
+    // F3: Ir para DESCONTO
+    if(e.key==='F3'){
+      e.preventDefault();
+      const d = el('#inp-desc');
+      if(d){ d.focus(); d.select(); d.scrollIntoView({block:'center'}); }
+    }
+
+    // F6: Ir para TOTAL RECEBIDO (ativa Dinheiro, mostra grupo e foca)
+    if(e.key==='F6'){
+      e.preventDefault();
+      forma='dinheiro'; toggleDin();
+      const r = el('#inp-recebido');
+      if(r){ r.focus(); r.select(); r.scrollIntoView({block:'center'}); }
+    }
+
+    // F4: Finalizar
+    if(e.key==='F4'){
+      e.preventDefault();
+      const f=document.getElementById('form-venda');
+      const b=document.getElementById('btn-finalizar');
+      if(b && !b.disabled){ f?.requestSubmit ? f.requestSubmit(b) : b.click(); }
+    }
   });
+
+  // Enter no campo de busca ainda adiciona (compat com leitores que mandam Enter)
   busca && busca.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){e.preventDefault(); addItem(); }});
 }
 
+/* Pagamento / troco */
 const selBtns=document.querySelectorAll('[data-pay]'), grpDin=el('#grp-din'), inpRec=el('#inp-recebido'), lblTroco=el('#lbl-troco');
 let forma='dinheiro';
 selBtns.forEach(b=>b.addEventListener('click',()=>{ forma=b.dataset.pay; toggleDin(); }));
 function toggleDin(){ const isDin=forma==='dinheiro'; if(grpDin) grpDin.style.display=isDin?'block':'none'; validateBtn(); }
 function troco(){
   if(forma!=='dinheiro'){ if(lblTroco){ lblTroco.textContent='R$ 0,00'; lblTroco.className='n money'; } return; }
-  const ttxt=(el('#tot-geral')?.textContent||'').replace(/[^\d,.-]/g,'').replace('.','').replace(',','.');
-  const tr=(parseFloat(inpRec?.value||'0') - (Number(ttxt)||0));
+  const tr = (parseFloat(inpRec?.value||'0') - totalAtual());
   if(lblTroco){ lblTroco.textContent='R$ '+fmt(tr); lblTroco.className='n money '+(tr>=0?'ok':'neg'); }
 }
 function validateBtn(){
@@ -462,11 +566,11 @@ function validateBtn(){
   if(!b) return;
   if(!temCaixa || itens.length===0){ b.disabled=true; return; }
   if(forma==='dinheiro'){
-    const t=itens.reduce((s,i)=>s+i.qtd*i.unit,0) - parseFloat(el('#inp-desc')?.value||'0');
+    const t = totalAtual();
     b.disabled = (parseFloat(inpRec?.value||'0') < Math.max(t,0));
   }else b.disabled=false;
 }
-el('#inp-desc')?.addEventListener('input', recalc);
+el('#inp-desc')?.addEventListener('input', ()=>{ recalc(); });
 inpRec && inpRec.addEventListener('input', ()=>{ troco(); validateBtn(); });
 
 function syncHidden(){ const d=el('#desconto_hidden'); const i=el('#inp-desc'); if(d && i) d.value=(parseFloat(i.value||'0')||0).toFixed(2); }
