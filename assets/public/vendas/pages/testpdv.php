@@ -626,6 +626,7 @@ try {
       border: #f8fafc 2px solid;
       background:  #16a34a;
       color: #f0f0f0f0;
+      font-weight: 900;
     }
   </style>
 </head>
