@@ -117,14 +117,18 @@ try {
       box-shadow: 0 8px 18px rgba(0, 0, 0, .45);
     }
 
-    .subgrid-vertical {
-      grid-template-columns: 1fr;
-      /* empilhado */
+    /* Força empilhado no bloco de dinheiro */
+    #grp-din .row {
+      display: flex;
+      flex-direction: column;
     }
 
-    .subgrid-vertical .money-wrap {
+    #grp-din .col-7,
+    #grp-din .col-5 {
       width: 100%;
+      max-width: 100%;
     }
+
 
     .top-left {
       display: flex;
@@ -576,7 +580,7 @@ try {
           </div>
 
           <div class="tile">
-            <div class="lbl">TOTAL DO IT</div>
+            <div class="lbl">TOTAL DO ITEM</div>
             <div class="value"><strong id="tile-item-total" class="money fs-4">R$ 0,00</strong></div>
           </div>
 
@@ -661,7 +665,7 @@ try {
 
           <div id="grp-din" class="mt-3" style="display:none">
             <div class="row g-2">
-              <div class="col-7">
+              <div class="col-12">
                 <div class="rt">
                   <div class="mb-1 fw-semibold">TOTAL RECEBIDO</div>
                   <div class="money-wrap">
@@ -670,8 +674,9 @@ try {
                   </div>
                 </div>
               </div>
-              <div class="col-5">
-                <div class="rt h-100 d-flex flex-column">
+
+              <div class="col-12">
+                <div class="rt d-flex flex-column">
                   <div class="fw-semibold">TROCO</div>
                   <div id="lbl-troco" class="n money mt-auto">R$ 0,00</div>
                 </div>
