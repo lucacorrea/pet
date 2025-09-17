@@ -681,7 +681,7 @@ try {
          <div class="caixa-pill text-white">
           <a href=".././../dashboard.php"
             id="btn-logout"
-            class="btn top-logout"
+            class="btn top-logout text-white"
             title="Sair (Alt+S)"
             data-bs-toggle="tooltip"
             aria-label="Sair">
