@@ -678,16 +678,16 @@ try {
           <i class="bi bi-clock"></i>
           <span id="clock">--:--</span>
         </div>
-         <div class="caixa-pill">
-        <a href=".././../dashboard.php"
-          id="btn-logout"
-          class="btn top-logout"
-          title="Sair (Alt+S)"
-          data-bs-toggle="tooltip"
-          aria-label="Sair">
-          <i class="bi bi-box-arrow-right"></i>
-          <span class="d-none d-md-inline ms-1">Voltar</span>
-        </a>
+         <div class="caixa-pill text-white">
+          <a href=".././../dashboard.php"
+            id="btn-logout"
+            class="btn top-logout"
+            title="Sair (Alt+S)"
+            data-bs-toggle="tooltip"
+            aria-label="Sair">
+            <i class="bi bi-box-arrow-right"></i>
+            <span class="d-none d-md-inline ms-1">Voltar</span>
+          </a>
       </div>
 
     </div>
