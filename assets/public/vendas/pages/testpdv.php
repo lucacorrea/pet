@@ -59,228 +59,117 @@ try {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
   <style>
-    /* ===== Tema claro (tons do print) ===== */
-    :root {
-      /* Base */
-      --bg: #f4f7fb;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --shadow: 0 8px 16px rgba(15, 23, 42, .06);
-      --ticket-edge: #e2e8f0;
-
-      /* Azul do topo */
-      --brand: #0f3fa7;
-      --brand2: #2563eb;
-
-      /* Cards */
-      --panel: #ffffff;
-      --panel2: #ffffff;
-
-      /* Colunas laterais */
-      --left: 360px;
-      --right: 360px;
+    :root{
+      --bg:#f4f7fb; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --shadow:0 8px 16px rgba(15,23,42,.06);
+      --ticket-edge:#e2e8f0; --brand:#0f3fa7; --brand2:#2563eb; --panel:#fff; --panel2:#fff; --left:360px; --right:360px;
     }
-
-    @media (max-width:1440px) {
-      :root { --left: 350px; --right: 340px }
-    }
-    @media (max-width:1100px) {
-      :root { --left: 1fr; --right: 1fr }
-    }
-
-    * { box-sizing: border-box }
-    html, body { height: 100% }
-    body {
-      margin: 0; background: var(--bg); color: var(--text);
-      font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
-      overflow: hidden
-    }
+    @media (max-width:1440px){ :root{ --left:350px; --right:340px } }
+    @media (max-width:1100px){ :root{ --left:1fr; --right:1fr } }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial;overflow:hidden}
 
     /* Topo */
-    .topbar{
-      height:64px; display:grid; grid-template-columns:1fr;
-      background:linear-gradient(135deg,var(--brand2),var(--brand));
-      border-bottom:1px solid rgba(0,0,0,.05);
-      box-shadow:var(--shadow); color:#fff;
-    }
-    .top-inner{
-      height:64px; display:flex; align-items:center; justify-content:space-between;
-      gap:12px; padding:0 16px;
-    }
-    .top-icon{ font-size:1.25rem; opacity:.95 }
-    .top-left{ display:flex; align-items:center; gap:10px }
-    .top-left .brand{ font-weight:800; letter-spacing:.12rem; text-transform:uppercase; font-size:1.02rem }
+    .topbar{height:64px;display:grid;grid-template-columns:1fr;background:linear-gradient(135deg,var(--brand2),var(--brand));
+      border-bottom:1px solid rgba(0,0,0,.05);box-shadow:var(--shadow);color:#fff;}
+    .top-inner{height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px;}
+    .top-icon{font-size:1.25rem;opacity:.95}
+    .top-left{display:flex;align-items:center;gap:10px}
+    .top-left .brand{font-weight:800;letter-spacing:.12rem;text-transform:uppercase;font-size:1.02rem}
 
-    /* Atalhos em chips (centro) */
-    .top-shortcuts{
-      display:flex; align-items:center; gap:10px;
-      background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25);
-      border-radius:12px; padding:6px 10px;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-    }
-    .top-shortcuts .sep{ opacity:.8 }
-    .chip{ display:inline-flex; align-items:center; gap:6px; }
-    .kbd{
-      background:#0f172a; color:#fff; border:1px solid #0f172a;
-      border-radius:.35rem; padding:.12rem .40rem; font-weight:700; line-height:1;
-    }
-    .chip-lab{ font-weight:700; letter-spacing:.02rem }
+    .top-shortcuts{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+      border-radius:12px;padding:6px 10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);}
+    .top-shortcuts .sep{opacity:.8}
+    .chip{display:inline-flex;align-items:center;gap:6px;}
+    .kbd{background:#0f172a;color:#fff;border:1px solid #0f172a;border-radius:.35rem;padding:.12rem .40rem;font-weight:700;line-height:1;}
+    .chip-lab{font-weight:700;letter-spacing:.02rem}
 
-    /* Direita do topo */
-    .top-right{ display:flex; align-items:center; gap:10px }
+    .top-right{display:flex;align-items:center;gap:10px}
+    .caixa-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;font-weight:900;letter-spacing:.08rem;
+      background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);text-transform:uppercase;}
+    .caixa-pill .dot{width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,.08) inset;}
+    .caixa-pill.open .dot{background:#22c55e} .caixa-pill.closed .dot{background:#ef4444}
 
-    .caixa-pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px; border-radius:999px; font-weight:900; letter-spacing:.08rem;
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-      text-transform:uppercase;
-    }
-    .caixa-pill .dot{ width:10px; height:10px; border-radius:50%; box-shadow:0 0 0 2px rgba(0,0,0,.08) inset; }
-    .caixa-pill.open .dot{ background:#22c55e }  /* verde */
-    .caixa-pill.closed .dot{ background:#ef4444 }/* vermelho */
+    .clock-wrap{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.25);
+      border-radius:10px;padding:6px 10px;font-weight:700;font-variant-numeric:tabular-nums;}
 
-    /* Relógio (wrapper) */
-    .clock-wrap{
-      display:inline-flex; align-items:center; gap:8px;
-      background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.25);
-      border-radius:10px; padding:6px 10px; font-weight:700;
-      font-variant-numeric:tabular-nums;
-    }
-
-    /* Botão Voltar — menor e borda mais quadrada */
-    .btn-return{
-      display:inline-flex; align-items:center; gap:6px;
-      height:32px; padding:0 10px; line-height:1;
-      border-radius:6px; /* mais quadrada */
-      color:#fff; background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.35);
-      text-decoration:none; font-weight:600;
-    }
-    .btn-return:hover{ background:rgba(255,255,255,.20); color:#fff; }
-    .btn-return:active{ transform:translateY(1px); }
-    .btn-return .bi{ font-size:1rem; }
-    .btn-return .label{ font-size:.9rem; }
-
-    @media (max-width: 576px){
-      .top-shortcuts{ display:none; }
-      .btn-return .label{ display:none; }
-    }
+    .btn-return{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;line-height:1;border-radius:6px;
+      color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);text-decoration:none;font-weight:600;}
+    .btn-return:hover{background:rgba(255,255,255,.20);color:#fff}
+    .btn-return:active{transform:translateY(1px)}
+    .btn-return .bi{font-size:1rem}.btn-return .label{font-size:.9rem}
+    @media (max-width:576px){ .top-shortcuts{display:none}.btn-return .label{display:none} }
 
     /* Área principal */
-    .stage {
-      height: calc(100vh - 64px);
-      display: grid;
-      grid-template-columns: var(--left) 1fr var(--right);
-      gap: 16px; padding: 16px; position: relative; z-index: 1;
-    }
-    @media (max-width:1100px){ .stage{ grid-template-columns:1fr; overflow:auto } }
+    .stage{height:calc(100vh - 64px);display:grid;grid-template-columns:var(--left) 1fr var(--right);gap:16px;padding:16px;position:relative;z-index:1;}
+    @media (max-width:1100px){ .stage{grid-template-columns:1fr;overflow:auto} }
 
-    /* Cards genéricos */
-    .card-pdv{
-      background:linear-gradient(180deg,var(--panel2),var(--panel));
-      border:1px solid var(--border); border-radius:14px; color:#0f1e4a;
-      box-shadow:var(--shadow);
-    }
-    .card-pdv .card-header{ padding:.7rem 1rem; border-bottom:1px solid var(--border); font-weight:700; color:#0f1e4a }
-    .card-pdv .card-body{ padding:14px }
+    /* Cards */
+    .card-pdv{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--border);border-radius:14px;color:#0f1e4a;box-shadow:var(--shadow)}
+    .card-pdv .card-header{padding:.7rem 1rem;border-bottom:1px solid var(--border);font-weight:700;color:#0f1e4a}
+    .card-pdv .card-body{padding:14px}
 
-    /* Coluna esquerda */
-    .left{ display:grid; grid-template-rows:auto auto 1fr; gap:16px; min-height:0 }
-    .tile{
-      background:#fff; border:1px solid var(--border); border-radius:12px;
-      padding:10px 12px; margin-bottom:10px; box-shadow:var(--shadow)
-    }
-    .tile .lbl{ font-size:.8rem; text-transform:uppercase; color:#334155; letter-spacing:.06rem }
-    .tile .value{ display:flex; align-items:center; gap:8px; margin-top:6px }
+    /* Esquerda */
+    .left{display:grid;grid-template-rows:auto auto 1fr;gap:16px;min-height:0}
+    .tile{background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:10px;box-shadow:var(--shadow)}
+    .tile .lbl{font-size:.8rem;text-transform:uppercase;color:#334155;letter-spacing:.06rem}
+    .tile .value{display:flex;align-items:center;gap:8px;margin-top:6px}
 
-    /* Input leitor */
-    .nfce-input{ position:relative; width:100% }
-    .nfce-input .inp{
-      width:100%; height:54px; padding:0 12px 0 46px;
-      background:#fff; color:#0f172a; border:2px dashed #c7d2fe; border-radius:12px; font-weight:700;
-    }
-    .nfce-input .inp::placeholder{ color:#94a3b8 }
-    .nfce-input .inp:focus{ outline:none; border-color:#93c5fd; box-shadow:0 0 0 4px rgba(147,197,253,.25) }
-    .nfce-input .inp-icon{
-      position:absolute; left:12px; top:50%; transform:translateY(-50%);
-      font-size:1.25rem; color:#1e3a8a; opacity:.85;
-    }
+    .nfce-input{position:relative;width:100%}
+    .nfce-input .inp{width:100%;height:54px;padding:0 12px 0 46px;background:#fff;color:#0f172a;border:2px dashed #c7d2fe;border-radius:12px;font-weight:700;}
+    .nfce-input .inp::placeholder{color:#94a3b8}
+    .nfce-input .inp:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 4px rgba(147,197,253,.25)}
+    .nfce-input .inp-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:1.25rem;color:#1e3a8a;opacity:.85;}
 
-    /* Sugestões */
-    #sug{ top:58px !important; display:none; max-height:300px; overflow:auto; border:2px dashed #e2e8f0 !important; z-index:1000 }
-    #sug .sug-item{ cursor:pointer; border-bottom:1px dotted #e5e7eb }
-    #sug .sug-item:last-child{ border-bottom:0 }
-    #sug .sug-item:hover{ background:#f8fafc }
-    #sug .price{ font-family:ui-monospace,Menlo,Consolas,monospace }
+    #sug{top:58px !important;display:none;max-height:300px;overflow:auto;border:2px dashed #e2e8f0 !important;z-index:1000}
+    #sug .sug-item{cursor:pointer;border-bottom:1px dotted #e5e7eb}
+    #sug .sug-item:last-child{border-bottom:0}
+    #sug .sug-item:hover{background:#f8fafc}
+    #sug .price{font-family:ui-monospace,Menlo,Consolas,monospace}
 
-    /* Inputs base */
-    .inp{ background:#fff; color:#0f172a; border:2px solid #cbd5e1; border-radius:10px; height:50px; padding:0 10px; font-weight:600; width:100% }
-    .money-wrap{ display:flex; align-items:center }
-    .money-prefix{
-      background:#fff; border:2px solid #cbd5e1; border-right:0; border-radius:10px 0 0 10px;
-      height:50px; display:flex; align-items:center; padding:0 12px; color:#0f172a; font-weight:700
-    }
-    .money-input{ border-left:0; border-radius:0 10px 10px 0 }
-    .money{ font-variant-numeric:tabular-nums }
+    .inp{background:#fff;color:#0f172a;border:2px solid #cbd5e1;border-radius:10px;height:50px;padding:0 10px;font-weight:600;width:100%}
+    .money-wrap{display:flex;align-items:center}
+    .money-prefix{background:#fff;border:2px solid #cbd5e1;border-right:0;border-radius:10px 0 0 10px;height:50px;display:flex;align-items:center;padding:0 12px;color:#0f172a;font-weight:700}
+    .money-input{border-left:0;border-radius:0 10px 10px 0}
+    .money{font-variant-numeric:tabular-nums}
 
     /* Centro */
-    .center{ display:grid; grid-template-rows:auto 1fr auto; gap:12px; min-height:0 }
+    .center{display:grid;grid-template-rows:auto 1fr auto;gap:12px;min-height:0}
+    .visor{background:linear-gradient(135deg,#0f3fa7,#0b2f85);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:12px;
+      padding:12px 16px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
+    .visor .big{font-size:1.95rem;font-weight:900}
 
-    .visor{
-      background:linear-gradient(135deg,#0f3fa7,#0b2f85);
-      color:#fff; border:1px solid rgba(255,255,255,.15);
-      border-radius:12px; padding:12px 16px;
-      display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow)
-    }
-    .visor .big{ font-size:1.95rem; font-weight:900 }
+    .list-card{min-height:0;display:flex;flex-direction:column;}
+    .list-card .card-body{flex:1;min-height:0;display:flex;}
+    .ticket-wrap{flex:1;min-height:0;display:flex;align-items:stretch;justify-content:center}
+    .ticket{width:100%;height:100%;background:#fff;color:#0f172a;border:1px dashed var(--ticket-edge);border-radius:16px;
+      padding:14px 14px 18px;font-family:ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;font-size:12.5px;line-height:1.28;display:flex;flex-direction:column;}
+    .t-line{display:grid;grid-template-columns:1fr auto;gap:6px;padding:6px 0;border-bottom:1px dotted #dde3ee}
+    .t-line:last-child{border-bottom:0}
+    .t-desc{font-weight:700;color:#0b1323}
+    .t-meta{color:#6b7280}
+    .t-val{font-weight:800;text-align:right}
+    .t-list{flex:1;min-height:0;overflow:auto;padding-right:4px}
 
-    /* Lista/Prévia */
-    .list-card{ min-height:0; display:flex; flex-direction:column; }
-    .list-card .card-body{ flex:1; min-height:0; display:flex; }
-    .ticket-wrap{ flex:1; min-height:0; display:flex; align-items:stretch; justify-content:center }
-
-    .ticket{
-      width:100%; max-width:none; height:100%; background:#fff; color:#0f172a;
-      border:1px dashed var(--ticket-edge); border-radius:16px; padding:14px 14px 18px;
-      font-family:ui-monospace,Menlo,Consolas,"Liberation Mono",monospace; font-size:12.5px; line-height:1.28; display:flex; flex-direction:column;
-    }
-    .t-line{ display:grid; grid-template-columns:1fr auto; gap:6px; padding:6px 0; border-bottom:1px dotted #dde3ee }
-    .t-line:last-child{ border-bottom:0 }
-    .t-desc{ font-weight:700; color:#0b1323 }
-    .t-meta{ color:#6b7280 }
-    .t-val{ font-weight:800; text-align:right }
-    .t-list{ flex:1; min-height:0; overflow:auto; padding-right:4px }
-
-    /* Subtotal */
-    .bottom{ display:grid; grid-template-rows:auto; gap:12px; min-height:0 }
-    .subgrid{ display:grid; grid-template-columns:1fr; gap:12px }
-    .box-num{
-      background:#fff; border:1px solid var(--border); border-radius:12px;
-      padding:12px 16px; display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow)
-    }
-    .box-num .lab{ color:#334155 }
-    .box-num .num{ font-size:2.2rem; font-weight:900; color:#0f1e4a }
+    .bottom{display:grid;grid-template-rows:auto;gap:12px;min-height:0}
+    .subgrid{display:grid;grid-template-columns:1fr;gap:12px}
+    .box-num{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
+    .box-num .lab{color:#334155}
+    .box-num .num{font-size:2.2rem;font-weight:900;color:#0f1e4a}
 
     /* Direita */
-    .right{ display:grid; grid-template-rows:auto auto 1fr; gap:16px; min-height:0 }
-    .totalzao{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:14px; box-shadow:var(--shadow) }
+    .right{display:grid;grid-template-rows:auto auto 1fr;gap:16px;min-height:0}
+    .totalzao{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
 
-    /* Botões claros */
-    .btn-outline-light{ color:#334155; border-color:#e2e8f0; background:#fff }
-    .btn-outline-light:hover{ background:#f8fafc; border-color:#cbd5e1; color:#111827 }
+    .btn-outline-light{color:#334155;border-color:#e2e8f0;background:#fff}
+    .btn-outline-light:hover{background:#f8fafc;border-color:#cbd5e1;color:#111827}
 
-    /* Pagamento */
-    .pay .btn{ height:52px; border-radius:12px }
-    .rt{ background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px; box-shadow:var(--shadow) }
-    .rt .n{ font-size:1.8rem; font-weight:900 }
-    .ok{ color:#16a34a } .neg{ color:#ef4444 }
+    .pay .btn{height:52px;border-radius:12px}
+    .rt{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:var(--shadow)}
+    .rt .n{font-size:1.8rem;font-weight:900}
+    .ok{color:#16a34a}.neg{color:#ef4444}
 
-    /* “Faixa” antiga desativada no tema claro */
-    .side-band{ display:none; }
-
-    /* Destaque do método de pagamento ativo */
-    .pay .pay-btn.active { box-shadow: 0 0 0 3px rgba(37,99,235,.25) inset; }
+    .side-band{display:none}
+    .pay .pay-btn.active{box-shadow:0 0 0 3px rgba(37,99,235,.25) inset}
   </style>
 </head>
 
@@ -288,13 +177,11 @@ try {
 
   <div class="topbar">
     <div class="top-inner">
-      <!-- Esquerda: marca -->
       <div class="top-left">
         <i class="bi bi-shop-window top-icon"></i>
         <div class="brand">Mundo Pets – PDV</div>
       </div>
 
-      <!-- Centro: atalhos (chips). Some em telas pequenas -->
       <div class="top-shortcuts">
         <span class="chip"><span class="kbd">F2</span><span class="chip-lab">Quantidade</span></span>
         <span class="sep">•</span>
@@ -307,7 +194,6 @@ try {
         <span class="chip"><span class="kbd">F6</span><span class="chip-lab">Recebido</span></span>
       </div>
 
-      <!-- Direita: status do caixa + relógio + voltar (menor) -->
       <div class="top-right">
         <div class="caixa-pill <?= $caixaAberto ? 'open' : 'closed' ?>" title="Status do caixa" data-bs-toggle="tooltip">
           <span class="dot"></span>
@@ -319,15 +205,8 @@ try {
           <span id="clock">--:--</span>
         </div>
 
-        <!-- Voltar: menor e com bordas mais quadradas -->
-        <a href="../../dashboard.php"
-           id="btn-voltar"
-           class="btn-return"
-           title="Voltar (Alt+V)"
-           data-bs-toggle="tooltip"
-           aria-label="Voltar">
-          <i class="bi bi-box-arrow-left"></i>
-          <span class="label">Voltar</span>
+        <a href="../../dashboard.php" id="btn-voltar" class="btn-return" title="Voltar (Alt+V)" data-bs-toggle="tooltip" aria-label="Voltar">
+          <i class="bi bi-box-arrow-left"></i><span class="label">Voltar</span>
         </a>
       </div>
     </div>
@@ -385,6 +264,8 @@ try {
         <div>
           <div class="opacity-75">Produto</div>
           <div id="visor-produto" class="big">—</div>
+          <!-- valor do último produto adicionado -->
+          <div id="visor-ultimo-valor" class="money" style="margin-top:4px;font-size:1.25rem;font-weight:800">R$ 0,00</div>
         </div>
         <div class="text-end">
           <div class="opacity-75">Total</div>
@@ -392,7 +273,6 @@ try {
         </div>
       </div>
 
-      <!-- LISTA ÚNICA -->
       <div class="card-pdv list-card" style="min-height:0;">
         <div class="card-header">LISTA DE ITENS</div>
         <div class="card-body ticket-wrap">
@@ -400,7 +280,6 @@ try {
         </div>
       </div>
 
-      <!-- SUBTOTAL -->
       <div class="bottom">
         <div class="subgrid">
           <div class="box-num">
@@ -413,7 +292,6 @@ try {
 
     <!-- DIREITA -->
     <div class="right">
-      <!-- Total geral para referência visual -->
       <div class="box-num">
         <div class="lab">TOTAL</div>
         <div id="tot-geral" class="num money">R$ 0,00</div>
@@ -499,6 +377,7 @@ try {
     const PRODUTOS = <?= json_encode($produtos, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const el = s => document.querySelector(s);
     let itens = [];
+    let produtoSelecionado = null; // guarda seleção de sugestão/EAN antes de adicionar
     const temCaixa = (document.getElementById('form-venda')?.dataset.caixa === '1');
     let forma = 'dinheiro';
 
@@ -547,20 +426,25 @@ try {
       sug.style.display='block';
     }
 
-    /* ==== Visor deve sempre mostrar o último produto adicionado ==== */
-    function visorUltimoProduto(){
+    /* ==== Visor: último produto adicionado (nome + valor unitário) ==== */
+    function visorUltimo(){
       const vp = el('#visor-produto');
-      if (!vp) return;
-      const ult = itens[itens.length - 1];
-      vp.textContent = ult ? (ult.nome || 'Item') : '—';
+      const vv = el('#visor-ultimo-valor');
+      const ult = itens[itens.length - 1] || null;
+      if (vp) vp.textContent = ult ? (ult.nome || 'Item') : '—';
+      if (vv) vv.textContent = 'R$ ' + fmt(ult ? ult.unit : 0);
     }
 
-    /* ==== Seleção/Scanner: auto-adicionar ==== */
+    /* ==== Pré-seleção/Scanner ==== */
     function setProdutoSelecionado(data){
-      // Mostra momentaneamente o produto que está para ser adicionado (bom feedback visual)
-      el('#visor-produto') && (el('#visor-produto').textContent = data.nome || 'Item');
-      preco && (preco.value = parseFloat(data.preco_venda || 0).toFixed(2));
-      el('#inp-sku') && (el('#inp-sku').value = data.sku || '');
+      // não mexe no visor; apenas prepara os campos
+      produtoSelecionado = {
+        nome: data.nome || 'Item',
+        unit: Number(data.preco_venda || 0),
+        sku: data.sku || ''
+      };
+      preco && (preco.value = produtoSelecionado.unit.toFixed(2));
+      el('#inp-sku') && (el('#inp-sku').value = produtoSelecionado.sku);
       upItemTile();
     }
 
@@ -569,7 +453,7 @@ try {
       if(!temCaixa) return;
       q=(q||'').trim(); if(!q) return;
 
-      // 1) Match exato por EAN ou SKU
+      // Match exato por EAN ou SKU
       const exact = PRODUTOS.find(p => (p.ean && String(p.ean)===q) || (p.sku && String(p.sku).toLowerCase()===q.toLowerCase()));
       if(exact){
         setProdutoSelecionado({nome:exact.nome, preco_venda:exact.preco_venda, sku:exact.sku});
@@ -578,7 +462,7 @@ try {
         return;
       }
 
-      // 2) Se restar só 1 sugestão e termo razoável, auto-adiciona após leve pausa
+      // Se restar só 1 sugestão e termo razoável, auto-adiciona
       const list = filtra(q);
       if(list.length===1 && q.length>=4){
         clearTimeout(autoAddTimer);
@@ -614,28 +498,40 @@ try {
 
     function addItem(){
       if(!temCaixa) return;
-      const nome=(el('#visor-produto')?.textContent||'').trim() || (busca?.value||'').trim() || 'Item';
-      const q=parseFloat(qtd?.value||'0'), u=parseFloat(preco?.value||'0'), sku=(el('#inp-sku')?.value||'').trim();
-      if(q<=0 || u<0) return;
-      itens.push({nome,qtd:q,unit:u,sku});
 
-      // Limpa campos (NÃO limpar o visor — ele deve mostrar o último item)
+      let nome, u, sku;
+      if (produtoSelecionado){
+        nome = produtoSelecionado.nome;
+        u = Number(produtoSelecionado.unit || 0);
+        sku = produtoSelecionado.sku || '';
+      } else {
+        nome = (busca?.value || '').trim() || 'Item';
+        u = parseFloat(preco?.value || '0');
+        sku = (el('#inp-sku')?.value || '').trim();
+      }
+
+      const q = parseFloat(qtd?.value || '0');
+      if(q<=0 || u<0) return;
+
+      itens.push({nome, qtd:q, unit:u, sku});
+
+      // Limpa campos e seleção temporária
+      produtoSelecionado = null;
       if(busca) busca.value='';
       if(el('#inp-sku')) el('#inp-sku').value='';
       if(qtd) qtd.value='1.000';
       if(preco) preco.value='0.00';
       upItemTile();
 
-      // Atualiza visor para o último item da lista
-      visorUltimoProduto();
+      visorUltimo();   // atualiza nome e valor unitário do último
       recalc();
       busca && busca.focus();
     }
 
     if(temCaixa){
-      document.getElementById('btn-add')?.addEventListener('click', addItem);
-      document.getElementById('btn-clear')?.addEventListener('click', ()=>{
-        itens=[]; recalc(); renderTicket(); visorUltimoProduto(); // volta para "—"
+      el('#btn-add')?.addEventListener('click', addItem);
+      el('#btn-clear')?.addEventListener('click', ()=>{
+        itens=[]; produtoSelecionado=null; recalc(); renderTicket(); visorUltimo(); // volta para "—" e R$ 0,00
       });
       qtd && qtd.addEventListener('input', upItemTile);
       preco && preco.addEventListener('input', upItemTile);
@@ -643,11 +539,10 @@ try {
       document.addEventListener('keydown',(e)=>{
         if(e.key==='F2'){ e.preventDefault(); qtd && (qtd.select(), qtd.scrollIntoView({block:'center'})); }
         if(e.key==='F3'){
-          e.preventDefault(); const d = el('#inp-desc');
-          if(d){ d.focus(); d.select(); d.scrollIntoView({block:'center'}); }
+          e.preventDefault(); const d = el('#inp-desc'); if(d){ d.focus(); d.select(); d.scrollIntoView({block:'center'}); }
         }
         if(e.key==='F6'){
-          e.preventDefault(); forma='dinheiro'; toggleDin();
+          e.preventDefault(); forma='dinheiro'; toggleDin(); updatePayActive();
           const r = el('#inp-recebido'); if(r){ r.focus(); r.select(); r.scrollIntoView({block:'center'}); }
         }
         if(e.key==='F4'){
@@ -655,12 +550,8 @@ try {
           const f=document.getElementById('form-venda'); const b=document.getElementById('btn-finalizar');
           if(b && !b.disabled){ f?.requestSubmit ? f.requestSubmit(b) : b.click(); }
         }
-
-        // Atalho Alt+V para Voltar
-        if(e.altKey && (e.key==='v' || e.key==='V')){
-          e.preventDefault();
-          document.getElementById('btn-voltar')?.click();
-        }
+        // Alt+V: Voltar
+        if(e.altKey && (e.key==='v' || e.key==='V')){ e.preventDefault(); document.getElementById('btn-voltar')?.click(); }
       });
 
       // Enter no campo de busca ainda adiciona
@@ -732,7 +623,7 @@ try {
       }
     })();
 
-    // Seleção visual: só o botão atual fica .active
+    // Visual do método de pagamento selecionado
     const payBtns = document.querySelectorAll('.pay .pay-btn');
     function updatePayActive() {
       payBtns.forEach(btn => {
@@ -743,12 +634,7 @@ try {
     }
 
     // Boot
-    upItemTile();
-    recalc();
-    toggleDin();
-    renderTicket();
-    visorUltimoProduto();
-    updatePayActive();
+    upItemTile(); recalc(); toggleDin(); renderTicket(); visorUltimo(); updatePayActive();
   </script>
 </body>
 </html>
