@@ -75,28 +75,14 @@ try {
     }
 
     @media (max-width:1440px) {
-      :root {
-        --left: 350px;
-        --right: 340px
-      }
+      :root { --left: 350px; --right: 340px }
     }
-
     @media (max-width:1100px) {
-      :root {
-        --left: 1fr;
-        --right: 1fr
-      }
+      :root { --left: 1fr; --right: 1fr }
     }
 
-    * {
-      box-sizing: border-box
-    }
-
-    html,
-    body {
-      height: 100%
-    }
-
+    * { box-sizing: border-box }
+    html, body { height: 100% }
     body {
       margin: 0;
       background: var(--bg);
@@ -115,518 +101,128 @@ try {
       box-shadow: var(--shadow);
       color: #fff;
     }
-
-    .top-inner {
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 0 16px;
-    }
-
-    .top-icon {
-      font-size: 1.25rem;
-      opacity: .95
-    }
-
-    .top-left {
-      display: flex;
-      align-items: center;
-      gap: 10px
-    }
-
-    .top-left .brand {
-      font-weight: 800;
-      letter-spacing: .12rem;
-      text-transform: uppercase;
-      font-size: 1.02rem
-    }
-
+    .top-inner { height: 64px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 16px; }
+    .top-icon { font-size:1.25rem; opacity:.95 }
+    .top-left { display:flex; align-items:center; gap:10px }
+    .top-left .brand { font-weight:800; letter-spacing:.12rem; text-transform:uppercase; font-size:1.02rem }
     .top-shortcuts {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(255, 255, 255, .12);
-      border: 1px solid rgba(255, 255, 255, .25);
-      border-radius: 12px;
-      padding: 6px 10px;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+      display:flex; align-items:center; gap:10px;
+      background: rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25);
+      border-radius:12px; padding:6px 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
     }
-
-    .top-shortcuts .sep {
-      opacity: .8
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .kbd {
-      background: #0f172a;
-      color: #fff;
-      border: 1px solid #0f172a;
-      border-radius: .35rem;
-      padding: .12rem .40rem;
-      font-weight: 700;
-      line-height: 1;
-    }
-
-    .chip-lab {
-      font-weight: 700;
-      letter-spacing: .02rem
-    }
-
-    .top-right {
-      display: flex;
-      align-items: center;
-      gap: 10px
-    }
-
+    .top-shortcuts .sep { opacity:.8 }
+    .chip { display:inline-flex; align-items:center; gap:6px; }
+    .kbd { background:#0f172a; color:#fff; border:1px solid #0f172a; border-radius:.35rem; padding:.12rem .40rem; font-weight:700; line-height:1; }
+    .chip-lab { font-weight:700; letter-spacing:.02rem }
+    .top-right { display:flex; align-items:center; gap:10px }
     .caixa-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-weight: 900;
-      letter-spacing: .08rem;
-      background: rgba(255, 255, 255, .15);
-      border: 1px solid rgba(255, 255, 255, .25);
-      text-transform: uppercase;
+      display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px;
+      font-weight:900; letter-spacing:.08rem; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
+      text-transform:uppercase;
     }
-
-    .caixa-pill .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      box-shadow: 0 0 0 2px rgba(0, 0, 0, .08) inset;
-    }
-
-    .caixa-pill.open .dot {
-      background: #22c55e
-    }
-
-    .caixa-pill.closed .dot {
-      background: #ef4444
-    }
-
+    .caixa-pill .dot { width:10px; height:10px; border-radius:50%; box-shadow:0 0 0 2px rgba(0,0,0,.08) inset; }
+    .caixa-pill.open .dot { background:#22c55e }
+    .caixa-pill.closed .dot { background:#ef4444 }
     .clock-wrap {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, .10);
-      border: 1px solid rgba(255, 255, 255, .25);
-      border-radius: 10px;
-      padding: 6px 10px;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
+      display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.25); border-radius:10px; padding:6px 10px; font-weight:700; font-variant-numeric: tabular-nums;
     }
-
     .btn-return {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      height: 32px;
-      padding: 0 10px;
-      line-height: 1;
-      border-radius: 6px;
-      color: #fff;
-      background: rgba(255, 255, 255, .12);
-      border: 1px solid rgba(255, 255, 255, .35);
-      text-decoration: none;
-      font-weight: 600;
+      display:inline-flex; align-items:center; gap:6px; height:32px; padding:0 10px; line-height:1; border-radius:6px;
+      color:#fff; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.35); text-decoration:none; font-weight:600;
     }
-
-    .btn-return:hover {
-      background: rgba(255, 255, 255, .20);
-      color: #fff
-    }
-
-    .btn-return:active {
-      transform: translateY(1px)
-    }
-
-    .btn-return .bi {
-      font-size: 1rem
-    }
-
-    .btn-return .label {
-      font-size: .9rem
-    }
-
-    @media (max-width:576px) {
-      .top-shortcuts {
-        display: none
-      }
-
-      .btn-return .label {
-        display: none
-      }
-    }
+    .btn-return:hover { background:rgba(255,255,255,.20); color:#fff }
+    .btn-return:active { transform: translateY(1px) }
+    .btn-return .bi { font-size:1rem }
+    .btn-return .label { font-size:.9rem }
+    @media (max-width:576px){ .top-shortcuts{display:none} .btn-return .label{display:none} }
 
     /* Área principal */
     .stage {
       height: calc(100vh - 64px);
-      display: grid;
-      grid-template-columns: var(--left) 1fr var(--right);
-      gap: 16px;
-      padding: 16px;
-      position: relative;
-      z-index: 1;
+      display: grid; grid-template-columns: var(--left) 1fr var(--right);
+      gap: 16px; padding: 16px; position: relative; z-index: 1;
     }
-
-    @media (max-width:1100px) {
-      .stage {
-        grid-template-columns: 1fr;
-        overflow: auto
-      }
-    }
+    @media (max-width:1100px){ .stage{ grid-template-columns:1fr; overflow:auto } }
 
     /* Cards */
-    .card-pdv {
-      background: linear-gradient(180deg, var(--panel2), var(--panel));
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      color: #0f1e4a;
-      box-shadow: var(--shadow)
-    }
-
-    .card-pdv .card-header {
-      padding: .7rem 1rem;
-      border-bottom: 1px solid var(--border);
-      font-weight: 700;
-      color: #0f1e4a
-    }
-
-    .card-pdv .card-body {
-      padding: 14px
-    }
+    .card-pdv { background: linear-gradient(180deg, var(--panel2), var(--panel)); border:1px solid var(--border); border-radius:14px; color:#0f1e4a; box-shadow:var(--shadow) }
+    .card-pdv .card-header { padding:.7rem 1rem; border-bottom:1px solid var(--border); font-weight:700; color:#0f1e4a }
+    .card-pdv .card-body { padding:14px }
 
     /* Esquerda */
-    .left {
-      display: grid;
-      grid-template-rows: auto auto 1fr;
-      gap: 16px;
-      min-height: 0
-    }
-
-    .tile {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 12px;
-      margin-bottom: 10px;
-      box-shadow: var(--shadow)
-    }
-
-    .tile .lbl {
-      font-size: .8rem;
-      text-transform: uppercase;
-      color: #334155;
-      letter-spacing: .06rem
-    }
-
-    .tile .value {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 6px
-    }
-
-    .nfce-input {
-      position: relative;
-      width: 100%
-    }
-
+    .left { display:grid; grid-template-rows:auto auto 1fr; gap:16px; min-height:0 }
+    .tile { background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:10px; box-shadow:var(--shadow) }
+    .tile .lbl { font-size:.8rem; text-transform:uppercase; color:#334155; letter-spacing:.06rem }
+    .tile .value { display:flex; align-items:center; gap:8px; margin-top:6px }
+    .nfce-input { position:relative; width:100% }
     .nfce-input .inp {
-      width: 100%;
-      height: 54px;
-      padding: 0 12px 0 46px;
-      background: #fff;
-      color: #0f172a;
-      border: 2px dashed #c7d2fe;
-      border-radius: 12px;
-      font-weight: 700;
+      width:100%; height:54px; padding:0 12px 0 46px; background:#fff; color:#0f172a; border:2px dashed #c7d2fe; border-radius:12px; font-weight:700;
     }
+    .nfce-input .inp::placeholder { color:#94a3b8 }
+    .nfce-input .inp:focus { outline:none; border-color:#93c5fd; box-shadow:0 0 0 4px rgba(147,197,253,.25) }
+    .nfce-input .inp-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:1.25rem; color:#1e3a8a; opacity:.85; }
+    #sug { top:58px !important; display:none; max-height:300px; overflow:auto; border:2px dashed #e2e8f0 !important; z-index:1000 }
+    #sug .sug-item { cursor:pointer; border-bottom:1px dotted #e5e7eb }
+    #sug .sug-item:last-child { border-bottom:0 }
+    #sug .sug-item:hover { background:#f8fafc }
+    #sug .price { font-family: ui-monospace, Menlo, Consolas, monospace }
 
-    .nfce-input .inp::placeholder {
-      color: #94a3b8
-    }
-
-    .nfce-input .inp:focus {
-      outline: none;
-      border-color: #93c5fd;
-      box-shadow: 0 0 0 4px rgba(147, 197, 253, .25)
-    }
-
-    .nfce-input .inp-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.25rem;
-      color: #1e3a8a;
-      opacity: .85;
-    }
-
-    #sug {
-      top: 58px !important;
-      display: none;
-      max-height: 300px;
-      overflow: auto;
-      border: 2px dashed #e2e8f0 !important;
-      z-index: 1000
-    }
-
-    #sug .sug-item {
-      cursor: pointer;
-      border-bottom: 1px dotted #e5e7eb
-    }
-
-    #sug .sug-item:last-child {
-      border-bottom: 0
-    }
-
-    #sug .sug-item:hover {
-      background: #f8fafc
-    }
-
-    #sug .price {
-      font-family: ui-monospace, Menlo, Consolas, monospace
-    }
-
-    .inp {
-      background: #fff;
-      color: #0f172a;
-      border: 2px solid #cbd5e1;
-      border-radius: 10px;
-      height: 50px;
-      padding: 0 10px;
-      font-weight: 600;
-      width: 100%
-    }
-
-    .money-wrap {
-      display: flex;
-      align-items: center
-    }
-
+    .inp { background:#fff; color:#0f172a; border:2px solid #cbd5e1; border-radius:10px; height:50px; padding:0 10px; font-weight:600; width:100% }
+    .money-wrap { display:flex; align-items:center }
     .money-prefix {
-      background: #fff;
-      border: 2px solid #cbd5e1;
-      border-right: 0;
-      border-radius: 10px 0 0 10px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      padding: 0 12px;
-      color: #0f172a;
-      font-weight: 700
+      background:#fff; border:2px solid #cbd5e1; border-right:0; border-radius:10px 0 0 10px; height:50px; display:flex; align-items:center; padding:0 12px; color:#0f172a; font-weight:700
     }
-
-    .money-input {
-      border-left: 0;
-      border-radius: 0 10px 10px 0
-    }
-
-    .money {
-      font-variant-numeric: tabular-nums
-    }
+    .money-input { border-left:0; border-radius:0 10px 10px 0 }
+    .money { font-variant-numeric: tabular-nums }
 
     /* Centro */
-    .center {
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 12px;
-      min-height: 0
-    }
-
+    .center { display:grid; grid-template-rows:auto 1fr auto; gap:12px; min-height:0 }
     .visor {
       background: linear-gradient(135deg, #0f3fa7, #0b2f85);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, .15);
-      border-radius: 12px;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: var(--shadow)
+      color:#fff; border:1px solid rgba(255,255,255,.15); border-radius:12px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow)
     }
+    .visor .big { font-size:1.95rem; font-weight:900 }
 
-    .visor .big {
-      font-size: 1.95rem;
-      font-weight: 900
-    }
+    /* >>> Ajuste de fonte para nomes longos (visor + ticket) <<< */
+    #visor-produto.big-compact { font-size:1.45rem; }
+    #visor-produto.big-ultra   { font-size:1.20rem; }
+    .t-desc.name-compact { font-size:0.92em; line-height:1.18; }
+    .t-desc.name-ultra   { font-size:0.84em; line-height:1.16; }
 
-    .list-card {
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .list-card .card-body {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-    }
-
-    .ticket-wrap {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      align-items: stretch;
-      justify-content: center
-    }
-
+    .list-card { min-height:0; display:flex; flex-direction:column; }
+    .list-card .card-body { flex:1; min-height:0; display:flex; }
+    .ticket-wrap { flex:1; min-height:0; display:flex; align-items:stretch; justify-content:center }
     .ticket {
-      width: 100%;
-      height: 100%;
-      background: #fff;
-      color: #0f172a;
-      border: 1px dashed var(--ticket-edge);
-      border-radius: 16px;
-      padding: 14px 14px 18px;
-      font-family: ui-monospace, Menlo, Consolas, "Liberation Mono", monospace;
-      font-size: 12.5px;
-      line-height: 1.28;
-      display: flex;
-      flex-direction: column;
+      width:100%; height:100%; background:#fff; color:#0f172a; border:1px dashed var(--ticket-edge); border-radius:16px; padding:14px 14px 18px;
+      font-family: ui-monospace, Menlo, Consolas, "Liberation Mono", monospace; font-size:12.5px; line-height:1.28; display:flex; flex-direction:column;
     }
+    .t-line { display:grid; grid-template-columns:1fr auto; gap:6px; padding:6px 0; border-bottom:1px dotted #dde3ee }
+    .t-line:last-child { border-bottom:0 }
+    .t-desc { font-weight:700; color:#0b1323 }
+    .t-meta { color:#6b7280 }
+    .t-val { font-weight:800; text-align:right }
+    .t-list { flex:1; min-height:0; overflow:auto; padding-right:4px }
 
-    .t-line {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 6px;
-      padding: 6px 0;
-      border-bottom: 1px dotted #dde3ee
-    }
-
-    .t-line:last-child {
-      border-bottom: 0
-    }
-
-    .t-desc {
-      font-weight: 700;
-      color: #0b1323
-    }
-
-    .t-meta {
-      color: #6b7280
-    }
-
-    .t-val {
-      font-weight: 800;
-      text-align: right
-    }
-
-    .t-list {
-      flex: 1;
-      min-height: 0;
-      overflow: auto;
-      padding-right: 4px
-    }
-
-    .bottom {
-      display: grid;
-      grid-template-rows: auto;
-      gap: 12px;
-      min-height: 0
-    }
-
-    .subgrid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px
-    }
-
-    .box-num {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: var(--shadow)
-    }
-
-    .box-num .lab {
-      color: #334155
-    }
-
-    .box-num .num {
-      font-size: 2.2rem;
-      font-weight: 900;
-      color: #0f1e4a
-    }
+    .bottom { display:grid; grid-template-rows:auto; gap:12px; min-height:0 }
+    .subgrid { display:grid; grid-template-columns:1fr; gap:12px }
+    .box-num { background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow) }
+    .box-num .lab { color:#334155 }
+    .box-num .num { font-size:2.2rem; font-weight:900; color:#0f1e4a }
 
     /* Direita */
-    .right {
-      display: grid;
-      grid-template-rows: auto auto 1fr;
-      gap: 16px;
-      min-height: 0
-    }
-
-    .totalzao {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-      box-shadow: var(--shadow)
-    }
-
-    .btn-outline-light {
-      color: #334155;
-      border-color: #e2e8f0;
-      background: #fff
-    }
-
-    .btn-outline-light:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
-      color: #111827
-    }
-
-    .pay .btn {
-      height: 52px;
-      border-radius: 12px
-    }
-
-    .rt {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: var(--shadow)
-    }
-
-    .rt .n {
-      font-size: 1.8rem;
-      font-weight: 900
-    }
-
-    .ok {
-      color: #16a34a
-    }
-
-    .neg {
-      color: #ef4444
-    }
-
-    .side-band {
-      display: none
-    }
-
+    .right { display:grid; grid-template-rows:auto auto 1fr; gap:16px; min-height:0 }
+    .totalzao { background:#fff; border:1px solid var(--border); border-radius:14px; padding:14px; box-shadow:var(--shadow) }
+    .btn-outline-light { color:#334155; border-color:#e2e8f0; background:#fff }
+    .btn-outline-light:hover { background:#f8fafc; border-color:#cbd5e1; color:#111827 }
+    .pay .btn { height:52px; border-radius:12px }
+    .rt { background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px; box-shadow:var(--shadow) }
+    .rt .n { font-size:1.8rem; font-weight:900 }
+    .ok { color:#16a34a }
+    .neg { color:#ef4444 }
+    .side-band { display:none }
     .pay .pay-btn.active {
-      box-shadow: 0 0 0 3px rgba(255, 255, 255, 1) inset;
-      border: #f8fafc 2px solid;
-      background: var(--brand);
-      color: #f0f0f0f0;
-      font-weight: 900;
+      box-shadow:0 0 0 3px rgba(255,255,255,1) inset; border:#f8fafc 2px solid; background:var(--brand); color:#f0f0f0f0; font-weight:900;
     }
   </style>
 </head>
@@ -722,8 +318,6 @@ try {
         <div>
           <div class="opacity-75">Produto</div>
           <div id="visor-produto" class="big">—</div>
-          <!-- valor do último produto adicionado -->
-
         </div>
         <div class="text-end">
           <div class="opacity-75">Valor</div>
@@ -839,20 +433,32 @@ try {
     const temCaixa = (document.getElementById('form-venda')?.dataset.caixa === '1');
     let forma = 'dinheiro';
 
-    const fmt = v => (Number(v || 0)).toLocaleString('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
+    const fmt = v => (Number(v || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    /* ===== Helpers p/ nomes longos ===== */
+    function wordCount(str){ return String(str||'').trim().split(/\s+/).filter(Boolean).length; }
+    function nameWordClass(nome){
+      const wc = wordCount(nome);
+      if (wc >= 6 || String(nome||'').length > 38) return 'name-ultra';
+      if (wc >= 3) return 'name-compact';
+      return '';
+    }
+    function ajustarFonteVisor(nome){
+      const vp = document.querySelector('#visor-produto');
+      if (!vp) return;
+      vp.classList.remove('big-compact','big-ultra');
+      const wc = wordCount(nome);
+      if (wc >= 6 || String(nome||'').length > 38) vp.classList.add('big-ultra');
+      else if (wc >= 3) vp.classList.add('big-compact');
+    }
 
     function itemTotal() {
       return (parseFloat(el('#inp-qtd').value || '0') * parseFloat(el('#inp-preco').value || '0'));
     }
-
     function upItemTile() {
       const t = el('#tile-item-total');
       if (t) t.textContent = 'R$ ' + fmt(itemTotal());
     }
-
     function totalAtual() {
       let sub = 0;
       itens.forEach(i => sub += i.qtd * i.unit);
@@ -880,34 +486,23 @@ try {
 
     function esc(s) {
       return String(s || '').replace(/[&<>"'`=\/]/g, c => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        '\'': '&#39;',
-        '/': '&#x2F;',
-        '`': '&#x60',
-        '=': '&#x3D;'
-      } [c]));
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60','=':'&#x3D;'
+      }[c]));
     }
 
-    const sug = el('#sug'),
-      busca = el('#inp-busca'),
-      qtd = el('#inp-qtd'),
-      preco = el('#inp-preco');
+    const sug = el('#sug'), busca = el('#inp-busca'), qtd = el('#inp-qtd'), preco = el('#inp-preco');
 
     function filtra(q) {
       q = (q || '').trim().toLowerCase();
       if (!q) return [];
-      return PRODUTOS.filter(p => (p.nome || '').toLowerCase().includes(q) || (p.sku || '').toLowerCase().includes(q) || (p.ean || '').toLowerCase().includes(q) || (p.marca || '').toLowerCase().includes(q)).slice(0, 50);
+      return PRODUTOS.filter(p => (p.nome||'').toLowerCase().includes(q)
+        || (p.sku||'').toLowerCase().includes(q)
+        || (p.ean||'').toLowerCase().includes(q)
+        || (p.marca||'').toLowerCase().includes(q)).slice(0, 50);
     }
 
     function showSug(list) {
-      if (!list.length) {
-        sug.style.display = 'none';
-        sug.innerHTML = '';
-        return;
-      }
+      if (!list.length) { sug.style.display='none'; sug.innerHTML=''; return; }
       sug.innerHTML = list.map(p => `<div class="p-2 sug-item" data-preco="${Number(p.preco_venda||0)}" data-nome="${esc(p.nome||'')}" data-sku="${esc(p.sku||'')}" data-ean="${esc(p.ean||'')}">
         <div class="d-flex justify-content-between">
           <strong>${esc(p.nome||'-')}</strong>
@@ -923,7 +518,8 @@ try {
       const vp = el('#visor-produto');
       const vv = el('#visor-ultimo-valor');
       const ult = itens[itens.length - 1] || null;
-      if (vp) vp.textContent = ult ? (ult.nome || 'Item') : '—';
+      const nome = ult ? (ult.nome || 'Item') : '—';
+      if (vp) { vp.textContent = nome; ajustarFonteVisor(nome); }
       if (vv) vv.textContent = 'R$ ' + fmt(ult ? ult.unit : 0);
     }
 
@@ -941,7 +537,6 @@ try {
     }
 
     let autoAddTimer = null;
-
     function tryAutoAddFromBusca(q) {
       if (!temCaixa) return;
       q = (q || '').trim();
@@ -950,11 +545,7 @@ try {
       // Match exato por EAN ou SKU
       const exact = PRODUTOS.find(p => (p.ean && String(p.ean) === q) || (p.sku && String(p.sku).toLowerCase() === q.toLowerCase()));
       if (exact) {
-        setProdutoSelecionado({
-          nome: exact.nome,
-          preco_venda: exact.preco_venda,
-          sku: exact.sku
-        });
+        setProdutoSelecionado({ nome: exact.nome, preco_venda: exact.preco_venda, sku: exact.sku });
         sug.style.display = 'none';
         setTimeout(() => addItem(), 0);
         return;
@@ -965,11 +556,7 @@ try {
       if (list.length === 1 && q.length >= 4) {
         clearTimeout(autoAddTimer);
         autoAddTimer = setTimeout(() => {
-          setProdutoSelecionado({
-            nome: list[0].nome,
-            preco_venda: list[0].preco_venda,
-            sku: list[0].sku
-          });
+          setProdutoSelecionado({ nome: list[0].nome, preco_venda: list[0].preco_venda, sku: list[0].sku });
           sug.style.display = 'none';
           addItem();
         }, 180);
@@ -1018,12 +605,7 @@ try {
       const q = parseFloat(qtd?.value || '0');
       if (q <= 0 || u < 0) return;
 
-      itens.push({
-        nome,
-        qtd: q,
-        unit: u,
-        sku
-      });
+      itens.push({ nome, qtd: q, unit: u, sku });
 
       // Limpa campos e seleção temporária
       produtoSelecionado = null;
@@ -1051,22 +633,11 @@ try {
       preco && preco.addEventListener('input', upItemTile);
 
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'F2') {
-          e.preventDefault();
-          qtd && (qtd.select(), qtd.scrollIntoView({
-            block: 'center'
-          }));
-        }
+        if (e.key === 'F2') { e.preventDefault(); qtd && (qtd.select(), qtd.scrollIntoView({ block:'center' })); }
         if (e.key === 'F3') {
           e.preventDefault();
           const d = el('#inp-desc');
-          if (d) {
-            d.focus();
-            d.select();
-            d.scrollIntoView({
-              block: 'center'
-            });
-          }
+          if (d) { d.focus(); d.select(); d.scrollIntoView({ block:'center' }); }
         }
         if (e.key === 'F6') {
           e.preventDefault();
@@ -1074,21 +645,13 @@ try {
           toggleDin();
           updatePayActive();
           const r = el('#inp-recebido');
-          if (r) {
-            r.focus();
-            r.select();
-            r.scrollIntoView({
-              block: 'center'
-            });
-          }
+          if (r) { r.focus(); r.select(); r.scrollIntoView({ block:'center' }); }
         }
         if (e.key === 'F4') {
           e.preventDefault();
           const f = document.getElementById('form-venda');
           const b = document.getElementById('btn-finalizar');
-          if (b && !b.disabled) {
-            f?.requestSubmit ? f.requestSubmit(b) : b.click();
-          }
+          if (b && !b.disabled) { f?.requestSubmit ? f.requestSubmit(b) : b.click(); }
         }
         // Alt+V: Voltar
         if (e.altKey && (e.key === 'v' || e.key === 'V')) {
@@ -1099,18 +662,15 @@ try {
 
       // Enter no campo de busca ainda adiciona
       busca && busca.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          addItem();
-        }
+        if (e.key === 'Enter') { e.preventDefault(); addItem(); }
       });
     }
 
     /* Pagamento / troco */
     const selBtns = document.querySelectorAll('[data-pay]'),
-      grpDin = el('#grp-din'),
-      inpRec = el('#inp-recebido'),
-      lblTroco = el('#lbl-troco');
+          grpDin = el('#grp-din'),
+          inpRec = el('#inp-recebido'),
+          lblTroco = el('#lbl-troco');
 
     selBtns.forEach(b => b.addEventListener('click', () => {
       forma = b.dataset.pay;
@@ -1142,22 +702,14 @@ try {
     function validateBtn() {
       const b = document.getElementById('btn-finalizar');
       if (!b) return;
-      if (!temCaixa || itens.length === 0) {
-        b.disabled = true;
-        return;
-      }
+      if (!temCaixa || itens.length === 0) { b.disabled = true; return; }
       if (forma === 'dinheiro') {
         const t = totalAtual();
         b.disabled = (parseFloat(inpRec?.value || '0') < Math.max(t, 0));
       } else b.disabled = false;
     }
-    el('#inp-desc')?.addEventListener('input', () => {
-      recalc();
-    });
-    inpRec && inpRec.addEventListener('input', () => {
-      troco();
-      validateBtn();
-    });
+    el('#inp-desc')?.addEventListener('input', () => { recalc(); });
+    inpRec && inpRec.addEventListener('input', () => { troco(); validateBtn(); });
 
     function syncHidden() {
       const d = el('#desconto_hidden');
@@ -1170,15 +722,18 @@ try {
     function renderTicket() {
       const t = el('#ticket');
       if (!t) return;
-      const linhas = itens.map(i => `
-        <div class="t-line">
-          <div>
-            <div class="t-desc">${esc(i.nome)}</div>
-            <div class="t-meta">${i.qtd.toFixed(3)} × ${fmt(i.unit)}</div>
+      const linhas = itens.map(i => {
+        const cls = nameWordClass(i.nome);
+        return `
+          <div class="t-line">
+            <div>
+              <div class="t-desc ${cls}">${esc(i.nome)}</div>
+              <div class="t-meta">${i.qtd.toFixed(3)} × ${fmt(i.unit)}</div>
+            </div>
+            <div class="t-val">R$ ${fmt(i.qtd*i.unit)}</div>
           </div>
-          <div class="t-val">R$ ${fmt(i.qtd*i.unit)}</div>
-        </div>
-      `).join('') || `<div class="text-muted">Sem itens</div>`;
+        `;
+      }).join('') || `<div class="text-muted">Sem itens</div>`;
       t.innerHTML = `<div class="t-list">${linhas}</div>`;
     }
 
@@ -1198,16 +753,13 @@ try {
     (function initTips() {
       if (window.bootstrap) {
         document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
-          try {
-            new bootstrap.Tooltip(el);
-          } catch (_) {}
+          try { new bootstrap.Tooltip(el); } catch (_) {}
         });
       }
     })();
 
     // Visual do método de pagamento selecionado
     const payBtns = document.querySelectorAll('.pay .pay-btn');
-
     function updatePayActive() {
       payBtns.forEach(btn => {
         const on = btn.dataset.pay === forma;
@@ -1224,6 +776,51 @@ try {
     visorUltimo();
     updatePayActive();
   </script>
-</body>
 
+  <?php if ($ok || $err): ?>
+    <div id="toastMsg" class="toast show align-items-center border-0 position-fixed top-0 end-0 m-3 shadow-lg"
+      role="alert" aria-live="assertive" aria-atomic="true"
+      style="z-index:2000;min-width:340px;border-radius:12px;overflow:hidden;">
+      <div class="d-flex">
+        <div class="toast-body d-flex align-items-center gap-2 text-white fw-semibold <?= $ok ? 'bg-success' : 'bg-danger' ?>">
+          <i class="bi <?= $ok ? 'bi-check-circle-fill' : 'bi-x-circle-fill' ?> fs-4"></i>
+          <?= htmlspecialchars($msg ?: ($ok ? 'Venda registrada com sucesso!' : 'Falha ao registrar venda.'), ENT_QUOTES, 'UTF-8') ?>
+        </div>
+        <button id="toastClose" type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+      </div>
+      <div class="progress" style="height:3px;">
+        <div id="toastProgress" class="progress-bar <?= $ok ? 'bg-light' : 'bg-warning' ?>" style="width:100%"></div>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        const toastEl = document.getElementById("toastMsg");
+        const progress = document.getElementById("toastProgress");
+        if (!toastEl) return;
+
+        const DURATION = 1400; // 1.4s
+        const toast = new bootstrap.Toast(toastEl, { delay: DURATION, autohide: true });
+        toast.show();
+
+        // vibração curtinha em sucesso (se suportado)
+        <?php if ($ok): ?> try { navigator.vibrate && navigator.vibrate(40); } catch(_) {} <?php endif; ?>
+
+        // barra de tempo sincronizada
+        let width = 100, stepMs = 20, step = 100 * stepMs / DURATION;
+        const itv = setInterval(() => {
+          width = Math.max(0, width - step);
+          if (progress) progress.style.width = width + "%";
+          if (width <= 0) clearInterval(itv);
+        }, stepMs);
+
+        // redireciona para DANFE quando o toast some (auto ou clique)
+        <?php if ($ok && $vendaId > 0): ?>
+          const goDanfe = () => { window.location.href = './danfe_nfce.php?venda_id=<?= (int)$vendaId ?>'; };
+          toastEl.addEventListener('hidden.bs.toast', goDanfe);
+        <?php endif; ?>
+      });
+    </script>
+  <?php endif; ?>
+
+</body>
 </html>
