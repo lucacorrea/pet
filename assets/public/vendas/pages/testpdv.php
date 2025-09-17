@@ -63,13 +63,9 @@ try {
     :root {
       /* Base */
       --bg: #f4f7fb;
-      /* fundo da página */
       --text: #0f172a;
-      /* texto principal (escuro) */
       --muted: #64748b;
-      /* texto secundário */
       --border: #e2e8f0;
-      /* bordas suaves */
       --shadow: 0 8px 16px rgba(15, 23, 42, .06);
       --ticket-edge: #e2e8f0;
 
@@ -87,449 +83,150 @@ try {
     }
 
     @media (max-width:1440px) {
-      :root {
-        --left: 350px;
-        --right: 340px
-      }
+      :root { --left: 350px; --right: 340px }
     }
-
     @media (max-width:1100px) {
-      :root {
-        --left: 1fr;
-        --right: 1fr
-      }
+      :root { --left: 1fr; --right: 1fr }
     }
-
-    * {
-      box-sizing: border-box
-    }
-
-    html,
+    * { box-sizing: border-box }
+    html, body { height: 100% }
     body {
-      height: 100%
-    }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
-      overflow: hidden
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: Inter, system-ui, Segoe UI, Roboto, Arial; overflow: hidden
     }
 
     /* Topo */
     .topbar {
-      height: 64px;
-      display: grid;
-      grid-template-columns: 1fr;
+      height: 64px; display: grid; grid-template-columns: 1fr;
       background: linear-gradient(135deg, var(--brand2), var(--brand));
-      border-bottom: 1px solid rgba(0, 0, 0, .05);
-      box-shadow: var(--shadow);
-      color: #fff;
+      border-bottom: 1px solid rgba(0, 0, 0, .05); box-shadow: var(--shadow); color: #fff;
     }
-
-    .top-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 0 18px
-    }
-
-    .top-left .brand {
-      font-weight: 800;
-      letter-spacing: .15rem;
-      text-transform: uppercase;
-      font-size: 1.05rem;
-    }
-
+    .top-left { display: flex; align-items: center; gap: 14px; padding: 0 18px }
+    .top-left .brand { font-weight: 800; letter-spacing: .15rem; text-transform: uppercase; font-size: 1.05rem; }
     .caixa-status {
-      background: rgba(255, 255, 255, .15);
-      border: 1px solid rgba(255, 255, 255, .25);
-      border-radius: 10px;
-      padding: 6px 10px;
-      text-transform: uppercase;
-      font-weight: 900;
-      letter-spacing: .12rem
+      background: rgba(255, 255, 255, .15); border: 1px solid rgba(255, 255, 255, .25);
+      border-radius: 10px; padding: 6px 10px; text-transform: uppercase; font-weight: 900; letter-spacing: .12rem
     }
 
     /* Área principal */
     .stage {
       height: calc(100vh - 64px);
-      display: grid;
-      grid-template-columns: var(--left) 1fr var(--right);
-      gap: 16px;
-      padding: 16px;
-      position: relative;
-      z-index: 1;
+      display: grid; grid-template-columns: var(--left) 1fr var(--right);
+      gap: 16px; padding: 16px; position: relative; z-index: 1;
     }
-
-    @media (max-width:1100px) {
-      .stage {
-        grid-template-columns: 1fr;
-        overflow: auto
-      }
-    }
+    @media (max-width:1100px) { .stage { grid-template-columns: 1fr; overflow: auto } }
 
     /* Cards genéricos */
     .card-pdv {
       background: linear-gradient(180deg, var(--panel2), var(--panel));
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      color: var(--text);
-      box-shadow: var(--shadow);
+      border: 1px solid var(--border); border-radius: 14px; color: var(--text); box-shadow: var(--shadow);
     }
-
-    .card-pdv .card-header {
-      padding: .7rem 1rem;
-      border-bottom: 1px solid var(--border);
-      font-weight: 700;
-      color: #0f1e4a
-    }
-
-    .card-pdv .card-body {
-      padding: 14px
-    }
+    .card-pdv .card-header { padding: .7rem 1rem; border-bottom: 1px solid var(--border); font-weight: 700; color: #0f1e4a }
+    .card-pdv .card-body { padding: 14px }
 
     /* Coluna esquerda */
-    .left {
-      display: grid;
-      grid-template-rows: auto auto 1fr;
-      gap: 16px;
-      min-height: 0
-    }
-
+    .left { display: grid; grid-template-rows: auto auto 1fr; gap: 16px; min-height: 0 }
     .tile {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 12px;
-      margin-bottom: 10px;
-      box-shadow: var(--shadow)
+      background: #fff; border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px 12px; margin-bottom: 10px; box-shadow: var(--shadow)
     }
-
-    .tile .lbl {
-      font-size: .8rem;
-      text-transform: uppercase;
-      color: #334155;
-      letter-spacing: .06rem
-    }
-
-    .tile .value {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 6px
-    }
+    .tile .lbl { font-size: .8rem; text-transform: uppercase; color: #334155; letter-spacing: .06rem }
+    .tile .value { display: flex; align-items: center; gap: 8px; margin-top: 6px }
 
     /* Input “leitor” */
-    .nfce-input {
-      position: relative;
-      width: 100%
-    }
-
+    .nfce-input { position: relative; width: 100% }
     .nfce-input .inp {
-      width: 100%;
-      height: 54px;
-      padding: 0 12px 0 46px;
-      background: #fff;
-      color: #0f172a;
-      border: 2px dashed #c7d2fe;
-      border-radius: 12px;
-      font-weight: 700;
+      width: 100%; height: 54px; padding: 0 12px 0 46px;
+      background: #fff; color: #0f172a; border: 2px dashed #c7d2fe; border-radius: 12px; font-weight: 700;
     }
-
-    .nfce-input .inp::placeholder {
-      color: #94a3b8
-    }
-
-    .nfce-input .inp:focus {
-      outline: none;
-      border-color: #93c5fd;
-      box-shadow: 0 0 0 4px rgba(147, 197, 253, .25)
-    }
-
+    .nfce-input .inp::placeholder { color: #94a3b8 }
+    .nfce-input .inp:focus { outline: none; border-color: #93c5fd; box-shadow: 0 0 0 4px rgba(147, 197, 253, .25) }
     .nfce-input .inp-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.25rem;
-      color: #1e3a8a;
-      opacity: .85;
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      font-size: 1.25rem; color: #1e3a8a; opacity: .85;
     }
 
     /* Sugestões */
-    #sug {
-      top: 58px !important;
-      display: none;
-      max-height: 300px;
-      overflow: auto;
-      border: 2px dashed #e2e8f0 !important;
-      z-index: 1000
-    }
-
-    #sug .sug-item {
-      cursor: pointer;
-      border-bottom: 1px dotted #e5e7eb
-    }
-
-    #sug .sug-item:last-child {
-      border-bottom: 0
-    }
-
-    #sug .sug-item:hover {
-      background: #f8fafc
-    }
-
-    #sug .price {
-      font-family: ui-monospace, Menlo, Consolas, monospace
-    }
+    #sug { top: 58px !important; display: none; max-height: 300px; overflow: auto; border: 2px dashed #e2e8f0 !important; z-index: 1000 }
+    #sug .sug-item { cursor: pointer; border-bottom: 1px dotted #e5e7eb }
+    #sug .sug-item:last-child { border-bottom: 0 }
+    #sug .sug-item:hover { background: #f8fafc }
+    #sug .price { font-family: ui-monospace, Menlo, Consolas, monospace }
 
     /* Inputs base */
     .inp {
-      background: #fff;
-      color: #0f172a;
-      border: 2px solid #cbd5e1;
-      border-radius: 10px;
-      height: 50px;
-      padding: 0 10px;
-      font-weight: 600;
-      width: 100%
+      background: #fff; color: #0f172a; border: 2px solid #cbd5e1; border-radius: 10px;
+      height: 50px; padding: 0 10px; font-weight: 600; width: 100%
     }
-
-    .money-wrap {
-      display: flex;
-      align-items: center
-    }
-
+    .money-wrap { display: flex; align-items: center }
     .money-prefix {
-      background: #fff;
-      border: 2px solid #cbd5e1;
-      border-right: 0;
-      border-radius: 10px 0 0 10px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      padding: 0 12px;
-      color: #0f172a;
-      font-weight: 700
+      background: #fff; border: 2px solid #cbd5e1; border-right: 0; border-radius: 10px 0 0 10px;
+      height: 50px; display: flex; align-items: center; padding: 0 12px; color: #0f172a; font-weight: 700
     }
-
-    .money-input {
-      border-left: 0;
-      border-radius: 0 10px 10px 0
-    }
-
-    .money {
-      font-variant-numeric: tabular-nums
-    }
+    .money-input { border-left: 0; border-radius: 0 10px 10px 0 }
+    .money { font-variant-numeric: tabular-nums }
 
     /* Centro (visor + lista + subtotal) */
-    .center {
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 12px;
-      min-height: 0
-    }
+    .center { display: grid; grid-template-rows: auto 1fr auto; gap: 12px; min-height: 0 }
 
     /* Visor azul */
     .visor {
       background: linear-gradient(135deg, #0f3fa7, #0b2f85);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, .15);
-      border-radius: 12px;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: var(--shadow)
+      color: #fff; border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow)
     }
-
-    .visor .big {
-      font-size: 1.95rem;
-      font-weight: 900
-    }
+    .visor .big { font-size: 1.95rem; font-weight: 900 }
 
     /* Lista/Prévia */
-    .list-card {
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .list-card .card-body {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-    }
-
-    .ticket-wrap {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      align-items: stretch;
-      justify-content: center
-    }
-
+    .list-card { min-height: 0; display: flex; flex-direction: column; }
+    .list-card .card-body { flex: 1; min-height: 0; display: flex; }
+    .ticket-wrap { flex: 1; min-height: 0; display: flex; align-items: stretch; justify-content: center }
     .ticket {
-      width: 100%;
-      max-width: none;
-      height: 100%;
-      background: #fff;
-      color: #0f172a;
-      border: 1px dashed var(--ticket-edge);
-      border-radius: 16px;
-      padding: 14px 14px 18px;
-      font-family: ui-monospace, Menlo, Consolas, "Liberation Mono", monospace;
-      font-size: 12.5px;
-      line-height: 1.28;
-      display: flex;
-      flex-direction: column;
+      width: 100%; max-width: none; height: 100%;
+      background: #fff; color: #0f172a; border: 1px dashed var(--ticket-edge); border-radius: 16px;
+      padding: 14px 14px 18px; font-family: ui-monospace, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 12.5px; line-height: 1.28; display: flex; flex-direction: column;
     }
-
-    .t-line {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 6px;
-      padding: 6px 0;
-      border-bottom: 1px dotted #dde3ee
-    }
-
-    .t-line:last-child {
-      border-bottom: 0
-    }
-
-    .t-desc {
-      font-weight: 700;
-      color: #0b1323
-    }
-
-    .t-meta {
-      color: #6b7280
-    }
-
-    .t-val {
-      font-weight: 800;
-      text-align: right
-    }
-
-    .t-list {
-      flex: 1;
-      min-height: 0;
-      overflow: auto;
-      padding-right: 4px
-    }
+    .t-line { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 6px 0; border-bottom: 1px dotted #dde3ee }
+    .t-line:last-child { border-bottom: 0 }
+    .t-desc { font-weight: 700; color: #0b1323 }
+    .t-meta { color: #6b7280 }
+    .t-val { font-weight: 800; text-align: right }
+    .t-list { flex: 1; min-height: 0; overflow: auto; padding-right: 4px }
 
     /* Subtotal (card branco) */
-    .bottom {
-      display: grid;
-      grid-template-rows: auto;
-      gap: 12px;
-      min-height: 0
-    }
-
-    .subgrid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px
-    }
-
+    .bottom { display: grid; grid-template-rows: auto; gap: 12px; min-height: 0 }
+    .subgrid { display: grid; grid-template-columns: 1fr; gap: 12px }
     .box-num {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: var(--shadow)
+      background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px;
+      display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow)
     }
-
-    .box-num .lab {
-      color: #334155
-    }
-
-    .box-num .num {
-      font-size: 2.2rem;
-      font-weight: 900;
-      color: #0f1e4a
-    }
+    .box-num .lab { color: #334155 }
+    .box-num .num { font-size: 2.2rem; font-weight: 900; color: #0f1e4a }
 
     /* Direita (cards claros) */
-    .right {
-      display: grid;
-      grid-template-rows: auto 1fr;
-      gap: 16px;
-      min-height: 0
-    }
-
-    .totalzao {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-      box-shadow: var(--shadow)
-    }
+    .right { display: grid; grid-template-rows: auto 1fr; gap: 16px; min-height: 0 }
+    .totalzao { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 14px; box-shadow: var(--shadow) }
 
     /* Botões no tema claro (corrige outline-light) */
-    .btn-outline-light {
-      color: #334155;
-      border-color: #e2e8f0;
-      background: #fff
-    }
-
-    .btn-outline-light:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
-      color: #111827
-    }
+    .btn-outline-light { color: #334155; border-color: #e2e8f0; background: #fff }
+    .btn-outline-light:hover { background: #f8fafc; border-color: #cbd5e1; color: #111827 }
 
     /* Pagamento/caixas */
-    .pay .btn {
-      height: 52px;
-      border-radius: 12px
-    }
-
-    .rt {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: var(--shadow)
-    }
-
-    .rt .n {
-      font-size: 1.8rem;
-      font-weight: 900
-    }
-
-    .ok {
-      color: #16a34a
-    }
-
-    .neg {
-      color: #ef4444
-    }
+    .pay .btn { height: 52px; border-radius: 12px }
+    .rt { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 12px; box-shadow: var(--shadow) }
+    .rt .n { font-size: 1.8rem; font-weight: 900 }
+    .ok { color: #16a34a } .neg { color: #ef4444 }
 
     /* Atalhos */
-    .shortcuts {
-      font-size: .92rem;
-      color: var(--muted);
-      line-height: 1.2
-    }
-
+    .shortcuts { font-size: .92rem; color: var(--muted); line-height: 1.2 }
     .kbd {
-      background: #0f172a;
-      color: #fff;
-      border: 1px solid #0f172a;
-      border-radius: .35rem;
-      padding: .12rem .38rem
+      background: #0f172a; color: #fff; border: 1px solid #0f172a;
+      border-radius: .35rem; padding: .12rem .38rem
     }
 
     /* “Faixa” antiga desativada no tema claro */
-    .side-band {
-      display: none;
-    }
+    .side-band { display: none; }
   </style>
 </head>
 
@@ -583,8 +280,15 @@ try {
             <button id="btn-add" class="btn btn-primary btn-sm" type="button" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-plus-lg"></i> Adicionar</button>
             <button id="btn-clear" class="btn btn-outline-light btn-sm" type="button" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-trash3"></i> Limpar</button>
           </div>
+
           <div class="shortcuts mt-3">
-            <div><span class="kbd">F2</span> – Alterar Qtd &nbsp; • &nbsp; <span class="kbd">Enter</span> – Adicionar &nbsp; • &nbsp; <span class="kbd">F4</span> – Finalizar</div>
+            <div>
+              <span class="kbd">F2</span> – Alterar Qtd &nbsp; • &nbsp;
+              <span class="kbd">Enter</span> – Adicionar &nbsp; • &nbsp;
+              <span class="kbd">F4</span> – Finalizar &nbsp; • &nbsp;
+              <span class="kbd">F8</span> – Recebido = Total &nbsp; • &nbsp;
+              <span class="kbd">F9</span> – Aplicar Troco
+            </div>
           </div>
         </div>
       </div>
@@ -632,7 +336,6 @@ try {
         </div>
       </div>
 
-
       <div class="card-pdv pay" style="min-height:0">
         <div class="card-header">Pagamento</div>
         <div class="card-body">
@@ -642,23 +345,55 @@ try {
             <div class="col-6"><button class="btn btn-outline-light w-100" type="button" data-pay="debito" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-credit-card-2-back me-1"></i> Débito</button></div>
             <div class="col-6"><button class="btn btn-outline-light w-100" type="button" data-pay="credito" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-credit-card me-1"></i> Crédito</button></div>
           </div>
+
           <div id="grp-din" class="mt-3" style="display:none">
             <div class="row g-2">
               <div class="col-12">
                 <div class="rt">
-                  <div class="mb-1 fw-semibold">TOTAL RECEBIDO</div>
+                  <div class="d-flex justify-content-between align-items-center mb-1 fw-semibold">
+                    <span>TOTAL RECEBIDO</span>
+                    <button type="button" id="btn-recebido-total" class="btn btn-sm btn-outline-secondary">
+                      Igualar ao total (F8)
+                    </button>
+                  </div>
                   <div class="money-wrap">
                     <span class="money-prefix">R$</span>
                     <input id="inp-recebido" name="valor_recebido" type="number" step="0.01" min="0" class="inp money-input text-end" placeholder="0,00">
                   </div>
                 </div>
               </div>
+
               <div class="col-12">
                 <div class="rt d-flex flex-column">
                   <div class="fw-semibold">TROCO</div>
                   <div id="lbl-troco" class="n money mt-auto">R$ 0,00</div>
                 </div>
               </div>
+
+              <!-- Troco desejado -->
+              <div class="col-12">
+                <div class="rt">
+                  <div class="d-flex justify-content-between align-items-center mb-1 fw-semibold">
+                    <span>TROCO DESEJADO</span>
+                    <button type="button" id="btn-aplicar-troco" class="btn btn-sm btn-outline-secondary">Aplicar (F9)</button>
+                  </div>
+                  <div class="row g-2 align-items-center">
+                    <div class="col-7">
+                      <div class="money-wrap">
+                        <span class="money-prefix">R$</span>
+                        <input id="inp-troco-desejado" type="number" step="0.01" min="0" class="inp money-input text-end" placeholder="0,00" value="0.00">
+                      </div>
+                    </div>
+                    <div class="col-5 d-flex gap-1 flex-wrap">
+                      <button type="button" class="btn btn-sm btn-outline-light" data-troco="1">+1</button>
+                      <button type="button" class="btn btn-sm btn-outline-light" data-troco="2">+2</button>
+                      <button type="button" class="btn btn-sm btn-outline-light" data-troco="5">+5</button>
+                      <button type="button" class="btn btn-sm btn-outline-light" data-troco="10">+10</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- /Troco desejado -->
             </div>
           </div>
 
@@ -686,15 +421,18 @@ try {
     let itens = [];
     const temCaixa = (document.getElementById('form-venda')?.dataset.caixa === '1');
 
-    const fmt = v => (Number(v || 0)).toLocaleString('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
+    const fmt = v => (Number(v || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // === Total geral (subtotal - desconto) ===
+    function totalGeral() {
+      const sub = itens.reduce((s, i) => s + (i.qtd * i.unit), 0);
+      const desc = parseFloat(el('#inp-desc')?.value || '0');
+      return Math.max(sub - desc, 0);
+    }
 
     function itemTotal() {
       return (parseFloat(el('#inp-qtd').value || '0') * parseFloat(el('#inp-preco').value || '0'));
     }
-
     function upItemTile() {
       const t = el('#tile-item-total');
       if (t) t.textContent = 'R$ ' + fmt(itemTotal());
@@ -705,16 +443,12 @@ try {
       itens.forEach(i => sub += i.qtd * i.unit);
       const desc = parseFloat(el('#inp-desc').value || '0');
       const total = Math.max(sub - desc, 0);
-      const s = sel => {
-        const n = el(sel);
-        if (n) n.textContent = 'R$ ' + fmt(sel === '#tot-itens' ? itens.length : (sel === '#tot-subtotal' ? sub : total));
-      };
+
       el('#tot-subtotal') && (el('#tot-subtotal').textContent = 'R$ ' + fmt(sub));
-      el('#tot-geral') && (el('#tot-geral').textContent = 'R$ ' + fmt(total));
       el('#visor-subtotal') && (el('#visor-subtotal').textContent = 'R$ ' + fmt(total));
-      el('#tot-itens') && (el('#tot-itens').textContent = itens.length);
       el('#desconto_hidden') && (el('#desconto_hidden').value = (desc || 0).toFixed(2));
       el('#itens_json') && (el('#itens_json').value = JSON.stringify(itens));
+
       troco();
       validateBtn();
       renderTicket();
@@ -722,122 +456,95 @@ try {
 
     function esc(s) {
       return String(s || '').replace(/[&<>"'`=\/]/g, c => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        '\'': '&#39;',
-        '/': '&#x2F;',
-        '`': '&#x60',
-        '=': '&#x3D;'
-      } [c]));
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#39;', '/': '&#x2F;', '`': '&#x60', '=': '&#x3D;'
+      }[c]));
     }
 
-    const sug = el('#sug'),
-      busca = el('#inp-busca'),
-      qtd = el('#inp-qtd'),
-      preco = el('#inp-preco');
+    const sug = el('#sug'), busca = el('#inp-busca'), qtd = el('#inp-qtd'), preco = el('#inp-preco');
 
     function filtra(q) {
       q = (q || '').trim().toLowerCase();
       if (!q) return [];
-      return PRODUTOS.filter(p => (p.nome || '').toLowerCase().includes(q) || (p.sku || '').toLowerCase().includes(q) || (p.ean || '').toLowerCase().includes(q) || (p.marca || '').toLowerCase().includes(q)).slice(0, 50);
+      return PRODUTOS
+        .filter(p =>
+          (p.nome || '').toLowerCase().includes(q) ||
+          (p.sku || '').toLowerCase().includes(q) ||
+          (p.ean || '').toLowerCase().includes(q) ||
+          (p.marca || '').toLowerCase().includes(q))
+        .slice(0, 50);
     }
 
     function showSug(list) {
-      if (!list.length) {
-        sug.style.display = 'none';
-        sug.innerHTML = '';
-        return;
-      }
-      sug.innerHTML = list.map(p => `<div class="p-2 sug-item" data-preco="${Number(p.preco_venda||0)}" data-nome="${esc(p.nome||'')}" data-sku="${esc(p.sku||'')}">
-    <div class="d-flex justify-content-between">
-      <strong>${esc(p.nome||'-')}</strong>
-      <span class="price">R$ ${fmt(p.preco_venda||0)}</span>
-    </div>
-    <div class="text-secondary small">${esc([p.marca,p.sku,p.ean].filter(Boolean).join(' • '))}${p.unidade?(' • '+esc(p.unidade)):''}</div>
-  </div>`).join('');
+      if (!list.length) { sug.style.display = 'none'; sug.innerHTML = ''; return; }
+      sug.innerHTML = list.map(p => `
+        <div class="p-2 sug-item" data-preco="${Number(p.preco_venda||0)}" data-nome="${esc(p.nome||'')}" data-sku="${esc(p.sku||'')}">
+          <div class="d-flex justify-content-between">
+            <strong>${esc(p.nome||'-')}</strong>
+            <span class="price">R$ ${fmt(p.preco_venda||0)}</span>
+          </div>
+          <div class="text-secondary small">${esc([p.marca,p.sku,p.ean].filter(Boolean).join(' • '))}${p.unidade?(' • '+esc(p.unidade)):''}</div>
+        </div>`).join('');
       sug.style.display = 'block';
     }
+
     if (temCaixa) {
       busca && busca.addEventListener('input', () => showSug(filtra(busca.value)));
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('#sug') && !e.target.closest('#inp-busca')) sug.style.display = 'none';
-      });
+      document.addEventListener('click', (e) => { if (!e.target.closest('#sug') && !e.target.closest('#inp-busca')) sug.style.display = 'none'; });
       sug && sug.addEventListener('click', (e) => {
-        const it = e.target.closest('.sug-item');
-        if (!it) return;
+        const it = e.target.closest('.sug-item'); if (!it) return;
         el('#visor-produto') && (el('#visor-produto').textContent = it.dataset.nome || '—');
         preco && (preco.value = parseFloat(it.dataset.preco || '0').toFixed(2));
         el('#inp-sku') && (el('#inp-sku').value = it.dataset.sku || '');
-        upItemTile();
-        sug.style.display = 'none';
-        setTimeout(() => qtd && qtd.focus(), 20);
+        upItemTile(); sug.style.display = 'none'; setTimeout(() => qtd && qtd.focus(), 20);
       });
     }
 
     function addItem() {
       if (!temCaixa) return;
       const nome = (el('#visor-produto')?.textContent || '').trim() || (busca?.value || '').trim() || 'Item';
-      const q = parseFloat(qtd?.value || '0'),
-        u = parseFloat(preco?.value || '0'),
-        sku = (el('#inp-sku')?.value || '').trim();
+      const q = parseFloat(qtd?.value || '0'), u = parseFloat(preco?.value || '0'), sku = (el('#inp-sku')?.value || '').trim();
       if (q <= 0 || u < 0) return;
-      itens.push({
-        nome,
-        qtd: q,
-        unit: u,
-        sku
-      });
+      itens.push({ nome, qtd: q, unit: u, sku });
       if (busca) busca.value = '';
       if (el('#inp-sku')) el('#inp-sku').value = '';
       if (el('#visor-produto')) el('#visor-produto').textContent = '—';
       if (qtd) qtd.value = '1.000';
       if (preco) preco.value = '0.00';
-      upItemTile();
-      recalc();
-      busca && busca.focus();
+      upItemTile(); recalc(); busca && busca.focus();
     }
 
     if (temCaixa) {
       document.getElementById('btn-add')?.addEventListener('click', addItem);
-      document.getElementById('btn-clear')?.addEventListener('click', () => {
-        itens = [];
-        recalc();
-      });
+      document.getElementById('btn-clear')?.addEventListener('click', () => { itens = []; recalc(); });
       qtd && qtd.addEventListener('input', upItemTile);
       preco && preco.addEventListener('input', upItemTile);
+
+      // Um único listener para F2/F4/F8/F9
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'F2') {
-          e.preventDefault();
-          qtd && qtd.select();
-        }
+        if (e.key === 'F2') { e.preventDefault(); qtd && qtd.select(); }
         if (e.key === 'F4') {
           e.preventDefault();
           const f = document.getElementById('form-venda');
           const b = document.getElementById('btn-finalizar');
-          if (b && !b.disabled) {
-            f?.requestSubmit ? f.requestSubmit(b) : b.click();
-          }
+          if (b && !b.disabled) { f?.requestSubmit ? f.requestSubmit(b) : b.click(); }
         }
+        if (e.key === 'F8') { e.preventDefault(); fillRecebidoComTotal(); }
+        if (e.key === 'F9') { e.preventDefault(); aplicarTrocoDesejado(); }
       });
+
       busca && busca.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          addItem();
-        }
+        if (e.key === 'Enter') { e.preventDefault(); addItem(); }
       });
     }
 
     const selBtns = document.querySelectorAll('[data-pay]'),
-      grpDin = el('#grp-din'),
-      inpRec = el('#inp-recebido'),
-      lblTroco = el('#lbl-troco');
+          grpDin = el('#grp-din'),
+          inpRec = el('#inp-recebido'),
+          lblTroco = el('#lbl-troco'),
+          inpTroco = el('#inp-troco-desejado');
+
     let forma = 'dinheiro';
-    selBtns.forEach(b => b.addEventListener('click', () => {
-      forma = b.dataset.pay;
-      toggleDin();
-    }));
+    selBtns.forEach(b => b.addEventListener('click', () => { forma = b.dataset.pay; toggleDin(); }));
 
     function toggleDin() {
       const isDin = forma === 'dinheiro';
@@ -845,68 +552,90 @@ try {
       validateBtn();
     }
 
+    // Troco calculado a partir do totalGeral e do recebido
     function troco() {
       if (forma !== 'dinheiro') {
-        if (lblTroco) {
-          lblTroco.textContent = 'R$ 0,00';
-          lblTroco.className = 'n money';
-        }
+        if (lblTroco) { lblTroco.textContent = 'R$ 0,00'; lblTroco.className = 'n money'; }
         return;
       }
-      const ttxt = (el('#tot-geral')?.textContent || '').replace(/[^\d,.-]/g, '').replace('.', '').replace(',', '.');
-      const tr = (parseFloat(inpRec?.value || '0') - (Number(ttxt) || 0));
+      const total = totalGeral();
+      const recebido = parseFloat(inpRec?.value || '0');
+      const tr = recebido - total;
       if (lblTroco) {
         lblTroco.textContent = 'R$ ' + fmt(tr);
         lblTroco.className = 'n money ' + (tr >= 0 ? 'ok' : 'neg');
       }
     }
 
+    // Validação do botão Finalizar
     function validateBtn() {
       const b = document.getElementById('btn-finalizar');
       if (!b) return;
-      if (!temCaixa || itens.length === 0) {
-        b.disabled = true;
-        return;
-      }
+      if (!temCaixa || itens.length === 0) { b.disabled = true; return; }
       if (forma === 'dinheiro') {
-        const t = itens.reduce((s, i) => s + i.qtd * i.unit, 0) - parseFloat(el('#inp-desc')?.value || '0');
+        const t = totalGeral();
         b.disabled = (parseFloat(inpRec?.value || '0') < Math.max(t, 0));
       } else b.disabled = false;
     }
-    el('#inp-desc')?.addEventListener('input', recalc);
-    inpRec && inpRec.addEventListener('input', () => {
-      troco();
-      validateBtn();
-    });
+
+    el('#inp-desc')?.addEventListener('input', () => { syncHidden(); recalc(); });
+    inpRec && inpRec.addEventListener('input', () => { troco(); validateBtn(); });
 
     function syncHidden() {
-      const d = el('#desconto_hidden');
-      const i = el('#inp-desc');
+      const d = el('#desconto_hidden'); const i = el('#inp-desc');
       if (d && i) d.value = (parseFloat(i.value || '0') || 0).toFixed(2);
     }
-    el('#inp-desc')?.addEventListener('input', syncHidden);
 
     /* Render da lista (somente itens) */
     function renderTicket() {
-      const t = el('#ticket');
-      if (!t) return;
+      const t = el('#ticket'); if (!t) return;
       const linhas = itens.map(i => `
-    <div class="t-line">
-      <div>
-        <div class="t-desc">${esc(i.nome)}</div>
-        <div class="t-meta">${i.qtd.toFixed(3)} × ${fmt(i.unit)}</div>
-      </div>
-      <div class="t-val">R$ ${fmt(i.qtd*i.unit)}</div>
-    </div>
-  `).join('') || `<div class="text-muted">Sem itens</div>`;
+        <div class="t-line">
+          <div>
+            <div class="t-desc">${esc(i.nome)}</div>
+            <div class="t-meta">${i.qtd.toFixed(3)} × ${fmt(i.unit)}</div>
+          </div>
+          <div class="t-val">R$ ${fmt(i.qtd*i.unit)}</div>
+        </div>`).join('') || `<div class="text-muted">Sem itens</div>`;
       t.innerHTML = `<div class="t-list">${linhas}</div>`;
     }
 
+    // === Atalhos/ações ===
+    function fillRecebidoComTotal() {
+      if (forma !== 'dinheiro') { forma = 'dinheiro'; toggleDin(); }
+      if (!inpRec) return;
+      inpRec.value = totalGeral().toFixed(2);
+      troco(); validateBtn(); inpRec.select();
+    }
+
+    function aplicarTrocoDesejado() {
+      if (forma !== 'dinheiro') { forma = 'dinheiro'; toggleDin(); }
+      const tv = parseFloat(inpTroco?.value || '0');
+      if (!inpRec) return;
+      const total = totalGeral();
+      inpRec.value = (total + Math.max(tv, 0)).toFixed(2);
+      troco(); validateBtn(); inpRec.select();
+    }
+
+    // Botões
+    document.getElementById('btn-recebido-total')?.addEventListener('click', fillRecebidoComTotal);
+    document.getElementById('btn-aplicar-troco')?.addEventListener('click', aplicarTrocoDesejado);
+
+    // Chips de incremento de troco (+1/+2/+5/+10)
+    grpDin?.querySelectorAll('[data-troco]')?.forEach(b => {
+      b.addEventListener('click', () => {
+        const add = parseFloat(b.dataset.troco || '0');
+        const cur = parseFloat(inpTroco?.value || '0');
+        if (!isFinite(add)) return;
+        inpTroco.value = (Math.max(cur + add, 0)).toFixed(2);
+      });
+    });
+
+    // Inicialização
     upItemTile();
     recalc();
     toggleDin();
     renderTicket();
   </script>
 </body>
-
 </html>
