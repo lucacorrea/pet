@@ -535,14 +535,15 @@ try {
     <div class="top-left">
       <div class="brand">Mundo Pets – PDV</div>
       <div class="caixa-status">CAIXA <?= $caixaAberto ? 'ABERTO' : 'FECHADO' ?></div>
-    </div>
-    <div class="shortcuts mt-3">
-      <div>
-        <span class="kbd">F2</span> – Alterar Qtd &nbsp; • &nbsp;
-        <span class="kbd">F3</span> – Desconto &nbsp; • &nbsp;
-        <span class="kbd">F6</span> – Total Recebido &nbsp; • &nbsp;
-        <span class="kbd">Enter</span> – Adicionar &nbsp; • &nbsp;
-        <span class="kbd">F4</span> – Finalizar
+
+      <div class="shortcuts mt-3">
+        <div>
+          <span class="kbd">F2</span> – Alterar Qtd &nbsp; • &nbsp;
+          <span class="kbd">F3</span> – Desconto &nbsp; • &nbsp;
+          <span class="kbd">F6</span> – Total Recebido &nbsp; • &nbsp;
+          <span class="kbd">Enter</span> – Adicionar &nbsp; • &nbsp;
+          <span class="kbd">F4</span> – Finalizar
+        </div>
       </div>
     </div>
   </div>
