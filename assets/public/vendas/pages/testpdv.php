@@ -669,14 +669,27 @@ try {
 
       <!-- Direita: status do caixa + relógio -->
       <div class="top-right">
-        <div class="caixa-pill <?= $caixaAberto ? 'open' : 'closed' ?>">
+        <div class="caixa-pill <?= $caixaAberto ? 'open' : 'closed' ?>" title="Status do caixa" data-bs-toggle="tooltip">
           <span class="dot"></span>
           CAIXA <?= $caixaAberto ? 'ABERTO' : 'FECHADO' ?>
         </div>
-        <div id="clock" class="clock">
-            <i class="bi bi-box-arrow-right" title="Sair"></i>
+
+        <div class="clock-wrap" role="timer" aria-live="polite" title="Horário atual" data-bs-toggle="tooltip">
+          <i class="bi bi-clock"></i>
+          <span id="clock">--:--</span>
         </div>
+
+        <a href=".././../dashboard.php"
+          id="btn-logout"
+          class="btn top-logout"
+          title="Sair (Alt+S)"
+          data-bs-toggle="tooltip"
+          aria-label="Sair">
+          <i class="bi bi-box-arrow-right"></i>
+          <span class="d-none d-md-inline ms-1">Sair</span>
+        </a>
       </div>
+
     </div>
   </div>
 
@@ -816,7 +829,7 @@ try {
                 <i class="bi bi-check2-circle me-1"></i> Finalizar Venda <span class="ms-1 small kbd">F4</span>
               </button>
             </div>
-            
+
           </form>
         </div>
       </div>
