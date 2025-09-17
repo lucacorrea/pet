@@ -628,13 +628,7 @@ try {
             <div class="lab">SUBTOTAL</div>
             <div id="tot-subtotal" class="num money">R$ 0,00</div>
           </div>
-          <div class="box-num">
-            <div class="lab me-2">DESCONTO</div>
-            <div class="money-wrap">
-              <span class="money-prefix">R$</span>
-              <input id="inp-desc" type="number" step="0.01" min="0" value="0.00" class="inp money-input text-end">
-            </div>
-          </div>
+
         </div>
       </div>
 
@@ -642,7 +636,13 @@ try {
 
     <!-- DIREITA -->
     <div class="right">
-   
+      <div class="box-num">
+        <div class="lab me-2">DESCONTO</div>
+        <div class="money-wrap">
+          <span class="money-prefix">R$</span>
+          <input id="inp-desc" type="number" step="0.01" min="0" value="0.00" class="inp money-input text-end">
+        </div>
+      </div>
 
       <div class="card-pdv pay" style="min-height:0">
         <div class="card-header">PAGAMENTO</div>
