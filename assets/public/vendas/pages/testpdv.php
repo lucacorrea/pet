@@ -1,7 +1,6 @@
 <?php
 // autoErp/public/vendas/pages/vendaRapida.php
 declare(strict_types=1);
-
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/../../../lib/auth_guard.php';
@@ -17,45 +16,32 @@ $empresaNome = empresa_nome_logada($pdo);
 
 $empresaCnpj = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj'] ?? ''));
 if (!preg_match('/^\d{14}$/', $empresaCnpj)) die('Empresa não vinculada ao usuário.');
+$empresaCnpjFmt = preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $empresaCnpj);
 
 if (empty($_SESSION['csrf_venda_rapida'])) {
   $_SESSION['csrf_venda_rapida'] = bin2hex(random_bytes(32));
 }
 $csrf = $_SESSION['csrf_venda_rapida'];
 
-// ===== toast (ok/err/msg) via GET =====
 $ok       = isset($_GET['ok'])  ? (int)$_GET['ok']  : 0;
 $err      = isset($_GET['err']) ? (int)$_GET['err'] : 0;
 $msg      = isset($_GET['msg']) ? (string)$_GET['msg'] : '';
 $vendaId  = isset($_GET['venda_id']) ? (int)$_GET['venda_id'] : 0;
 
-// ===== Verifica se existe caixa ABERTO =====
+// Caixa aberto?
 $caixaAberto = null;
 try {
-  $stCx = $pdo->prepare("
-    SELECT id, tipo, COALESCE(terminal,'PDV') AS terminal,
-           DATE_FORMAT(aberto_em,'%d/%m/%Y %H:%i') AS quando
-    FROM caixas_peca
-    WHERE empresa_cnpj = :c AND status = 'aberto'
-    ORDER BY aberto_em DESC
-    LIMIT 1
-  ");
+  $stCx = $pdo->prepare("SELECT id FROM caixas_peca WHERE empresa_cnpj=:c AND status='aberto' ORDER BY aberto_em DESC LIMIT 1");
   $stCx->execute([':c' => $empresaCnpj]);
   $caixaAberto = $stCx->fetch(PDO::FETCH_ASSOC) ?: null;
 } catch (Throwable $e) {
   $caixaAberto = null;
 }
 
-// Produtos (para busca rápida)
+// Produtos p/ sugestão
 $produtos = [];
 try {
-  $st = $pdo->prepare("
-    SELECT id, nome, sku, ean, marca, unidade, preco_venda
-    FROM produtos_peca
-    WHERE empresa_cnpj = :c AND ativo = 1
-    ORDER BY nome
-    LIMIT 2000
-  ");
+  $st = $pdo->prepare("SELECT id,nome,sku,ean,marca,unidade,preco_venda FROM produtos_peca WHERE empresa_cnpj=:c AND ativo=1 ORDER BY nome LIMIT 2000");
   $st->execute([':c' => $empresaCnpj]);
   $produtos = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 } catch (Throwable $e) {
@@ -63,610 +49,592 @@ try {
 }
 ?>
 <!doctype html>
-<html lang="pt-BR" dir="ltr">
+<html lang="pt-BR">
+
 <head>
   <meta charset="utf-8">
-  <title>Mundo Pets — Venda Rápida</title>
+  <title><?= htmlspecialchars($empresaNome ?: 'PDV', ENT_QUOTES, 'UTF-8') ?> — PDV</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="../../assets/images/dashboard/logo.png">
-  <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
-  <link rel="stylesheet" href="../../assets/vendor/aos/dist/aos.css">
-  <link rel="stylesheet" href="../../assets/css/hope-ui.min.css?v=4.0.0">
-  <link rel="stylesheet" href="../../assets/css/custom.min.css?v=4.0.0">
-  <link rel="stylesheet" href="../../assets/css/dark.min.css">
-  <link rel="stylesheet" href="../../assets/css/customizer.min.css">
-  <link rel="stylesheet" href="../../assets/css/customizer.css">
-  <link rel="stylesheet" href="../../assets/css/rtl.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
   <style>
-    :root{ --input-lg-h:48px; }
-
-    /* Visor */
-    .pdv-visor{
-      background:#002f8c; color:#f0f0f0; border-radius:14px; padding:16px 20px;
-      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      display:flex; align-items:center; justify-content:space-between;
-      box-shadow:inset 0 0 0 1px #111827, 0 10px 28px rgba(0,0,0,.15);
+    :root{
+      --bg:#f4f7fb; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --shadow:0 8px 16px rgba(15,23,42,.06);
+      --ticket-edge:#e2e8f0; --brand:#0f3fa7; --brand2:#2563eb; --panel:#fff; --panel2:#fff; --left:360px; --right:360px;
     }
-    .pdv-visor .linha1{ font-size:1rem; opacity:.9 }
-    .pdv-visor .linha2{ font-size:2.2rem; font-weight:700; letter-spacing:.5px }
-    .pdv-visor .right{ text-align:right }
-    /* Nome do produto com ajuste dinâmico */
-    #visor-produto{ transition:font-size .12s ease }
-    .vp-medium{ font-size:1.8rem !important }
-    .vp-small{ font-size:1.4rem !important }
+    @media (max-width:1440px){ :root{ --left:350px; --right:340px } }
+    @media (max-width:1100px){ :root{ --left:1fr; --right:1fr } }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial;overflow:hidden}
 
-    .pdv-busca{ position:relative }
-    .pdv-suggest{
-      position:absolute; left:0; right:0; top:100%; background:#fff; border:1px solid #e5e7eb; border-top:0;
-      max-height:320px; overflow:auto; z-index:1060; display:none; border-bottom-left-radius:10px; border-bottom-right-radius:10px;
-    }
-    .pdv-suggest .item{ padding:.55rem .75rem; cursor:pointer }
-    .pdv-suggest .item:hover{ background:#f3f4f6 }
-    .pdv-suggest .muted{ color:#6b7280; font-size:.85em }
+    /* Topo */
+    .topbar{height:64px;display:grid;grid-template-columns:1fr;background:linear-gradient(135deg,var(--brand2),var(--brand));
+      border-bottom:1px solid rgba(0,0,0,.05);box-shadow:var(--shadow);color:#fff;}
+    .top-inner{height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px;}
+    .top-icon{font-size:1.25rem;opacity:.95}
+    .top-left{display:flex;align-items:center;gap:10px}
+    .top-left .brand{font-weight:800;letter-spacing:.12rem;text-transform:uppercase;font-size:1.02rem}
 
-    .itens-table td,.itens-table th{ vertical-align:middle }
-    .totais-card{ border:1px dashed #c7c9d1; border-radius:16px; background:#f9fafb }
+    .top-shortcuts{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+      border-radius:12px;padding:6px 10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);}
+    .top-shortcuts .sep{opacity:.8}
+    .chip{display:inline-flex;align-items:center;gap:6px;}
+    .kbd{background:#0f172a;color:#fff;border:1px solid #0f172a;border-radius:.35rem;padding:.12rem .40rem;font-weight:700;line-height:1;}
+    .chip-lab{font-weight:700;letter-spacing:.02rem}
 
-    .kbtn{ min-width:84px }
-    .kbd{ background:#0b1220; color:#cbd5e1; padding:.15rem .45rem; border-radius:.35rem; font-size:.85rem; border:1px solid #1f2937 }
+    .top-right{display:flex;align-items:center;gap:10px}
+    .caixa-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;font-weight:900;letter-spacing:.08rem;
+      background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);text-transform:uppercase;}
+    .caixa-pill .dot{width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,.08) inset;}
+    .caixa-pill.open .dot{background:#22c55e} .caixa-pill.closed .dot{background:#ef4444}
 
-    .pay-btn{ height:var(--input-lg-h); font-size:1.05rem }
-    .pay-btn.active{ box-shadow:0 0 0 3px rgba(37,99,235,.25) inset; border-color:#2563eb !important }
+    .clock-wrap{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.25);
+      border-radius:10px;padding:6px 10px;font-weight:700;font-variant-numeric:tabular-nums;}
 
-    .money{ font-variant-numeric:tabular-nums }
-    .troco-ok{ color:#16a34a } .troco-neg{ color:#dc2626 }
+    .btn-return{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;line-height:1;border-radius:6px;
+      color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);text-decoration:none;font-weight:600;}
+    .btn-return:hover{background:rgba(255,255,255,.20);color:#fff}
+    .btn-return:active{transform:translateY(1px)}
+    .btn-return .bi{font-size:1rem}.btn-return .label{font-size:.9rem}
+    @media (max-width:576px){ .top-shortcuts{display:none}.btn-return .label{display:none} }
 
-    .form-label{ margin-bottom:.35rem }
-    .form-control-lg{ height:var(--input-lg-h); line-height:calc(var(--input-lg-h) - 2px) }
-    .input-group-text{ height:var(--input-lg-h); display:flex; align-items:center }
-    .btn.kbtn{ height:var(--input-lg-h); display:flex; align-items:center }
-    .pdv-help{ min-height:22px }
+    /* Área principal */
+    .stage{height:calc(100vh - 64px);display:grid;grid-template-columns:var(--left) 1fr var(--right);gap:16px;padding:16px;position:relative;z-index:1;}
+    @media (max-width:1100px){ .stage{grid-template-columns:1fr;overflow:auto} }
 
-    @media (max-width:1199px){ .pdv-visor .linha2{ font-size:1.8rem } }
+    /* Cards */
+    .card-pdv{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--border);border-radius:14px;color:#0f1e4a;box-shadow:var(--shadow)}
+    .card-pdv .card-header{padding:.7rem 1rem;border-bottom:1px solid var(--border);font-weight:700;color:#0f1e4a}
+    .card-pdv .card-body{padding:14px}
 
-    /* ===== Toast melhorado ===== */
-    .sale-toast{z-index:2000;min-width:360px;border:0;border-radius:14px;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.18)}
-    .sale-head{display:flex;align-items:center;gap:10px;padding:12px 14px;font-weight:800;letter-spacing:.02rem;color:#fff}
-    .sale-head.ok{background:linear-gradient(135deg,#16a34a,#0ea5e9)}
-    .sale-head.err{background:linear-gradient(135deg,#ef4444,#f59e0b)}
-    .sale-icon{width:34px;height:34px;border-radius:999px;display:grid;place-items:center;background:rgba(255,255,255,.18);box-shadow:inset 0 0 0 2px rgba(255,255,255,.18)}
-    .sale-body{background:#fff;padding:10px 12px}
-    .sale-actions{display:flex;gap:8px;justify-content:flex-end;padding:8px 12px;background:#f8fafc;border-top:1px solid #eef2f7}
-    .sale-actions .btn{border-radius:10px}
-    .sale-progress{height:3px}
-    .sale-progress .progress-bar{transition:width .2s linear}
-    @media (max-width:440px){ .sale-toast{min-width:300px} }
-    @media (prefers-reduced-motion:reduce){ .sale-progress .progress-bar,.sale-head,.sale-body,.sale-actions{transition:none} }
+    /* Esquerda */
+    .left{display:grid;grid-template-rows:auto auto 1fr;gap:16px;min-height:0}
+    .tile{background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:10px;box-shadow:var(--shadow)}
+    .tile .lbl{font-size:.8rem;text-transform:uppercase;color:#334155;letter-spacing:.06rem}
+    .tile .value{display:flex;align-items:center;gap:8px;margin-top:6px}
+
+    .nfce-input{position:relative;width:100%}
+    .nfce-input .inp{width:100%;height:54px;padding:0 12px 0 46px;background:#fff;color:#0f172a;border:2px dashed #c7d2fe;border-radius:12px;font-weight:700;}
+    .nfce-input .inp::placeholder{color:#94a3b8}
+    .nfce-input .inp:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 4px rgba(147,197,253,.25)}
+    .nfce-input .inp-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:1.25rem;color:#1e3a8a;opacity:.85;}
+
+    #sug{top:58px !important;display:none;max-height:300px;overflow:auto;border:2px dashed #e2e8f0 !important;z-index:1000}
+    #sug .sug-item{cursor:pointer;border-bottom:1px dotted #e5e7eb}
+    #sug .sug-item:last-child{border-bottom:0}
+    #sug .sug-item:hover{background:#f8fafc}
+    #sug .price{font-family:ui-monospace,Menlo,Consolas,monospace}
+
+    .inp{background:#fff;color:#0f172a;border:2px solid #cbd5e1;border-radius:10px;height:50px;padding:0 10px;font-weight:600;width:100%}
+    .money-wrap{display:flex;align-items:center}
+    .money-prefix{background:#fff;border:2px solid #cbd5e1;border-right:0;border-radius:10px 0 0 10px;height:50px;display:flex;align-items:center;padding:0 12px;color:#0f172a;font-weight:700}
+    .money-input{border-left:0;border-radius:0 10px 10px 0}
+    .money{font-variant-numeric:tabular-nums}
+
+    /* Centro */
+    .center{display:grid;grid-template-rows:auto 1fr auto;gap:12px;min-height:0}
+    .visor{background:linear-gradient(135deg,#0f3fa7,#0b2f85);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:12px;
+      padding:12px 16px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
+    .visor .big{font-size:1.95rem;font-weight:900}
+
+    .list-card{min-height:0;display:flex;flex-direction:column;}
+    .list-card .card-body{flex:1;min-height:0;display:flex;}
+    .ticket-wrap{flex:1;min-height:0;display:flex;align-items:stretch;justify-content:center}
+    .ticket{width:100%;height:100%;background:#fff;color:#0f172a;border:1px dashed var(--ticket-edge);border-radius:16px;
+      padding:14px 14px 18px;font-family:ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;font-size:12.5px;line-height:1.28;display:flex;flex-direction:column;}
+    .t-line{display:grid;grid-template-columns:1fr auto;gap:6px;padding:6px 0;border-bottom:1px dotted #dde3ee}
+    .t-line:last-child{border-bottom:0}
+    .t-desc{font-weight:700;color:#0b1323}
+    .t-meta{color:#6b7280}
+    .t-val{font-weight:800;text-align:right}
+    .t-list{flex:1;min-height:0;overflow:auto;padding-right:4px}
+
+    .bottom{display:grid;grid-template-rows:auto;gap:12px;min-height:0}
+    .subgrid{display:grid;grid-template-columns:1fr;gap:12px}
+    .box-num{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
+    .box-num .lab{color:#334155}
+    .box-num .num{font-size:2.2rem;font-weight:900;color:#0f1e4a}
+
+    /* Direita */
+    .right{display:grid;grid-template-rows:auto auto 1fr;gap:16px;min-height:0}
+    .totalzao{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+
+    .btn-outline-light{color:#334155;border-color:#e2e8f0;background:#fff}
+    .btn-outline-light:hover{background:#f8fafc;border-color:#cbd5e1;color:#111827}
+
+    .pay .btn{height:52px;border-radius:12px}
+    .rt{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:var(--shadow)}
+    .rt .n{font-size:1.8rem;font-weight:900}
+    .ok{color:#16a34a}.neg{color:#ef4444}
+
+    .side-band{display:none}
+    .pay .pay-btn.active{box-shadow:0 0 0 3px rgba(37,99,235,.25) inset}
   </style>
 </head>
+
 <body>
-<?php
-if (session_status() === PHP_SESSION_NONE) session_start();
-$menuAtivo = 'vendas-rapida';
-include '../../layouts/sidebar.php';
-?>
 
-<main class="main-content">
-  <div class="position-relative iq-banner">
-    <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
-      <div class="container-fluid navbar-inner">
-        <a href="../../dashboard.php" class="navbar-brand"><h4 class="logo-title">Mundo Pets</h4></a>
-        <div class="ms-auto d-none d-lg-flex align-items-center gap-3">
-          <span class="text-muted small">Atalhos:
-            <span class="kbd">Enter</span> Adicionar •
-            <span class="kbd">F2</span> Quantidade •
-            <span class="kbd">F3</span> Desconto •
-            <span class="kbd">F6</span> Recebido •
-            <span class="kbd">F4</span> Finalizar
-          </span>
-        </div>
+  <div class="topbar">
+    <div class="top-inner">
+      <div class="top-left">
+        <i class="bi bi-shop-window top-icon"></i>
+        <div class="brand">Mundo Pets – PDV</div>
       </div>
-    </nav>
 
-    <!-- ===== TOAST Melhorado ===== -->
-    <?php if ($ok || $err): ?>
-      <div id="toastMsg" class="toast sale-toast show position-fixed top-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="sale-head <?= $ok ? 'ok' : 'err' ?>">
-          <div class="sale-icon"><i class="bi <?= $ok ? 'bi-check-lg' : 'bi-x-lg' ?> fs-5 text-white"></i></div>
-          <div class="flex-grow-1"><?= $ok ? 'Venda concluída!' : 'Ops, algo deu errado' ?></div>
-          <button id="toastClose" type="button" class="btn btn-sm btn-light border-0" data-bs-dismiss="toast" aria-label="Fechar" style="--bs-btn-padding-y:.2rem;--bs-btn-padding-x:.45rem;border-radius:8px;">
-            <i class="bi bi-x-lg"></i>
-          </button>
-        </div>
-        <div class="sale-body">
-          <div class="fw-semibold text-dark">
-            <?= htmlspecialchars($msg ?: ($ok ? 'Venda registrada com sucesso.' : 'Falha ao registrar venda.'), ENT_QUOTES, 'UTF-8') ?>
-          </div>
-        </div>
-        <div class="sale-actions">
-          <?php if ($ok && $vendaId > 0): ?>
-            <a id="btnDanfe" href="./danfe_nfce.php?venda_id=<?= (int)$vendaId ?>" class="btn btn-success btn-sm">
-              <i class="bi bi-printer me-1"></i> Ver DANFE
-            </a>
-            <a id="btnNova" href="./vendaRapida.php" class="btn btn-outline-secondary btn-sm">
-              <i class="bi bi-plus-lg me-1"></i> Nova venda
-            </a>
-          <?php else: ?>
-            <button type="button" class="btn btn-warning btn-sm" data-bs-dismiss="toast">
-              <i class="bi bi-arrow-counterclockwise me-1"></i> Tentar novamente
-            </button>
-          <?php endif; ?>
-        </div>
-        <div class="progress sale-progress">
-          <div id="toastProgress" class="progress-bar <?= $ok ? 'bg-success' : 'bg-danger' ?>" style="width:100%"></div>
-        </div>
+      <div class="top-shortcuts">
+        <span class="chip"><span class="kbd">F2</span><span class="chip-lab">Quantidade</span></span>
+        <span class="sep">•</span>
+        <span class="chip"><span class="kbd">F3</span><span class="chip-lab">Desconto</span></span>
+        <span class="sep">•</span>
+        <span class="chip"><span class="kbd">Enter</span><span class="chip-lab">Adicionar</span></span>
+        <span class="sep">•</span>
+        <span class="chip"><span class="kbd">F4</span><span class="chip-lab">Finalizar</span></span>
+        <span class="sep">•</span>
+        <span class="chip"><span class="kbd">F6</span><span class="chip-lab">Recebido</span></span>
       </div>
-      <script>
-        (function(){
-          const toastEl = document.getElementById("toastMsg");
-          const progress = document.getElementById("toastProgress");
-          if(!toastEl) return;
-          const base = 1600, extra = Math.min(1800, (<?= json_encode(mb_strlen($msg ?? '')) ?> || 0) * 40);
-          const DURATION = base + extra;
-          let toast;
-          if (window.bootstrap?.Toast) {
-            toast = new bootstrap.Toast(toastEl, { delay: DURATION, autohide: true }); toast.show();
-          } else { setTimeout(() => toastEl.remove(), DURATION); }
-          let width=100, stepMs=20, step=100*stepMs/DURATION;
-          const itv=setInterval(()=>{ width=Math.max(0,width-step); if(progress) progress.style.width=width+"%"; if(width<=0) clearInterval(itv); }, stepMs);
-          // limpar params da URL
-          try{ const url=new URL(window.location.href); ['ok','err','msg','venda_id'].forEach(p=>url.searchParams.delete(p)); history.replaceState({},'',url.toString()); }catch(_){}
-          // redireciona pro DANFE ao fechar (se sucesso e tiver vendaId)
-          <?php if ($ok && $vendaId > 0): ?>
-            const goDanfe = () => { if (!window.__skipDanfeRedirect) window.location.href = './danfe_nfce.php?venda_id=<?= (int)$vendaId ?>'; };
-            toastEl.addEventListener('hidden.bs.toast', goDanfe);
-            document.getElementById('btnDanfe')?.addEventListener('click', ()=> window.__skipDanfeRedirect = true);
-            document.getElementById('btnNova')?.addEventListener('click', ()=> window.__skipDanfeRedirect = true);
-          <?php endif; ?>
-          // ESC fecha
-          document.addEventListener('keydown', e => { if(e.key==='Escape'){ try{ bootstrap.Toast.getOrCreateInstance(toastEl).hide(); }catch(_){ toastEl.remove(); } }});
-        })();
-      </script>
-    <?php endif; ?>
 
-    <div class="iq-navbar-header" style="height:140px; margin-bottom:50px;">
-      <div class="container-fluid iq-container">
-        <div class="row">
-          <div class="col-md-8">
-            <h1 class="">Venda Rápida</h1>
-            <p>Fluxo de PDV para balcão — leitor de código, busca por nome/SKU/EAN, e finalização rápida.</p>
-            <?php if (!$caixaAberto): ?>
-              <div style="font-weight:900;color:#f73232;">
-                <i class="bi bi-exclamation-triangle me-1"></i>
-                Nenhum caixa aberto no momento.
-                <a href="./caixaAbrir.php" class="alert-link text-white">Clique aqui</a> para abrir ou entrar em um caixa.
-              </div>
-            <?php else: ?>
-              <i class="bi bi-cash-coin me-1"></i>
-              Caixa aberto:
-              <strong>#<?= (int)$caixaAberto['id'] ?></strong> —
-              <?= htmlspecialchars($caixaAberto['tipo'], ENT_QUOTES, 'UTF-8') ?> —
-              <?= htmlspecialchars($caixaAberto['terminal'], ENT_QUOTES, 'UTF-8') ?> —
-              desde <?= htmlspecialchars($caixaAberto['quando'], ENT_QUOTES, 'UTF-8') ?>
-            <?php endif; ?>
-          </div>
-          <div class="col-md-4 text-md-end">
-            <a href="./orcamentos.php" class="btn btn-outline-secondary"><i class="bi bi-receipt"></i> Orçamentos</a>
-            <a href="./caixaAbrir.php" class="btn btn-outline-primary"><i class="bi bi-cash-stack"></i> Caixa</a>
-          </div>
+      <div class="top-right">
+        <div class="caixa-pill <?= $caixaAberto ? 'open' : 'closed' ?>" title="Status do caixa" data-bs-toggle="tooltip">
+          <span class="dot"></span>
+          CAIXA <?= $caixaAberto ? 'ABERTO' : 'FECHADO' ?>
         </div>
-      </div>
-      <div class="iq-header-img">
-        <img src="../../assets/images/dashboard/top-header.png" class="img-fluid w-100 h-100 animated-scaleX" alt="">
+
+        <div class="clock-wrap" role="timer" aria-live="polite" title="Horário atual" data-bs-toggle="tooltip">
+          <i class="bi bi-clock"></i>
+          <span id="clock">--:--</span>
+        </div>
+
+        <a href="../../dashboard.php" id="btn-voltar" class="btn-return" title="Voltar (Alt+V)" data-bs-toggle="tooltip" aria-label="Voltar">
+          <i class="bi bi-box-arrow-left"></i><span class="label">Voltar</span>
+        </a>
       </div>
     </div>
   </div>
 
-  <div class="container-fluid content-inner mt-n3 py-0">
-    <form method="post" action="../actions/vendaRapidaSalvar.php" id="form-venda" data-caixa="<?= $caixaAberto ? '1' : '0' ?>">
-      <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
-      <input type="hidden" name="itens_json" id="itens_json">
-      <input type="hidden" name="desconto" id="desconto_hidden" value="0.00">
-
-      <div class="row g-3">
-        <!-- ESQUERDA -->
-        <div class="col-xxl-8">
-          <!-- Visor PDV: último produto + valor do último item -->
-          <div class="pdv-visor mb-3">
-            <div>
-              <div class="linha1">Último produto</div>
-              <div class="linha2" id="visor-produto">—</div>
-            </div>
-            <div class="right">
-              <div class="linha1">Valor do item</div>
-              <div class="linha2 money" id="visor-ultimo-valor">R$ 0,00</div>
+  <div class="stage">
+    <!-- ESQUERDA -->
+    <div class="left">
+      <div class="card-pdv">
+        <div class="card-body">
+          <div class="tile">
+            <div class="lbl d-flex align-items-center gap-2"><span>CÓDIGO DE BARRAS</span></div>
+            <div class="value nfce-input">
+              <i class="bi bi-upc-scan inp-icon"></i>
+              <input class="inp" id="inp-busca" placeholder="Passe o leitor ou digite" autocomplete="off" <?= $caixaAberto ? '' : 'disabled' ?>>
+              <div id="sug" class="position-absolute w-100 bg-white text-dark rounded-2 shadow"></div>
             </div>
           </div>
 
-          <!-- Busca rápida -->
-          <div class="card">
-            <div class="card-body">
-              <div class="row g-3">
-                <div class="col-lg-7">
-                  <label class="form-label">Código / Nome / SKU / EAN</label>
-                  <div class="pdv-busca">
-                    <input type="text" class="form-control form-control-lg" id="inp-busca" placeholder="Digite o Nome do Produto" autocomplete="off" <?= $caixaAberto ? '' : 'disabled' ?>>
-                    <div class="pdv-suggest" id="box-suggest"></div>
-                  </div>
-                  <div class="form-text pdv-help">Use leitor de código de barras ou digite e pressione <span class="kbd">Enter</span>.</div>
-                </div>
+          <div class="tile">
+            <div class="lbl">CÓDIGO</div>
+            <div class="value"><input class="inp" id="inp-sku" placeholder="SKU / interno (opcional)"></div>
+          </div>
 
-                <div class="col-lg-2">
-                  <label class="form-label">Qtd</label>
-                  <input type="number" class="form-control form-control-lg text-end" id="inp-qtd" step="0.001" min="0.001" value="1.000" <?= $caixaAberto ? '' : 'disabled' ?>>
-                  <div class="pdv-help"></div>
-                </div>
-
-                <div class="col-lg-3">
-                  <label class="form-label">Vlr. Unit (R$)</label>
-                  <input type="number" class="form-control form-control-lg text-end" id="inp-preco" step="0.01" min="0" value="0.00" <?= $caixaAberto ? '' : 'disabled' ?>>
-                  <div class="pdv-help"></div>
-                </div>
-
-                <div class="col-12 d-flex gap-2">
-                  <button type="button" class="btn btn-primary kbtn" id="btn-add" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-plus-lg"></i>&nbsp;Adicionar <span class="small ms-1 kbd">Enter</span></button>
-                  <button type="button" class="btn btn-outline-secondary kbtn" id="btn-qtd" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-123"></i>&nbsp;Qtd <span class="small ms-1 kbd">F2</span></button>
-                  <button type="button" class="btn btn-outline-secondary kbtn" id="btn-desc" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-percent"></i>&nbsp;Desconto <span class="small ms-1 kbd">F3</span></button>
-                  <button type="button" class="btn btn-outline-danger kbtn" id="btn-clear" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-trash3"></i>&nbsp;Limpar</button>
-                </div>
-              </div>
+          <div class="tile">
+            <div class="lbl">VALOR UNITÁRIO</div>
+            <div class="value money-wrap">
+              <span class="money-prefix">R$</span>
+              <input type="number" id="inp-preco" class="inp money-input text-end" step="0.01" min="0" value="0.00" <?= $caixaAberto ? '' : 'disabled' ?>>
             </div>
           </div>
 
-          <!-- Itens -->
-          <div class="card mt-3">
-            <div class="card-body">
-              <div class="table-responsive">
-                <table class="table table-striped itens-table align-middle" id="tbl-itens">
-                  <thead>
-                    <tr>
-                      <th>Descrição</th>
-                      <th style="width:9rem;" class="text-end">Qtd</th>
-                      <th style="width:10rem;" class="text-end">Vlr. Unit</th>
-                      <th style="width:10rem;" class="text-end">Total</th>
-                      <th style="width:4rem;" class="text-end"></th>
-                    </tr>
-                  </thead>
-                  <tbody></tbody>
-                  <tfoot>
-                    <tr>
-                      <td colspan="5" class="text-muted small">Dica: clique no valor para editar; use o ícone <i class="bi bi-x"></i> para remover.</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- DIREITA -->
-        <div class="col-xxl-4">
-          <div class="card totais-card">
-            <div class="card-body">
-              <div class="d-flex justify-content-between"><span class="text-muted">Itens</span><strong id="tot-itens">0</strong></div>
-              <div class="d-flex justify-content-between mt-2"><span class="text-muted">Subtotal</span><strong class="money" id="tot-subtotal">R$ 0,00</strong></div>
-              <div class="d-flex justify-content-between mt-2">
-                <span class="text-muted">Desconto</span>
-                <div class="d-flex align-items-center gap-2">
-                  <input type="number" step="0.01" min="0" class="form-control form-control-sm text-end" id="inp-desconto" value="0.00" style="width:110px" <?= $caixaAberto ? '' : 'disabled' ?>>
-                </div>
-              </div>
-              <hr>
-              <div class="d-flex justify-content-between">
-                <span class="fs-5">TOTAL</span>
-                <span class="fs-4 fw-bold money" id="tot-geral">R$ 0,00</span>
-              </div>
-            </div>
+          <div class="tile">
+            <div class="lbl">TOTAL DO ITEM</div>
+            <div class="value"><strong id="tile-item-total" class="money fs-4">R$ 0,00</strong></div>
           </div>
 
-          <div class="card mt-3">
-            <div class="card-header"><h5 class="mb-0">Pagamento</h5></div>
-            <div class="card-body">
-              <div class="row g-2">
-                <div class="col-6"><button type="button" class="btn btn-success w-100 pay-btn active" data-pay="dinheiro" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-cash-coin me-1"></i> Dinheiro</button></div>
-                <div class="col-6"><button type="button" class="btn btn-primary w-100 pay-btn" data-pay="pix" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-upc-scan me-1"></i> PIX</button></div>
-                <div class="col-6"><button type="button" class="btn btn-outline-dark w-100 pay-btn" data-pay="debito" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-credit-card-2-back me-1"></i> Débito</button></div>
-                <div class="col-6"><button type="button" class="btn btn-outline-dark w-100 pay-btn" data-pay="credito" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-credit-card me-1"></i> Crédito</button></div>
-              </div>
+          <div class="tile">
+            <div class="lbl">QUANTIDADE</div>
+            <div class="value"><input id="inp-qtd" type="number" step="0.001" min="0.001" value="1.000" class="inp text-end" <?= $caixaAberto ? '' : 'disabled' ?>></div>
+          </div>
 
-              <div class="mt-3">
-                <label class="form-label">Forma de Pagamento</label>
-                <select name="forma_pagamento" id="forma_pagamento" class="form-select" <?= $caixaAberto ? '' : 'disabled' ?>>
-                  <option value="dinheiro" selected>Dinheiro</option>
-                  <option value="pix">PIX</option>
-                  <option value="debito">Débito</option>
-                  <option value="credito">Crédito</option>
-                </select>
-              </div>
-
-              <div id="grp-dinheiro" class="mt-3" style="display:block;">
-                <label class="form-label">Valor Recebido (Dinheiro)</label>
-                <div class="input-group">
-                  <span class="input-group-text">R$</span>
-                  <input type="number" step="0.01" min="0" class="form-control text-end" id="inp-recebido" name="valor_recebido" placeholder="0,00">
-                </div>
-                <div class="d-flex justify-content-between mt-2">
-                  <span class="text-muted">Troco</span>
-                  <strong id="lbl-troco" class="money">R$ 0,00</strong>
-                </div>
-              </div>
-
-              <div class="d-grid mt-3">
-                <button type="submit" class="btn btn-lg btn-success" id="btn-finalizar" <?= $caixaAberto ? '' : 'disabled' ?>>
-                  <i class="bi bi-check2-circle me-1"></i> Finalizar Venda <span class="small kbd">F4</span>
-                </button>
-              </div>
-              <div class="d-grid mt-2">
-                <a href="../../dashboard.php" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
-              </div>
-            </div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button id="btn-add" class="btn btn-primary btn-sm" type="button" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-plus-lg"></i> Adicionar</button>
+            <button id="btn-clear" class="btn btn-outline-light btn-sm" type="button" <?= $caixaAberto ? '' : 'disabled' ?>><i class="bi bi-trash3"></i> Limpar</button>
           </div>
 
         </div>
       </div>
-    </form>
+    </div>
+
+    <!-- CENTRO -->
+    <div class="center">
+      <div class="visor">
+        <div>
+          <div class="opacity-75">Produto</div>
+          <div id="visor-produto" class="big">—</div>
+          <!-- valor do último produto adicionado -->
+          <div id="visor-ultimo-valor" class="money" style="margin-top:4px;font-size:1.25rem;font-weight:800">R$ 0,00</div>
+        </div>
+        <div class="text-end">
+          <div class="opacity-75">Total</div>
+          <div id="visor-subtotal" class="big money">R$ 0,00</div>
+        </div>
+      </div>
+
+      <div class="card-pdv list-card" style="min-height:0;">
+        <div class="card-header">LISTA DE ITENS</div>
+        <div class="card-body ticket-wrap">
+          <div class="ticket" id="ticket"><!-- render via JS --></div>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <div class="subgrid">
+          <div class="box-num">
+            <div class="lab">SUBTOTAL</div>
+            <div id="tot-subtotal" class="num money">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIREITA -->
+    <div class="right">
+      <div class="box-num">
+        <div class="lab">TOTAL</div>
+        <div id="tot-geral" class="num money">R$ 0,00</div>
+      </div>
+
+      <div class="box-num">
+        <div class="lab me-2">DESCONTO</div>
+        <div class="money-wrap" style="width:210px">
+          <span class="money-prefix">R$</span>
+          <input id="inp-desc" type="number" step="0.01" min="0" value="0.00" class="inp money-input text-end">
+        </div>
+      </div>
+
+      <div class="card-pdv pay" style="min-height:0">
+        <div class="card-header">Pagamento</div>
+        <div class="card-body">
+          <div class="row g-2">
+            <div class="col-6">
+              <button class="btn btn-success w-100 pay-btn active"
+                      type="button" data-pay="dinheiro" aria-pressed="true" <?= $caixaAberto ? '' : 'disabled' ?>>
+                <i class="bi bi-cash-coin me-1"></i> Dinheiro
+              </button>
+            </div>
+            <div class="col-6">
+              <button class="btn btn-primary w-100 pay-btn"
+                      type="button" data-pay="pix" aria-pressed="false" <?= $caixaAberto ? '' : 'disabled' ?>>
+                <i class="bi bi-upc-scan me-1"></i> PIX
+              </button>
+            </div>
+            <div class="col-6">
+              <button class="btn btn-outline-light w-100 pay-btn"
+                      type="button" data-pay="debito" aria-pressed="false" <?= $caixaAberto ? '' : 'disabled' ?>>
+                <i class="bi bi-credit-card-2-back me-1"></i> Débito
+              </button>
+            </div>
+            <div class="col-6">
+              <button class="btn btn-outline-light w-100 pay-btn"
+                      type="button" data-pay="credito" aria-pressed="false" <?= $caixaAberto ? '' : 'disabled' ?>>
+                <i class="bi bi-credit-card me-1"></i> Crédito
+              </button>
+            </div>
+          </div>
+
+          <div id="grp-din" class="mt-3" style="display:none">
+            <div class="row g-2">
+              <div class="col-12">
+                <div class="rt">
+                  <div class="mb-1 fw-semibold">TOTAL RECEBIDO</div>
+                  <div class="money-wrap">
+                    <span class="money-prefix">R$</span>
+                    <input id="inp-recebido" name="valor_recebido" type="number" step="0.01" min="0" class="inp money-input text-end" placeholder="0,00">
+                  </div>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="rt d-flex flex-column">
+                  <div class="fw-semibold">TROCO</div>
+                  <div id="lbl-troco" class="n money mt-auto">R$ 0,00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <form method="post" action="../actions/vendaRapidaSalvar.php" id="form-venda" data-caixa="<?= $caixaAberto ? '1' : '0' ?>">
+            <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="itens_json" id="itens_json">
+            <input type="hidden" name="desconto" id="desconto_hidden" value="0.00">
+            <div class="mt-3 d-grid">
+              <button id="btn-finalizar" class="btn btn-success btn-lg" type="submit" <?= $caixaAberto ? '' : 'disabled' ?>>
+                <i class="bi bi-check2-circle me-1"></i> Finalizar Venda <span class="ms-1 small kbd">F4</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
-</main>
 
-<script src="../../assets/js/core/libs.min.js"></script>
-<script src="../../assets/js/core/external.min.js"></script>
-<script src="../../assets/vendor/aos/dist/aos.js"></script>
-<script src="../../assets/js/hope-ui.js" defer></script>
-<script>
-  const PRODUTOS = <?= json_encode($produtos, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+  <!-- Bootstrap JS para tooltips -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  // helpers
-  const fmt = v => (Number(v || 0)).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const el = sel => document.querySelector(sel);
-  const tbody = document.querySelector('#tbl-itens tbody');
-  let itens = [];
-  const form = document.getElementById('form-venda');
-  const temCaixa = form.getAttribute('data-caixa') === '1';
-  let forma = 'dinheiro'; // estado corrente dos botões
+  <script>
+    const PRODUTOS = <?= json_encode($produtos, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const el = s => document.querySelector(s);
+    let itens = [];
+    let produtoSelecionado = null; // guarda seleção de sugestão/EAN antes de adicionar
+    const temCaixa = (document.getElementById('form-venda')?.dataset.caixa === '1');
+    let forma = 'dinheiro';
 
-  function totalGeral(){
-    let subtotal=0; itens.forEach(i=> subtotal += i.qtd*i.unit);
-    const d = parseFloat(el('#inp-desconto').value||'0');
-    return Math.max(subtotal - d, 0);
-  }
+    const fmt = v => (Number(v || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    function itemTotal(){ return (parseFloat(el('#inp-qtd').value || '0') * parseFloat(el('#inp-preco').value || '0')); }
+    function upItemTile(){ const t = el('#tile-item-total'); if (t) t.textContent = 'R$ ' + fmt(itemTotal()); }
 
-  function recalc(){
-    let subtotal=0, count=0; itens.forEach(i=>{ subtotal += i.qtd*i.unit; count++; });
-    const d = parseFloat(el('#inp-desconto').value||'0'), total=Math.max(subtotal-d,0);
-    el('#tot-subtotal').textContent = 'R$ '+fmt(subtotal);
-    el('#tot-geral').textContent    = 'R$ '+fmt(total);
-    el('#tot-itens').textContent    = count;
-    el('#desconto_hidden').value    = (d||0).toFixed(2);
-    el('#itens_json').value         = JSON.stringify(itens);
-    renderTable();
-    recalcTroco();
-    validateFinalizeButton();
-  }
-
-  function renderTable(){
-    tbody.innerHTML = itens.map((i, idx)=>`
-      <tr>
-        <td>${escapeHtml(i.nome)}</td>
-        <td class="text-end"><input type="number" min="0.001" step="0.001" class="form-control form-control-sm text-end inp-qtd" data-idx="${idx}" value="${i.qtd.toFixed(3)}" ${temCaixa?'':'disabled'}></td>
-        <td class="text-end"><input type="number" min="0" step="0.01" class="form-control form-control-sm text-end inp-unit" data-idx="${idx}" value="${i.unit.toFixed(2)}" ${temCaixa?'':'disabled'}></td>
-        <td class="text-end money">R$ ${fmt(i.qtd*i.unit)}</td>
-        <td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger btn-del" data-idx="${idx}" ${temCaixa?'':'disabled'}><i class="bi bi-x"></i></button></td>
-      </tr>`).join('');
-  }
-
-  function escapeHtml(s){
-    return String(s||'').replace(/[&<>"'`=\/]/g, c => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'
-    }[c]));
-  }
-
-  // ==== Visor: último produto + valor do item ====
-  function updateVisorUltimo(){
-    const vp = el('#visor-produto');
-    const vv = el('#visor-ultimo-valor');
-    const u  = itens[itens.length-1] || null;
-    const nome = u ? (u.nome||'Item') : '—';
-    const valor = u ? (u.qtd*u.unit) : 0;
-    if (vp) {
-      vp.textContent = nome;
-      // ajuste de tamanho se muito grande
-      vp.classList.remove('vp-medium','vp-small');
-      if (nome.length > 64) vp.classList.add('vp-small');
-      else if (nome.length > 28) vp.classList.add('vp-medium');
+    function totalAtual(){
+      let sub=0; itens.forEach(i=> sub+=i.qtd*i.unit);
+      const desc=parseFloat(el('#inp-desc').value||'0');
+      return Math.max(sub - (desc||0), 0);
     }
-    if (vv) vv.textContent = 'R$ '+fmt(valor);
-  }
 
-  // ==== Busca / Sugestões ====
-  const box = el('#box-suggest'),
-        inpBusca = el('#inp-busca'),
-        inpQtd   = el('#inp-qtd'),
-        inpPreco = el('#inp-preco');
+    function recalc(){
+      let sub=0; itens.forEach(i=> sub+=i.qtd*i.unit);
+      const desc=parseFloat(el('#inp-desc').value||'0'); const total=Math.max(sub-desc,0);
 
-  function filtra(q){
-    q=(q||'').trim().toLowerCase(); if(!q) return [];
-    return PRODUTOS.filter(p =>
-      (p.nome||'').toLowerCase().includes(q) ||
-      (p.sku||'').toLowerCase().includes(q)  ||
-      (p.ean||'').toLowerCase().includes(q)  ||
-      (p.marca||'').toLowerCase().includes(q)
-    ).slice(0,50);
-  }
+      el('#tot-subtotal') && (el('#tot-subtotal').textContent='R$ '+fmt(sub));
+      el('#tot-geral') && (el('#tot-geral').textContent='R$ '+fmt(total));
+      el('#visor-subtotal') && (el('#visor-subtotal').textContent='R$ '+fmt(total));
+      el('#tot-itens') && (el('#tot-itens').textContent=itens.length);
+      el('#desconto_hidden') && (el('#desconto_hidden').value=(desc||0).toFixed(2));
+      el('#itens_json') && (el('#itens_json').value=JSON.stringify(itens));
 
-  function showSugestoes(lista){
-    if(!lista.length){ box.style.display='none'; box.innerHTML=''; return; }
-    box.innerHTML = lista.map(p=>`
-      <div class="item" data-id="${p.id}" data-preco="${Number(p.preco_venda||0)}" data-nome="${escapeHtml(p.nome||'')}" data-sku="${escapeHtml(p.sku||'')}" data-ean="${escapeHtml(p.ean||'')}">
-        <div><strong>${escapeHtml(p.nome||'-')}</strong></div>
-        <div class="muted">${escapeHtml([p.marca,p.sku,p.ean].filter(Boolean).join(' • '))}</div>
-        <div class="muted">R$ ${fmt(p.preco_venda||0)} ${p.unidade?(' / '+escapeHtml(p.unidade)) : ''}</div>
+      troco(); validateBtn(); renderTicket();
+    }
+
+    function esc(s){return String(s||'').replace(/[&<>"'`=\/]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;','/':'&#x2F;','`':'&#x60','=':'&#x3D;'}[c]));}
+
+    const sug=el('#sug'), busca=el('#inp-busca'), qtd=el('#inp-qtd'), preco=el('#inp-preco');
+
+    function filtra(q){
+      q=(q||'').trim().toLowerCase(); if(!q) return [];
+      return PRODUTOS.filter(p=>(p.nome||'').toLowerCase().includes(q)||(p.sku||'').toLowerCase().includes(q)||(p.ean||'').toLowerCase().includes(q)||(p.marca||'').toLowerCase().includes(q)).slice(0,50);
+    }
+
+    function showSug(list){
+      if(!list.length){sug.style.display='none'; sug.innerHTML=''; return;}
+      sug.innerHTML = list.map(p=>`<div class="p-2 sug-item" data-preco="${Number(p.preco_venda||0)}" data-nome="${esc(p.nome||'')}" data-sku="${esc(p.sku||'')}" data-ean="${esc(p.ean||'')}">
+        <div class="d-flex justify-content-between">
+          <strong>${esc(p.nome||'-')}</strong>
+          <span class="price">R$ ${fmt(p.preco_venda||0)}</span>
+        </div>
+        <div class="text-secondary small">${esc([p.marca,p.sku,p.ean].filter(Boolean).join(' • '))}${p.unidade?(' • '+esc(p.unidade)):''}</div>
       </div>`).join('');
-    box.style.display='block';
-  }
-
-  // Auto-adicionar: match exato por EAN/SKU ou quando só sobrar 1 sugestão
-  let autoAddTimer = null;
-  function tryAutoAddFromBusca(q){
-    if(!temCaixa) return;
-    q=(q||'').trim(); if(!q) return;
-
-    // 1) match exato EAN ou SKU
-    const exact = PRODUTOS.find(p => (p.ean && String(p.ean)===q) || (p.sku && String(p.sku).toLowerCase()===q.toLowerCase()));
-    if (exact){
-      inpPreco.value = Number(exact.preco_venda||0).toFixed(2);
-      addItem(exact.nome, Number(inpQtd.value||'1'), Number(inpPreco.value||0), exact.sku||'');
-      box.style.display='none';
-      return;
+      sug.style.display='block';
     }
-    // 2) restou uma sugestão com termo razoável
-    const lista = filtra(q);
-    if (lista.length===1 && q.length>=4){
-      clearTimeout(autoAddTimer);
-      autoAddTimer = setTimeout(()=>{
-        inpPreco.value = Number(lista[0].preco_venda||0).toFixed(2);
-        addItem(lista[0].nome, Number(inpQtd.value||'1'), Number(inpPreco.value||0), lista[0].sku||'');
-        box.style.display='none';
-      }, 180);
+
+    /* ==== Visor: último produto adicionado (nome + valor unitário) ==== */
+    function visorUltimo(){
+      const vp = el('#visor-produto');
+      const vv = el('#visor-ultimo-valor');
+      const ult = itens[itens.length - 1] || null;
+      if (vp) vp.textContent = ult ? (ult.nome || 'Item') : '—';
+      if (vv) vv.textContent = 'R$ ' + fmt(ult ? ult.unit : 0);
     }
-  }
 
-  if (temCaixa){
-    inpBusca.addEventListener('input', ()=>{
-      const q = inpBusca.value;
-      showSugestoes(filtra(q));
-      tryAutoAddFromBusca(q);
-    });
-    document.addEventListener('click',(e)=>{ if(!e.target.closest('.pdv-busca')) box.style.display='none'; });
-    box.addEventListener('click',(e)=>{
-      const it = e.target.closest('.item'); if(!it) return;
-      const nome  = it.getAttribute('data-nome') || 'Item';
-      const preco = parseFloat(it.getAttribute('data-preco')||'0');
-      inpPreco.value = preco.toFixed(2);
-      // adiciona imediatamente
-      addItem(nome, Number(inpQtd.value||'1'), preco, it.getAttribute('data-sku')||'');
-      box.style.display='none';
-    });
-  }
-
-  // ==== Adicionar item ====
-  function addItem(nome, qtd, unit, sku=''){
-    if (!temCaixa) return;
-    if (typeof nome!=='string' || !nome.trim()){
-      // fallback pelo termo e sugestões
-      const termo = (inpBusca.value||'').trim();
-      const lista = filtra(termo);
-      nome = lista[0]?.nome || termo || 'Item';
-      if ((!inpPreco.value || parseFloat(inpPreco.value||'0')<=0) && lista[0]) unit = Number(lista[0].preco_venda||0);
+    /* ==== Pré-seleção/Scanner ==== */
+    function setProdutoSelecionado(data){
+      // não mexe no visor; apenas prepara os campos
+      produtoSelecionado = {
+        nome: data.nome || 'Item',
+        unit: Number(data.preco_venda || 0),
+        sku: data.sku || ''
+      };
+      preco && (preco.value = produtoSelecionado.unit.toFixed(2));
+      el('#inp-sku') && (el('#inp-sku').value = produtoSelecionado.sku);
+      upItemTile();
     }
-    qtd  = Number(qtd||0);
-    unit = Number(unit||0);
-    if (qtd<=0 || unit<0) return;
 
-    itens.push({nome, qtd, unit, sku});
-    // limpar campos
-    inpBusca.value=''; inpQtd.value='1.000'; inpPreco.value='0.00';
-    updateVisorUltimo(); // mostra último produto + valor do item
-    recalc();
-    inpBusca.focus();
-  }
+    let autoAddTimer=null;
+    function tryAutoAddFromBusca(q){
+      if(!temCaixa) return;
+      q=(q||'').trim(); if(!q) return;
 
-  function addItemFromInputs(){
-    addItem((el('#visor-produto').textContent||'').trim(), parseFloat(inpQtd.value||'0'), parseFloat(inpPreco.value||'0'));
-  }
-
-  if (temCaixa){
-    el('#btn-add').addEventListener('click', addItemFromInputs);
-    el('#btn-clear').addEventListener('click', ()=>{
-      itens=[]; recalc(); inpBusca.value=''; inpQtd.value='1.000'; inpPreco.value='0.00'; updateVisorUltimo();
-      inpBusca.focus();
-    });
-    el('#btn-qtd').addEventListener('click', ()=> inpQtd.select());
-    el('#btn-desc').addEventListener('click', ()=> el('#inp-desconto').select());
-
-    tbody.addEventListener('input',(e)=>{
-      if (e.target.matches('.inp-qtd')){
-        const i=+e.target.dataset.idx, v=parseFloat(e.target.value||'0'); if(itens[i]) itens[i].qtd=Math.max(v,0); recalc(); updateVisorUltimo();
-      } else if (e.target.matches('.inp-unit')){
-        const i=+e.target.dataset.idx, v=parseFloat(e.target.value||'0'); if(itens[i]) itens[i].unit=Math.max(v,0); recalc(); updateVisorUltimo();
+      // Match exato por EAN ou SKU
+      const exact = PRODUTOS.find(p => (p.ean && String(p.ean)===q) || (p.sku && String(p.sku).toLowerCase()===q.toLowerCase()));
+      if(exact){
+        setProdutoSelecionado({nome:exact.nome, preco_venda:exact.preco_venda, sku:exact.sku});
+        sug.style.display='none';
+        setTimeout(()=>addItem(), 0);
+        return;
       }
-    });
-    tbody.addEventListener('click',(e)=>{
-      if (e.target.closest('.btn-del')){
-        const i=+e.target.closest('.btn-del').dataset.idx; itens.splice(i,1); recalc(); updateVisorUltimo();
+
+      // Se restar só 1 sugestão e termo razoável, auto-adiciona
+      const list = filtra(q);
+      if(list.length===1 && q.length>=4){
+        clearTimeout(autoAddTimer);
+        autoAddTimer = setTimeout(()=>{
+          setProdutoSelecionado({nome:list[0].nome, preco_venda:list[0].preco_venda, sku:list[0].sku});
+          sug.style.display='none';
+          addItem();
+        }, 180);
       }
-    });
-    el('#inp-desconto').addEventListener('input', recalc);
+    }
 
-    // atalhos
-    form.addEventListener('keydown',(e)=>{
-      if (e.key==='Enter' && document.activeElement===inpBusca){ e.preventDefault(); addItemFromInputs(); }
-    });
-    document.addEventListener('keydown',(e)=>{
-      if (e.key==='F2'){ e.preventDefault(); inpQtd.select(); }
-      if (e.key==='F3'){ e.preventDefault(); el('#inp-desconto').focus(); el('#inp-desconto').select(); }
-      if (e.key==='F6'){ e.preventDefault(); setFormaPagamento('dinheiro'); el('#inp-recebido')?.focus(); el('#inp-recebido')?.select(); }
-      if (e.key==='F4'){ e.preventDefault(); if(!el('#btn-finalizar').disabled){ form.requestSubmit ? form.requestSubmit(el('#btn-finalizar')) : el('#btn-finalizar').click(); } }
-    });
-  }
+    if(temCaixa){
+      busca && busca.addEventListener('input',()=>{
+        const q = busca.value;
+        showSug(filtra(q));
+        tryAutoAddFromBusca(q);
+      });
+      document.addEventListener('click',(e)=>{ if(!e.target.closest('#sug') && !e.target.closest('#inp-busca')) sug.style.display='none'; });
 
-  // ==== Pagamento ====
-  const selFP  = el('#forma_pagamento'),
-        grpDin = el('#grp-dinheiro'),
-        inpRec = el('#inp-recebido'),
-        lblTroco = el('#lbl-troco'),
-        payBtns = document.querySelectorAll('.pay-btn');
+      // Clique na sugestão => seleciona e adiciona
+      sug && sug.addEventListener('click',(e)=>{
+        const it=e.target.closest('.sug-item'); if(!it) return;
+        const data = {
+          nome: it.dataset.nome || 'Item',
+          preco_venda: parseFloat(it.dataset.preco||'0'),
+          sku: it.dataset.sku || ''
+        };
+        setProdutoSelecionado(data);
+        sug.style.display='none';
+        setTimeout(()=>addItem(),0);
+      });
+    }
 
-  function toggleDinheiroUI(){
-    const isDin = selFP.value==='dinheiro';
-    grpDin.style.display = isDin ? 'block' : 'none';
-    validateFinalizeButton();
-  }
-  function recalcTroco(){
-    if (selFP.value!=='dinheiro'){ lblTroco.textContent='R$ 0,00'; lblTroco.className='money'; return; }
-    const t = totalGeral(), r = parseFloat(inpRec.value||'0'), tr = r - t;
-    lblTroco.textContent = 'R$ '+fmt(tr);
-    lblTroco.className = 'money ' + (tr>=0 ? 'troco-ok' : 'troco-neg');
-    validateFinalizeButton();
-  }
-  function validateFinalizeButton(){
-    const b = el('#btn-finalizar');
-    if (!temCaixa || !itens.length){ b.disabled=true; return; }
-    if (selFP.value==='dinheiro'){
-      const t = totalGeral(), r = parseFloat(inpRec.value||'0');
-      b.disabled = !(r >= t);
-    } else b.disabled=false;
-  }
-  function updatePayActive(){
-    payBtns.forEach(btn=>{
-      const on = btn.dataset.pay === forma;
-      btn.classList.toggle('active', on);
-      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-  }
-  function setFormaPagamento(v){
-    forma = v; selFP.value = v; toggleDinheiroUI(); updatePayActive();
-  }
+    function addItem(){
+      if(!temCaixa) return;
 
-  if (temCaixa){
-    document.querySelectorAll('[data-pay]').forEach(btn=>{
-      btn.addEventListener('click', ()=> setFormaPagamento(btn.getAttribute('data-pay')));
-    });
-    selFP.addEventListener('change', ()=> setFormaPagamento(selFP.value));
-    inpRec.addEventListener('input', recalcTroco);
-  }
+      let nome, u, sku;
+      if (produtoSelecionado){
+        nome = produtoSelecionado.nome;
+        u = Number(produtoSelecionado.unit || 0);
+        sku = produtoSelecionado.sku || '';
+      } else {
+        nome = (busca?.value || '').trim() || 'Item';
+        u = parseFloat(preco?.value || '0');
+        sku = (el('#inp-sku')?.value || '').trim();
+      }
 
-  // start
-  recalc();
-  updateVisorUltimo();  // inicia visor
-  setFormaPagamento('dinheiro'); // seleciona default + ativa UI
-</script>
+      const q = parseFloat(qtd?.value || '0');
+      if(q<=0 || u<0) return;
 
-<script>
-  document.addEventListener('DOMContentLoaded', function(){
-    const m = document.getElementById('modalCaixaObrigatorio');
-    if (m) new bootstrap.Modal(m).show();
-  });
-</script>
+      itens.push({nome, qtd:q, unit:u, sku});
+
+      // Limpa campos e seleção temporária
+      produtoSelecionado = null;
+      if(busca) busca.value='';
+      if(el('#inp-sku')) el('#inp-sku').value='';
+      if(qtd) qtd.value='1.000';
+      if(preco) preco.value='0.00';
+      upItemTile();
+
+      visorUltimo();   // atualiza nome e valor unitário do último
+      recalc();
+      busca && busca.focus();
+    }
+
+    if(temCaixa){
+      el('#btn-add')?.addEventListener('click', addItem);
+      el('#btn-clear')?.addEventListener('click', ()=>{
+        itens=[]; produtoSelecionado=null; recalc(); renderTicket(); visorUltimo(); // volta para "—" e R$ 0,00
+      });
+      qtd && qtd.addEventListener('input', upItemTile);
+      preco && preco.addEventListener('input', upItemTile);
+
+      document.addEventListener('keydown',(e)=>{
+        if(e.key==='F2'){ e.preventDefault(); qtd && (qtd.select(), qtd.scrollIntoView({block:'center'})); }
+        if(e.key==='F3'){
+          e.preventDefault(); const d = el('#inp-desc'); if(d){ d.focus(); d.select(); d.scrollIntoView({block:'center'}); }
+        }
+        if(e.key==='F6'){
+          e.preventDefault(); forma='dinheiro'; toggleDin(); updatePayActive();
+          const r = el('#inp-recebido'); if(r){ r.focus(); r.select(); r.scrollIntoView({block:'center'}); }
+        }
+        if(e.key==='F4'){
+          e.preventDefault();
+          const f=document.getElementById('form-venda'); const b=document.getElementById('btn-finalizar');
+          if(b && !b.disabled){ f?.requestSubmit ? f.requestSubmit(b) : b.click(); }
+        }
+        // Alt+V: Voltar
+        if(e.altKey && (e.key==='v' || e.key==='V')){ e.preventDefault(); document.getElementById('btn-voltar')?.click(); }
+      });
+
+      // Enter no campo de busca ainda adiciona
+      busca && busca.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); addItem(); }});
+    }
+
+    /* Pagamento / troco */
+    const selBtns=document.querySelectorAll('[data-pay]'),
+          grpDin=el('#grp-din'),
+          inpRec=el('#inp-recebido'),
+          lblTroco=el('#lbl-troco');
+
+    selBtns.forEach(b=>b.addEventListener('click',()=>{ forma=b.dataset.pay; toggleDin(); updatePayActive(); }));
+
+    function toggleDin(){ const isDin=forma==='dinheiro'; if(grpDin) grpDin.style.display=isDin?'block':'none'; validateBtn(); }
+    function troco(){
+      if(forma!=='dinheiro'){ if(lblTroco){ lblTroco.textContent='R$ 0,00'; lblTroco.className='n money'; } return; }
+      const tr = (parseFloat(inpRec?.value||'0') - totalAtual());
+      if(lblTroco){ lblTroco.textContent='R$ '+fmt(tr); lblTroco.className='n money '+(tr>=0?'ok':'neg'); }
+    }
+    function validateBtn(){
+      const b=document.getElementById('btn-finalizar');
+      if(!b) return;
+      if(!temCaixa || itens.length===0){ b.disabled=true; return; }
+      if(forma==='dinheiro'){
+        const t = totalAtual();
+        b.disabled = (parseFloat(inpRec?.value||'0') < Math.max(t,0));
+      } else b.disabled=false;
+    }
+    el('#inp-desc')?.addEventListener('input', ()=>{ recalc(); });
+    inpRec && inpRec.addEventListener('input', ()=>{ troco(); validateBtn(); });
+
+    function syncHidden(){ const d=el('#desconto_hidden'); const i=el('#inp-desc'); if(d && i) d.value=(parseFloat(i.value||'0')||0).toFixed(2); }
+    el('#inp-desc')?.addEventListener('input', syncHidden);
+
+    /* Render da lista */
+    function renderTicket(){
+      const t = el('#ticket'); if(!t) return;
+      const linhas = itens.map(i=>`
+        <div class="t-line">
+          <div>
+            <div class="t-desc">${esc(i.nome)}</div>
+            <div class="t-meta">${i.qtd.toFixed(3)} × ${fmt(i.unit)}</div>
+          </div>
+          <div class="t-val">R$ ${fmt(i.qtd*i.unit)}</div>
+        </div>
+      `).join('') || `<div class="text-muted">Sem itens</div>`;
+      t.innerHTML = `<div class="t-list">${linhas}</div>`;
+    }
+
+    // Relógio HH:MM (atualiza a cada 10s)
+    (function clockTick(){
+      const e = document.getElementById('clock');
+      if(e){
+        const d = new Date();
+        const hh = String(d.getHours()).padStart(2,'0');
+        const mm = String(d.getMinutes()).padStart(2,'0');
+        e.textContent = `${hh}:${mm}`;
+      }
+      setTimeout(clockTick, 10_000);
+    })();
+
+    // Tooltips (Bootstrap)
+    (function initTips(){
+      if (window.bootstrap) {
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+          try { new bootstrap.Tooltip(el); } catch(_) {}
+        });
+      }
+    })();
+
+    // Visual do método de pagamento selecionado
+    const payBtns = document.querySelectorAll('.pay .pay-btn');
+    function updatePayActive() {
+      payBtns.forEach(btn => {
+        const on = btn.dataset.pay === forma;
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+
+    // Boot
+    upItemTile(); recalc(); toggleDin(); renderTicket(); visorUltimo(); updatePayActive();
+  </script>
 </body>
 </html>
