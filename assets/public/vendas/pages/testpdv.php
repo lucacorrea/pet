@@ -686,7 +686,7 @@ try {
           data-bs-toggle="tooltip"
           aria-label="Sair">
           <i class="bi bi-box-arrow-right"></i>
-          <span class="d-none d-md-inline ms-1">Sair</span>
+          <span class="d-none d-md-inline ms-1">Voltar</span>
         </a>
       </div>
 
