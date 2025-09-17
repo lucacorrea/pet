@@ -624,7 +624,7 @@ try {
       <!-- Subtotais -->
       <div class="bottom">
         <div class="subgrid w-100">
-          <div class="box-num">
+          <div class="box-num 100-width">
             <div class="lab">SUBTOTAL</div>
             <div id="tot-subtotal" class="num money">R$ 0,00</div>
           </div>
