@@ -642,16 +642,7 @@ try {
 
     <!-- DIREITA -->
     <div class="right">
-      <div class="totalzao">
-        <div class="d-flex justify-content-between">
-          <span class="">Itens</span><strong id="tot-itens">0</strong>
-        </div>
-        <hr class="border-light ">
-        <div class="d-flex justify-content-between align-items-center">
-          <span class="fs-6">TOTAL</span>
-          <span id="tot-geral" class="fs-2 fw-bold money" style="font-size:20px !important;">R$ 0,00</span>
-        </div>
-      </div>
+   
 
       <div class="card-pdv pay" style="min-height:0">
         <div class="card-header">PAGAMENTO</div>
