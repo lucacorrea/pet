@@ -622,7 +622,8 @@ try {
     }
 
     .pay .pay-btn.active {
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, .25) inset;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 1) inset;
+      border: #f8fafc 2px solid;
       background:  #16a34a;
       color: #f0f0f0f0;
     }
