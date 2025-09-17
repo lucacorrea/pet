@@ -673,7 +673,9 @@ try {
           <span class="dot"></span>
           CAIXA <?= $caixaAberto ? 'ABERTO' : 'FECHADO' ?>
         </div>
-        <div id="clock" class="clock">--:--</div>
+        <div id="clock" class="clock">
+            <i class="bi bi-box-arrow-right" title="Sair"></i>
+        </div>
       </div>
     </div>
   </div>
@@ -814,9 +816,7 @@ try {
                 <i class="bi bi-check2-circle me-1"></i> Finalizar Venda <span class="ms-1 small kbd">F4</span>
               </button>
             </div>
-            <div class="mt-2 d-grid">
-              <a href="../../dashboard.php" class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> Voltar</a>
-            </div>
+            
           </form>
         </div>
       </div>
