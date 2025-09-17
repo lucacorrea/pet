@@ -678,7 +678,7 @@ try {
           <i class="bi bi-clock"></i>
           <span id="clock">--:--</span>
         </div>
-
+         <div class="caixa-pill">
         <a href=".././../dashboard.php"
           id="btn-logout"
           class="btn top-logout"
@@ -692,7 +692,6 @@ try {
 
     </div>
   </div>
-
 
   <div class="stage">
     <!-- ESQUERDA -->
@@ -719,7 +718,7 @@ try {
               <span class="money-prefix">R$</span>
               <input type="number" id="inp-preco" class="inp money-input text-end" step="0.01" min="0" value="0.00" <?= $caixaAberto ? '' : 'disabled' ?>>
             </div>
-          </div>
+          </div>´
 
           <div class="tile">
             <div class="lbl">TOTAL DO ITEM</div>
