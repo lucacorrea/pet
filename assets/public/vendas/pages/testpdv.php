@@ -310,13 +310,13 @@ try {
         <div class="card-body">
           <div class="row g-2">
             <div class="col-6">
-              <button class="btn btn-success w-100 pay-btn active"
+              <button class="btn btn-outline-light w-100 pay-btn active"
                       type="button" data-pay="dinheiro" aria-pressed="true" <?= $caixaAberto ? '' : 'disabled' ?>>
                 <i class="bi bi-cash-coin me-1"></i> Dinheiro
               </button>
             </div>
             <div class="col-6">
-              <button class="btn btn-primary w-100 pay-btn"
+              <button class="btn btn-outline-light w-100 pay-btn"
                       type="button" data-pay="pix" aria-pressed="false" <?= $caixaAberto ? '' : 'disabled' ?>>
                 <i class="bi bi-upc-scan me-1"></i> PIX
               </button>
