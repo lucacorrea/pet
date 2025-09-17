@@ -265,11 +265,11 @@ try {
           <div class="opacity-75">Produto</div>
           <div id="visor-produto" class="big">—</div>
           <!-- valor do último produto adicionado -->
-          <div id="visor-ultimo-valor" class="money" style="margin-top:4px;font-size:1.25rem;font-weight:800">R$ 0,00</div>
+        
         </div>
         <div class="text-end">
-          <div class="opacity-75">Total</div>
-          <div id="visor-subtotal" class="big money">R$ 0,00</div>
+          <div class="opacity-75">Valor</div>
+          <div id="visor-ultimo-valor" class="big money">R$ 0,00</div>
         </div>
       </div>
 
