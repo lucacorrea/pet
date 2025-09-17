@@ -117,6 +117,15 @@ try {
       box-shadow: 0 8px 18px rgba(0, 0, 0, .45);
     }
 
+    .subgrid-vertical {
+      grid-template-columns: 1fr;
+      /* empilhado */
+    }
+
+    .subgrid-vertical .money-wrap {
+      width: 100%;
+    }
+
     .top-left {
       display: flex;
       align-items: center;
