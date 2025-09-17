@@ -526,27 +526,158 @@ try {
     .side-band {
       display: none;
     }
+
+    /* Container interno flex (não mexe no .topbar existente) */
+    .top-inner {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 16px;
+    }
+
+    /* Marca / ícone */
+    .top-icon {
+      font-size: 1.25rem;
+      opacity: .95
+    }
+
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .top-left .brand {
+      font-weight: 800;
+      letter-spacing: .12rem;
+      text-transform: uppercase;
+      font-size: 1.02rem
+    }
+
+    /* Atalhos em chips */
+    .top-shortcuts {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, .12);
+      border: 1px solid rgba(255, 255, 255, .25);
+      border-radius: 12px;
+      padding: 6px 10px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+    }
+
+    .top-shortcuts .sep {
+      opacity: .8
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .kbd {
+      background: #0f172a;
+      color: #fff;
+      border: 1px solid #0f172a;
+      border-radius: .35rem;
+      padding: .12rem .40rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .chip-lab {
+      font-weight: 700;
+      letter-spacing: .02rem
+    }
+
+    /* Status do caixa + relógio */
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .caixa-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+      letter-spacing: .08rem;
+      background: rgba(255, 255, 255, .15);
+      border: 1px solid rgba(255, 255, 255, .25);
+      text-transform: uppercase;
+    }
+
+    .caixa-pill .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, .08) inset;
+    }
+
+    .caixa-pill.open .dot {
+      background: #22c55e
+    }
+
+    /* verde */
+    .caixa-pill.closed .dot {
+      background: #ef4444
+    }
+
+    /* vermelho */
+
+    .clock {
+      min-width: 72px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      background: rgba(255, 255, 255, .10);
+      border: 1px solid rgba(255, 255, 255, .25);
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-weight: 700
+    }
   </style>
 </head>
 
 <body>
 
   <div class="topbar">
-    <div class="top-left">
-      <div class="brand">Mundo Pets – PDV</div>
-      <div class="caixa-status">CAIXA <?= $caixaAberto ? 'ABERTO' : 'FECHADO' ?></div>
+    <div class="top-inner">
+      <!-- Esquerda: marca -->
+      <div class="top-left">
+        <i class="bi bi-shop-window top-icon"></i>
+        <div class="brand">Mundo Pets – PDV</div>
+      </div>
 
-      <div class="shortcuts mt-3">
-        <div>
-          <span class="kbd">F2</span> – Alterar Qtd &nbsp; • &nbsp;
-          <span class="kbd">F3</span> – Desconto &nbsp; • &nbsp;
-          <span class="kbd">F6</span> – Total Recebido &nbsp; • &nbsp;
-          <span class="kbd">Enter</span> – Adicionar &nbsp; • &nbsp;
-          <span class="kbd">F4</span> – Finalizar
+      <!-- Centro: atalhos (chips). Some em telas pequenas -->
+      <div class="top-shortcuts">
+        <span class="chip"><span class="kbd">F2</span><span class="chip-lab">Qtd</span></span>
+        <span class="sep">•</span>
+        <span class="chip"><span class="kbd">F3</span><span class="chip-lab">Desconto</span></span>
+        <span class="sep">•</span>
+        <span class="chip"><span class="kbd">Enter</span><span class="chip-lab">Adicionar</span></span>
+        <span class="sep">•</span>
+        <span class="chip"><span class="kbd">F4</span><span class="chip-lab">Finalizar</span></span>
+        <span class="sep">•</span>
+        <span class="chip"><span class="kbd">F6</span><span class="chip-lab">Recebido</span></span>
+      </div>
+
+      <!-- Direita: status do caixa + relógio -->
+      <div class="top-right">
+        <div class="caixa-pill <?= $caixaAberto ? 'open' : 'closed' ?>">
+          <span class="dot"></span>
+          CAIXA <?= $caixaAberto ? 'ABERTO' : 'FECHADO' ?>
         </div>
+        <div id="clock" class="clock">--:--</div>
       </div>
     </div>
   </div>
+
 
   <div class="stage">
     <!-- ESQUERDA -->
