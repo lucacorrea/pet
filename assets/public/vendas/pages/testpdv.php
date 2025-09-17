@@ -656,7 +656,7 @@ try {
 
       <!-- Centro: atalhos (chips). Some em telas pequenas -->
       <div class="top-shortcuts">
-        <span class="chip"><span class="kbd">F2</span><span class="chip-lab">Qtd</span></span>
+        <span class="chip"><span class="kbd">F2</span><span class="chip-lab">Quantidade</span></span>
         <span class="sep">•</span>
         <span class="chip"><span class="kbd">F3</span><span class="chip-lab">Desconto</span></span>
         <span class="sep">•</span>
