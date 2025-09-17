@@ -818,7 +818,7 @@ try {
             <input type="hidden" name="itens_json" id="itens_json">
             <input type="hidden" name="desconto" id="desconto_hidden" value="0.00">
             <div class="mt-3 d-grid">
-              <button id="btn-finalizar" class="btn btn-success btn-lg" type="submit" <?= $caixaAberto ? '' : 'disabled' ?>>
+              <button id="btn-finalizar" class="btn btn-primary btn-lg" type="submit" <?= $caixaAberto ? '' : 'disabled' ?>>
                 <i class="bi bi-check2-circle me-1"></i> Finalizar Venda <span class="ms-1 small kbd">F4</span>
               </button>
             </div>
