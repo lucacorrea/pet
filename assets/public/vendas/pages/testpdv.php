@@ -649,7 +649,7 @@ try {
         <hr class="border-light ">
         <div class="d-flex justify-content-between align-items-center">
           <span class="fs-6">TOTAL</span>
-          <span id="tot-geral" class="fs-2 fw-bold money">R$ 0,00</span>
+          <span id="tot-geral" class="fs-2 fw-bold money" style="font-size:20px;">R$ 0,00</span>
         </div>
       </div>
 
