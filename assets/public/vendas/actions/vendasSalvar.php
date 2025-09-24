@@ -1,155 +1,206 @@
 <?php
-// autoErp/public/vendas/actions/vendasSalvar.php
+// autoErp/public/vendas/actions/vendaRapidaSalvar.php
 declare(strict_types=1);
-
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/../../../lib/auth_guard.php';
-guard_empresa_user(['dono','administrativo','funcionario']);
+guard_empresa_user(['dono', 'administrativo', 'caixa']);
 
 $pdo = null;
 $pathCon = realpath(__DIR__ . '/../../../conexao/conexao.php');
 if ($pathCon && file_exists($pathCon)) require_once $pathCon;
 if (!isset($pdo) || !($pdo instanceof PDO)) die('Conexão indisponível.');
 
-$op   = (string)($_POST['op'] ?? '');
-$csrf = (string)($_POST['csrf'] ?? '');
-
-if ($op !== 'venda_rapida' || empty($_SESSION['csrf_venda_rapida']) || !hash_equals($_SESSION['csrf_venda_rapida'], $csrf)) {
-  header('Location: ../pages/vendaRapida.php?err=1&msg=' . urlencode('Operação inválida.'));
+function back(string $msg, int $ok = 0, array $extra = []): never {
+  $params = array_merge(['ok'=>$ok, 'err'=>$ok?0:1, 'msg'=>$msg], $extra);
+  $q = http_build_query($params);
+  header("Location: ../pages/vendaRapida.php?$q");
   exit;
 }
 
-// empresa / vendedor
+// CSRF
+$csrf = (string)($_POST['csrf'] ?? '');
+if (!$csrf || !hash_equals($_SESSION['csrf_venda_rapida'] ?? '', $csrf)) {
+  back('Sessão expirada. Recarregue a página e tente novamente.');
+}
+
 $empresaCnpj = preg_replace('/\D+/', '', (string)($_SESSION['user_empresa_cnpj'] ?? ''));
 if (!preg_match('/^\d{14}$/', $empresaCnpj)) {
-  header('Location: ../pages/vendaRapida.php?err=1&msg=' . urlencode('Empresa não vinculada.'));
-  exit;
-}
-$vendedorCpf = preg_replace('/\D+/', '', (string)($_SESSION['user_cpf'] ?? '')); // se não tiver, pode ficar vazio
-
-// dados venda
-$cliente_nome    = trim((string)($_POST['cliente_nome'] ?? ''));
-$forma_pagamento = (string)($_POST['forma_pagamento'] ?? 'dinheiro');
-$status          = (string)($_POST['status'] ?? 'fechada');
-$desconto        = (float)($_POST['desconto'] ?? 0);
-
-// itens
-$item_tipo  = $_POST['item_tipo']  ?? [];
-$descricao  = $_POST['descricao']  ?? [];
-$qtd        = $_POST['qtd']        ?? [];
-$valor_unit = $_POST['valor_unit'] ?? [];
-$item_id    = $_POST['item_id']    ?? []; // produto_id quando tipo=produto
-
-// valida itens
-$linhas = [];
-for ($i=0; $i < count($descricao); $i++) {
-  $tipo = ($item_tipo[$i] ?? 'produto') === 'servico' ? 'servico' : 'produto';
-  $desc = trim((string)($descricao[$i] ?? ''));
-  $q    = (float)($qtd[$i] ?? 0);
-  $vu   = (float)($valor_unit[$i] ?? 0);
-  $pid  = (int)($item_id[$i] ?? 0);
-
-  if ($desc === '' || $q <= 0 || $vu < 0) continue;
-
-  $linhas[] = [
-    'tipo' => $tipo,
-    'desc' => $desc,
-    'qtd'  => $q,
-    'unit' => $vu,
-    'pid'  => $tipo==='produto' ? $pid : null,
-  ];
+  back('Empresa inválida na sessão.');
 }
 
-if (!$linhas) {
-  header('Location: ../pages/vendaRapida.php?err=1&msg=' . urlencode('Inclua ao menos um item válido.'));
-  exit;
+$vendedorCpf = preg_replace('/\D+/', '', (string)($_SESSION['user_cpf'] ?? ''));
+if (!$vendedorCpf) {
+  back('Usuário sem CPF vinculado.');
 }
 
-$total_bruto = 0.0;
-foreach ($linhas as $L) $total_bruto += $L['qtd'] * $L['unit'];
-$total_liquido = max($total_bruto - $desconto, 0);
+// forma de pagamento (compatibilidade com 2 nomes)
+$forma = strtolower(trim((string)($_POST['forma_pagamento'] ?? $_POST['pagamento_tipo'] ?? '')));
+if ($forma === '') $forma = 'dinheiro';
+$formasValidas = ['dinheiro','pix','debito','credito'];
+if (!in_array($forma, $formasValidas, true)) $forma = 'dinheiro';
+
+// itens + desconto
+$itens = json_decode((string)($_POST['itens_json'] ?? '[]'), true);
+if (!is_array($itens) || count($itens) === 0) {
+  back('Sem itens na venda.');
+}
+
+$descontoRaw = (string)($_POST['desconto'] ?? '0');
+$desconto = (float) str_replace(['.',','], ['','.' ], $descontoRaw);
+
+// Recalcula total no servidor
+$subtotal = 0.0;
+foreach ($itens as $it) {
+  $qtd  = (float)($it['qtd']  ?? 0);
+  $unit = (float)($it['unit'] ?? 0);
+  if ($qtd <= 0 || $unit < 0) continue;
+  $subtotal += $qtd * $unit;
+}
+$total = max(0, $subtotal - max(0, $desconto));
+
+// Se for dinheiro, exige valor_recebido
+$valorRecebido = null;
+if ($forma === 'dinheiro') {
+  $rawReceb = (string)($_POST['valor_recebido'] ?? '');
+  $norm = str_replace(['.', ','], ['', '.'], $rawReceb); // 1.234,56 -> 1234.56
+  if ($norm === '' || !is_numeric($norm)) {
+    back('Informe o valor recebido em dinheiro.');
+  }
+  $valorRecebido = (float)$norm;
+  if ($valorRecebido + 1e-9 < $total) {
+    back('Valor recebido insuficiente.');
+  }
+}
+
+// Verifica caixa aberto (para lançar movimento em dinheiro)
+$caixaAberto = null;
+try {
+  $stCx = $pdo->prepare("SELECT id FROM caixas_peca WHERE empresa_cnpj=:c AND status='aberto' ORDER BY aberto_em DESC LIMIT 1");
+  $stCx->execute([':c' => $empresaCnpj]);
+  $caixaAberto = $stCx->fetch(PDO::FETCH_ASSOC) ?: null;
+} catch (Throwable $e) {
+  // segue nulo
+}
 
 try {
   $pdo->beginTransaction();
 
-  // cria venda
-  $ins = $pdo->prepare("
-    INSERT INTO vendas_peca
-      (empresa_cnpj, vendedor_cpf, origem, status, total_bruto, desconto, total_liquido, forma_pagamento)
-    VALUES
-      (:c, :v, 'balcao', :s, :tb, :d, :tl, :fp)
-  ");
-  $ins->execute([
-    ':c'  => $empresaCnpj,
-    ':v'  => $vendedorCpf ?: null,
-    ':s'  => in_array($status, ['aberta','fechada','cancelada'], true) ? $status : 'fechada',
-    ':tb' => $total_bruto,
-    ':d'  => $desconto,
-    ':tl' => $total_liquido,
-    ':fp' => $forma_pagamento,
+  // Grava venda
+  $stVenda = $pdo->prepare(
+    "INSERT INTO vendas_peca
+     (empresa_cnpj, vendedor_cpf, origem, status, total_bruto, desconto, total_liquido, forma_pagamento)
+     VALUES
+     (:cnpj, :cpf, 'balcao', 'fechada', :bruto, :desc, :liq, :forma)"
+  );
+  $stVenda->execute([
+    ':cnpj'  => $empresaCnpj,
+    ':cpf'   => $vendedorCpf,
+    ':bruto' => number_format($subtotal,2,'.',''),
+    ':desc'  => number_format(max(0,$desconto),2,'.',''),
+    ':liq'   => number_format($total,2,'.',''),
+    ':forma' => $forma,
   ]);
   $vendaId = (int)$pdo->lastInsertId();
+  if ($vendaId <= 0) throw new RuntimeException('Falha ao criar venda.');
 
-  // itens + movimentação de estoque (quando produto e status != cancelada)
-  $insItem = $pdo->prepare("
-    INSERT INTO venda_itens_peca
-      (venda_id, item_tipo, item_id, descricao, qtd, valor_unit, valor_total)
-    VALUES
-      (:vid, :t, :iid, :d, :q, :vu, :vt)
-  ");
+  // Prepara buscas de produto
+  $stFindSku = $pdo->prepare("SELECT id FROM produtos_peca WHERE empresa_cnpj=:c AND sku=:sku LIMIT 1");
+  $stFindEan = $pdo->prepare("SELECT id FROM produtos_peca WHERE empresa_cnpj=:c AND ean=:ean LIMIT 1");
+  $stFindNome= $pdo->prepare("SELECT id FROM produtos_peca WHERE empresa_cnpj=:c AND nome=:n LIMIT 1");
 
-  $mov = $pdo->prepare("
-    INSERT INTO mov_estoque_peca
-      (empresa_cnpj, produto_id, tipo, qtd, origem, ref_id, usuario_cpf)
-    VALUES
-      (:c, :pid, 'saida', :q, 'venda', :ref, :u)
-  ");
+  // Insere itens
+  $stItem = $pdo->prepare(
+    "INSERT INTO venda_itens_peca
+     (venda_id, item_tipo, item_id, descricao, qtd, valor_unit, valor_total)
+     VALUES
+     (:venda, 'produto', :item_id, :desc, :qtd, :vu, :vt)"
+  );
 
-  $updEst = $pdo->prepare("
-    UPDATE produtos_peca
-       SET estoque_atual = estoque_atual - :q
-     WHERE id = :pid AND empresa_cnpj = :c
-  ");
+  foreach ($itens as $it) {
+    $nome = trim((string)($it['nome'] ?? ''));
+    $sku  = trim((string)($it['sku']  ?? ''));
+    $qtd  = (float)($it['qtd']  ?? 0);
+    $unit = (float)($it['unit'] ?? 0);
+    if ($qtd <= 0 || $unit < 0) continue;
 
-  foreach ($linhas as $L) {
-    $vt = $L['qtd'] * $L['unit'];
+    // mapeia produto: SKU > EAN (se veio como sku) > Nome
+    $produtoId = null;
+    if ($sku !== '') {
+      $stFindSku->execute([':c'=>$empresaCnpj, ':sku'=>$sku]);
+      $row = $stFindSku->fetch(PDO::FETCH_ASSOC);
+      if ($row) $produtoId = (int)$row['id'];
+      if (!$produtoId) { // tenta como EAN
+        $stFindEan->execute([':c'=>$empresaCnpj, ':ean'=>$sku]);
+        $row = $stFindEan->fetch(PDO::FETCH_ASSOC);
+        if ($row) $produtoId = (int)$row['id'];
+      }
+    }
+    if (!$produtoId && $nome !== '') {
+      $stFindNome->execute([':c'=>$empresaCnpj, ':n'=>$nome]);
+      $row = $stFindNome->fetch(PDO::FETCH_ASSOC);
+      if ($row) $produtoId = (int)$row['id'];
+    }
 
-    $insItem->execute([
-      ':vid' => $vendaId,
-      ':t'   => $L['tipo'],
-      ':iid' => $L['tipo']==='produto' ? ($L['pid'] ?: 0) : 0,
-      ':d'   => $L['desc'],
-      ':q'   => $L['qtd'],
-      ':vu'  => $L['unit'],
-      ':vt'  => $vt,
+    if (!$produtoId) {
+      // IMPORTANTE: para não violar NOT NULL, paramos e pedimos para cadastrar/mapear o produto
+      throw new RuntimeException("Produto não localizado (\"$nome\" / SKU \"$sku\"). Cadastre o produto ou informe o SKU.");
+      // Alternativa (se desejar): criar "ITEM AVULSO" e usar id dele.
+    }
+
+    $vt = $qtd * $unit;
+
+    $stItem->execute([
+      ':venda'   => $vendaId,
+      ':item_id' => $produtoId,
+      ':desc'    => ($nome !== '' ? $nome : 'Item'),
+      ':qtd'     => number_format($qtd,3,'.',''),
+      ':vu'      => number_format($unit,2,'.',''),
+      ':vt'      => number_format($vt,2,'.',''),
     ]);
 
-    if ($L['tipo'] === 'produto' && $status !== 'cancelada' && $L['pid']) {
-      // baixa estoque
-      $updEst->execute([
-        ':q'   => $L['qtd'],
-        ':pid' => $L['pid'],
-        ':c'   => $empresaCnpj,
-      ]);
-      // movimento
-      $mov->execute([
-        ':c'   => $empresaCnpj,
-        ':pid' => $L['pid'],
-        ':q'   => $L['qtd'],
-        ':ref' => $vendaId,
-        ':u'   => $vendedorCpf ?: null,
-      ]);
-    }
+    // (Opcional) baixar estoque aqui se desejar, usando mov_estoque_peca
+  }
+
+  // Movimento de caixa apenas se for dinheiro e tiver caixa aberto
+  if ($forma === 'dinheiro' && $caixaAberto && !empty($caixaAberto['id'])) {
+    $stMov = $pdo->prepare(
+      "INSERT INTO caixa_movimentos_peca
+       (empresa_cnpj, caixa_id, tipo, forma_pagamento, valor, descricao)
+       VALUES
+       (:cnpj, :caixa, 'entrada', :forma, :valor, :desc)"
+    );
+    $stMov->execute([
+      ':cnpj'  => $empresaCnpj,
+      ':caixa' => (int)$caixaAberto['id'],
+      ':forma' => 'dinheiro',
+      ':valor' => number_format($total,2,'.',''), // registra o líquido
+      ':desc'  => "Venda #$vendaId (dinheiro)"
+    ]);
+
+    // (Opcional) registrar saída de troco:
+    // if ($valorRecebido !== null && $valorRecebido > $total) {
+    //   $troco = $valorRecebido - $total;
+    //   $stTroco = $pdo->prepare(
+    //     "INSERT INTO caixa_movimentos_peca
+    //      (empresa_cnpj, caixa_id, tipo, forma_pagamento, valor, descricao)
+    //      VALUES
+    //      (:cnpj, :caixa, 'saida', :forma, :valor, :desc)"
+    //   );
+    //   $stTroco->execute([
+    //     ':cnpj'=>$empresaCnpj, ':caixa'=>(int)$caixaAberto['id'],
+    //     ':forma'=>'dinheiro', ':valor'=>number_format($troco,2,'.',''),
+    //     ':desc'=>"Troco da venda #$vendaId"
+    //   ]);
+    // }
   }
 
   $pdo->commit();
-  unset($_SESSION['csrf_venda_rapida']); // força novo token
-  header('Location: ../pages/vendaRapida.php?ok=1&msg=' . urlencode('Venda registrada!'));
-  exit;
+
+  // sucesso
+  back('Venda registrada com sucesso!', 1, ['venda_id'=>$vendaId]);
 
 } catch (Throwable $e) {
   if ($pdo->inTransaction()) $pdo->rollBack();
-  header('Location: ../pages/vendaRapida.php?err=1&msg=' . urlencode('Erro ao salvar a venda.'));
-  exit;
+  back('Falha ao registrar venda: ' . $e->getMessage());
 }
